@@ -1,4 +1,4 @@
 # job-application
 
-Read short trade file.
-Send information to log-api
+- Read short trade file.
+- Send information to log-api
