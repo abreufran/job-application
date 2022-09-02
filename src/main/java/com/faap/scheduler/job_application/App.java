@@ -16,7 +16,7 @@ public class App
         Timer timer = new Timer();
         TimerTask tradeTask = new TradeTask();
         
-        ((TradeTask)tradeTask).readFile();
+        ((TradeTask)tradeTask).readFileAndSave();
         
         timer.schedule(tradeTask, 0, 2000);
     }

@@ -19,7 +19,7 @@ public class TradeTask extends TimerTask {
 		System.out.println(LocalDateTime.now());
 	}
 
-	public void readFile() {
+	public void readFileAndSave() {
 		String fileName =  System.getProperty("user.home") + "/Documents/Trades/five_minutes_open_short_trades.txt";
 
 		//read file into stream, try-with-resources
