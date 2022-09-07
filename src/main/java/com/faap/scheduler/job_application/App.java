@@ -18,6 +18,8 @@ public class App
         
         ((TradeTask)tradeTask).readFileAndSave();
         
-        timer.schedule(tradeTask, 0, 2000);
+        int seconds = 300;
+        
+        timer.schedule(tradeTask, 0, seconds * 1000);
     }
 }

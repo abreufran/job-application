@@ -20,8 +20,8 @@ public class TradeTask extends TimerTask {
 	}
 
 	public void readFileAndSave() {
-		String fileName =  System.getProperty("user.home") + "/Documents/Trades/five_minutes_open_short_trades.txt";
-
+		String fileName =  System.getProperty("user.home") + "/Desktop/trades/five_minutes_open_short_trades.txt";
+		System.out.println("filename: " + fileName);
 		//read file into stream, try-with-resources
 		try (Stream<String> stream = Files.lines(Paths.get(fileName))) {
 
@@ -37,7 +37,7 @@ public class TradeTask extends TimerTask {
 	
 	public void saveTrade(String trade) {
 		String driver="org.postgresql.Driver";
-		String url="jdbc:postgresql://localhost:5433/log_api";
+		String url="jdbc:postgresql://localhost:5432/log_api";
 		String username = "postgres";
 		String password="123456";
 		
