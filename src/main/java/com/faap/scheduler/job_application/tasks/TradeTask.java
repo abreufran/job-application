@@ -105,8 +105,8 @@ public class TradeTask extends TimerTask {
 	}
 	
 	public boolean existTrade(Connection con, PreparedStatement stmt, ResultSet rs, String trade) throws SQLException {
-		stmt = con.prepareStatement("select id from data_file where raw_data like ?");
-		stmt.setString(1, "%" + trade + "-%");
+		stmt = con.prepareStatement("select id from data_file where raw_data = ?");
+		stmt.setString(1, trade);
 		rs = stmt.executeQuery();
 		 
 		boolean exist = rs.next();
