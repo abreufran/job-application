@@ -1,7 +1,10 @@
 # job-application
 
-- Ajustar el tiempo en que corre TradeTask.
-- Seguir avanzando con log-api (Leer su readme)
+- Leer el archivo Things to do.xlsx
+- Llenar una tabla data_file de log-api
+- Buscar la manera de compartir drive de easylearning21 con abreufran para tener un solo archivo
+- Crear la tabla ThingToDo
+- Cambiar manager para leer la tabla ThingToDo y mandar una notificacion de alerta. 
 
 
 # Instalación
