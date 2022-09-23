@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.faap.scheduler.job_application.tasks.Job;
+import com.faap.scheduler.job_application.tasks.JobTask;
+import com.faap.scheduler.job_application.tasks.Task;
 import com.faap.scheduler.job_application.tasks.TradeTask;
 
 /**
@@ -15,13 +16,14 @@ public class App
 {
     public static void main( String[] args )
     {
-        App.runReadTraderFile();
-        App.runReadJobFile();
+    	Task task = new Task();
+        App.runReadTraderFile(task);
+        App.runReadJobFile(task);
     }
     
-    public static void runReadTraderFile() {
+    public static void runReadTraderFile(Task task) {
     	Timer timer = new Timer();
-        TimerTask tradeTask = new TradeTask();
+        TimerTask tradeTask = new TradeTask(task);
         
         ((TradeTask)tradeTask).readFileAndSave();
         
@@ -30,12 +32,12 @@ public class App
         timer.schedule(tradeTask, 0, seconds * 1000);
     }
     
-    public static void runReadJobFile() {
+    public static void runReadJobFile(Task task) {
     	Timer timer = new Timer();
-        TimerTask jobTask = new Job();
+        TimerTask jobTask = new JobTask(task);
         
         try {
-			((Job)jobTask).readExcel();
+			((JobTask)jobTask).readExcel();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

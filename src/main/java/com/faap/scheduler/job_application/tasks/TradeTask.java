@@ -4,19 +4,20 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TimerTask;
 import java.util.stream.Stream;
 
+import com.faap.scheduler.job_application.enums.Flag;
+
 public class TradeTask extends TimerTask {
+	private Task task;
+	
+	public TradeTask(Task task) {
+		this.task = task;
+	}
 
 	@Override
 	public void run() {
@@ -48,68 +49,7 @@ public class TradeTask extends TimerTask {
 
 	
 	public void saveTrade(String trade) {
-		String driver="org.postgresql.Driver";
-		String url="jdbc:postgresql://localhost:5432/log_api";
-		String username = "postgres";
-		String password="123456";
-		
-		Connection con = null;
-		PreparedStatement stmt = null;
-		ResultSet rs = null;
-		
-		try {
-			Class.forName(driver);
-			con = DriverManager.getConnection(url,username,password);
-			
-			if(!this.existTrade(con, stmt, rs, trade)) {
-				System.out.println(trade);
-				
-				stmt = con.prepareStatement("insert into data_file (created_at, raw_data, updated_at, flag) values (?, ?, ?, ?)");
-		        stmt.setTimestamp(1,Timestamp.valueOf(LocalDateTime.now()));
-		        stmt.setString(2,trade);
-		        stmt.setTimestamp(3,Timestamp.valueOf(LocalDateTime.now()));
-		        stmt.setString(4,"TRADE");
-		                     
-		        int retorno = stmt.executeUpdate();
-		        
-		        if (retorno>0)
-		            System.out.println("Insertado correctamente"); 
-			}
-			
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		finally {
-	        if (con != null) {
-	           try{
-	        	  if(rs != null) rs.close();
-	        	  if(stmt != null) stmt.close();
-	        	  if(con != null) con.close();
-	           } catch(Exception e){
-	              e.printStackTrace();
-	           }
-	        }
-	    } 
-	}
-	
-	public boolean existTrade(Connection con, PreparedStatement stmt, ResultSet rs, String trade) throws SQLException {
-		stmt = con.prepareStatement("select id from data_file where raw_data = ?");
-		stmt.setString(1, trade);
-		rs = stmt.executeQuery();
-		 
-		boolean exist = rs.next();
-		
-		rs.close();
-  	   	stmt.close();
-  	   	
-  	   	rs = null;
-  	   	stmt = null;
-		
-		return exist;
+		task.saveData(trade, Flag.TRADE);
 	}
 	
 	public boolean existFile(String fileName) {
