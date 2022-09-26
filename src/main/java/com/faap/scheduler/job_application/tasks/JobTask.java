@@ -20,7 +20,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import com.faap.scheduler.job_application.enums.Flag;
 
 public class JobTask extends TimerTask {
-
+	public static int NUMBER_OF_CELLS = 7;
+	
 	private Task task;
 
 	public JobTask(Task task) {
@@ -29,11 +30,18 @@ public class JobTask extends TimerTask {
 
 	@Override
 	public void run() {
-		System.out.println(LocalDateTime.now());
+		System.out.println("Job Task: " + LocalDateTime.now());
+		try {
+			this.readExcel();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public void readExcel() throws IOException {
 		File myFile = new File("G://My Drive/Things to do.xlsx");
+		//File myFile = new File("C://Things to do.xlsx");
 		FileInputStream fis = new FileInputStream(myFile);
 
 		// Finds the workbook instance for XLSX file
@@ -78,15 +86,17 @@ public class JobTask extends TimerTask {
 						cellList.add(null);
 					}
 				}
+				//Sí la celda ID no está vacía
 				if (cellList.size() > 0 && cellList.get(0) != null) {
-					if (cellList.size() == 7) {
+					//Si la cantidad de celdas por fila es la correcta
+					if (cellList.size() == NUMBER_OF_CELLS) {
 						StringBuffer cellStr = new StringBuffer();
 						for (String c : cellList) {
 							if (cellStr.length() > 0) {
 								cellStr.append(",");
 							}
 							if (c != null) {
-								cellStr.append(c);
+								cellStr.append(c.replaceAll(",", "__"));
 							} else {
 								cellStr.append("");
 							}
@@ -103,7 +113,10 @@ public class JobTask extends TimerTask {
 
 			}
 		}
+		fis.close();
 		myWorkBook.close();
+		myFile = null;
+		fis = null;
 	}
 
 	public void saveJob(String job) {

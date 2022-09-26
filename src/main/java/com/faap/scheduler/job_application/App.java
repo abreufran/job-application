@@ -1,6 +1,5 @@
 package com.faap.scheduler.job_application;
 
-import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -25,8 +24,6 @@ public class App
     	Timer timer = new Timer();
         TimerTask tradeTask = new TradeTask(task);
         
-        ((TradeTask)tradeTask).readFileAndSave();
-        
         int seconds = 300;
         
         timer.schedule(tradeTask, 0, seconds * 1000);
@@ -35,13 +32,6 @@ public class App
     public static void runReadJobFile(Task task) {
     	Timer timer = new Timer();
         TimerTask jobTask = new JobTask(task);
-        
-        try {
-			((JobTask)jobTask).readExcel();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
         
         int seconds = 300;
         

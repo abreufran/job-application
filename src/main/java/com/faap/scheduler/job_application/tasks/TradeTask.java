@@ -21,7 +21,9 @@ public class TradeTask extends TimerTask {
 
 	@Override
 	public void run() {
-		System.out.println(LocalDateTime.now());
+		System.out.println("Trade Task: " + LocalDateTime.now());
+		
+		this.readFileAndSave();
 	}
 
 	public void readFileAndSave() {
