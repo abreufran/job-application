@@ -12,15 +12,20 @@ import java.util.List;
 import java.util.TimerTask;
 
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.faap.scheduler.job_application.enums.Flag;
+import com.faap.scheduler.job_application.models.job.JobSheet;
+import com.faap.scheduler.job_application.models.job.SheetRow;
+import com.faap.scheduler.job_application.models.job.SheetType;
 
 public class JobTask extends TimerTask {
 	public static int NUMBER_OF_CELLS = 7;
+	public static String JOB_FILE_NAME = "G://My Drive/Things to do.xlsx";
 	
 	private Task task;
 
@@ -32,91 +37,135 @@ public class JobTask extends TimerTask {
 	public void run() {
 		System.out.println("Job Task: " + LocalDateTime.now());
 		try {
-			this.readExcel();
+			this.readAndSaveExcel();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
+	
+	public void fillEmptyFields() throws IOException {
+		XSSFWorkbook myWorkBook = this.readExcel();
+		
+		JobSheet jobSheet = this.readSheet(myWorkBook);
+		
+		//TODO CONTINUAR AQUIIII
+		
+		myWorkBook.close();
+	}
 
-	public void readExcel() throws IOException {
-		File myFile = new File("G://My Drive/Things to do.xlsx");
-		//File myFile = new File("C://Things to do.xlsx");
-		FileInputStream fis = new FileInputStream(myFile);
+	public void readAndSaveExcel() throws IOException {
+		XSSFWorkbook myWorkBook = this.readExcel();
+		
+		JobSheet jobSheet = this.readSheet(myWorkBook);
+		
+		for(SheetRow sheetRow: jobSheet.getSheetRowList()) {
+			List<String> cellList = this.getStrCellList(sheetRow.getCellList());
+			
+			StringBuffer cellStr = new StringBuffer();
+			for (String c : cellList) {
+				if (cellStr.length() > 0) {
+					cellStr.append(",");
+				}
+				if (c != null) {
+					cellStr.append(c.replaceAll(",", "__"));
+				} else {
+					cellStr.append("");
+				}
 
-		// Finds the workbook instance for XLSX file
-		XSSFWorkbook myWorkBook = new XSSFWorkbook(fis);
+			}
+			this.saveJob(cellStr.toString());
+		}
 
+		myWorkBook.close();
+	}
+	
+	private JobSheet readSheet(XSSFWorkbook myWorkBook) {
+		JobSheet jobSheet = new JobSheet(SheetType.THINGS_TO_DO);
 		// Return first sheet from the XLSX workbook
 		XSSFSheet mySheet = myWorkBook.getSheetAt(0);
 
 		// Get iterator to all the rows in current sheet
 		Iterator<Row> rowIterator = mySheet.iterator();
-
-		List<String> cellList = null;
-		DateFormat dateFormat = new SimpleDateFormat("ddMMyyyy");
-
-		int count = -1;
+		
+		List<Cell> cellList = null;
+		int x = -1;
 		// Traversing over each row of XLSX file
 		while (rowIterator.hasNext()) {
 			Row row = rowIterator.next();
-			count++;
-			if (count > 0) {
+			x++;
+			if (x > 0) {
 				cellList = new ArrayList<>();
-
+				
 				// For each row, iterate through each columns
 				Iterator<Cell> cellIterator = row.cellIterator();
-				while (cellIterator.hasNext()) {
-					Cell cell = cellIterator.next();
-					switch (cell.getCellType()) {
-					case STRING:
-						cellList.add(cell.getStringCellValue());
-						break;
-					case NUMERIC:
-						if (DateUtil.isCellDateFormatted(cell)) {
-							cellList.add(dateFormat.format(cell.getDateCellValue()));
-						} else {
-							cellList.add(String.valueOf(cell.getNumericCellValue()));
-						}
-						break;
-					case FORMULA:
-						cellList.add(cell.getRichStringCellValue().toString());
-						break;
-					default:
-						cellList.add(null);
-					}
+				while (cellIterator.hasNext()) {					
+					cellList.add(cellIterator.next());
 				}
-				//Sí la celda ID no está vacía
-				if (cellList.size() > 0 && cellList.get(0) != null) {
-					//Si la cantidad de celdas por fila es la correcta
-					if (cellList.size() == NUMBER_OF_CELLS) {
-						StringBuffer cellStr = new StringBuffer();
-						for (String c : cellList) {
-							if (cellStr.length() > 0) {
-								cellStr.append(",");
-							}
-							if (c != null) {
-								cellStr.append(c.replaceAll(",", "__"));
-							} else {
-								cellStr.append("");
-							}
-
-						}
-						this.saveJob(cellStr.toString());
-					} else {
-						System.out.print("ERROR: \t" + cellList.size() + "\t");
-						cellList.stream().forEach(c -> System.out.print(c + "\t"));
-						System.out.println("");
-					}
-
-				}
-
 			}
+			//Sí la celda ID no está vacía
+			if (cellList.size() > 0 && this.validCell(cellList.get(0))) {
+				//Si la cantidad de celdas por fila es la correcta
+				if (cellList.size() == NUMBER_OF_CELLS) {
+					jobSheet.getSheetRowList().add(new SheetRow(cellList));
+				}
+				else {
+					List<String> strCellList = this.getStrCellList(cellList);
+					System.out.print("ERROR: \t" + strCellList.size() + "\t");
+					strCellList.stream().forEach(c -> System.out.print(c + "\t"));
+					System.out.println("");
+				}
+			}
+			
 		}
+		
+		return jobSheet;
+	}
+	
+	private List<String> getStrCellList(List<Cell> cellList) {
+		List<String> strCellList = new ArrayList<>();
+		
+		for(Cell cell: cellList) {
+			strCellList.add(this.readCell(cell));
+		}
+		return strCellList;
+	}
+	
+	private String readCell(Cell cell) {
+		DateFormat dateFormat = new SimpleDateFormat("ddMMyyyy");
+		
+		switch (cell.getCellType()) {
+		case STRING:
+			return cell.getStringCellValue();
+		case NUMERIC:
+			if (DateUtil.isCellDateFormatted(cell)) {
+				return dateFormat.format(cell.getDateCellValue());
+			} else {
+				return String.valueOf(cell.getNumericCellValue());
+			}
+		case FORMULA:
+			return cell.getRichStringCellValue().toString();
+		default:
+			return null;
+		}
+	}
+		
+	private boolean validCell(Cell cell) {
+		return cell.getCellType() == CellType.STRING || 
+				cell.getCellType() == CellType.NUMERIC ||
+				cell.getCellType() == CellType.FORMULA;
+	}
+	
+	private XSSFWorkbook readExcel() throws IOException {
+		File myFile = new File(JOB_FILE_NAME);
+
+		FileInputStream fis = new FileInputStream(myFile);
+		
 		fis.close();
-		myWorkBook.close();
 		myFile = null;
 		fis = null;
+		// Finds the workbook instance for XLSX file
+		return new XSSFWorkbook(fis);
 	}
 
 	public void saveJob(String job) {
