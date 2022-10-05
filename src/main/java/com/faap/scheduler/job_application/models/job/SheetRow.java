@@ -1,33 +1,39 @@
 package com.faap.scheduler.job_application.models.job;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.poi.ss.usermodel.Cell;
-
 public class SheetRow {
-	private List<Cell> cellList;
+	private int rowNumber;
+	private List<SheetCell> sheetCellList;
 	
-	public SheetRow() {
-		this.cellList = new ArrayList<>();
-	}
-	
-	public SheetRow(List<Cell> cellList) {
-		this.cellList = cellList;
+	public SheetRow(List<SheetCell> sheetCellList, int rowNumber) {
+		super();
+		this.sheetCellList = sheetCellList;
+		this.rowNumber = rowNumber;
 	}
 
-	public List<Cell> getCellList() {
-		return cellList;
+	public int getRowNumber() {
+		return rowNumber;
 	}
 
-	public void setCellList(List<Cell> cellList) {
-		this.cellList = cellList;
+	public void setRowNumber(int rowNumber) {
+		this.rowNumber = rowNumber;
+	}
+
+	public List<SheetCell> getSheetCellList() {
+		return sheetCellList;
+	}
+
+	public void setSheetCellList(List<SheetCell> sheetCellList) {
+		this.sheetCellList = sheetCellList;
 	}
 
 	@Override
 	public String toString() {
-		return "SheetRow [cellList=" + cellList + "]";
+		return "SheetRow [rowNumber=" + rowNumber + ", sheetCellList=" + sheetCellList + "]";
 	}
+
+	
 	
 	
 }
