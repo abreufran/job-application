@@ -49,7 +49,8 @@ public class JobTask extends TimerTask {
 	public void run() {
 		System.out.println("Job Task: " + LocalDateTime.now());
 		try {
-			this.readAndSaveExcel();
+			//this.readAndSaveExcel();
+			this.fillEmptyFields();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -67,7 +68,9 @@ public class JobTask extends TimerTask {
 		
 		this.completeSheetCellList(incompleteSheetCellList);
 		
-		this.writeExcel(myWorkBook);
+		if(incompleteSheetCellList.size() > 0) {
+			this.writeExcel(myWorkBook);
+		}
 		
 		myWorkBook.close();
 	}
@@ -200,7 +203,7 @@ public class JobTask extends TimerTask {
 	}
 	
 	private SheetCellType getSheetCellType(Cell cell) {
-		return Arrays.stream(SheetCellType.values()).filter(sct -> sct.name().equals(this.readCell(cell))).findFirst().orElse(null);
+		return Arrays.stream(SheetCellType.values()).filter(sct -> sct.getName().equals(this.readCell(cell))).findFirst().orElse(null);
 	}
 	
 	private ValidCellListResponse validCellList(List<Cell> cellList, int rowNumber) {
@@ -223,7 +226,9 @@ public class JobTask extends TimerTask {
 		List<String> strCellList = this.getStrCellList(cellList);
 		
 		return Arrays.stream(SheetCellType.values()).allMatch(sct -> {
-			return strCellList.stream().filter(sc -> sct.name().equals(sc)).findFirst().isPresent();
+			boolean match = strCellList.stream().filter(sc -> sct.getName().equals(sc)).findFirst().isPresent();
+			System.out.println(sct.getName() + ":" + match);
+			return match;
 		});
 
 	}
@@ -281,12 +286,14 @@ public class JobTask extends TimerTask {
 		File myFile = new File(JOB_FILE_NAME);
 
 		FileInputStream fis = new FileInputStream(myFile);
+		XSSFWorkbook myWorkbook = new XSSFWorkbook(fis);
+		
 		
 		fis.close();
 		myFile = null;
 		fis = null;
-		// Finds the workbook instance for XLSX file
-		return new XSSFWorkbook(fis);
+
+		return myWorkbook;
 	}
 	
 	private void writeExcel(XSSFWorkbook myWorkBook) throws IOException {
