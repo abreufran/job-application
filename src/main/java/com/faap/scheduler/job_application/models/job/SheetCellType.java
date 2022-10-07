@@ -7,6 +7,7 @@ public enum SheetCellType {
 	ESTIMATED_DATE("Estimated Date", false),
 	PRIORITY("Priority", true),
 	THINGS_TO_DO("Things to do", true),
+	CATEGORY("Category", true),
 	STATUS("Status", true);
 	
 	private String name;

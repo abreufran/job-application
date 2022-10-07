@@ -21,6 +21,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -33,11 +34,12 @@ import com.faap.scheduler.job_application.models.job.SheetType;
 import com.faap.scheduler.job_application.models.job.ValidCellListResponse;
 
 public class JobTask extends TimerTask {
-	public static int NUMBER_OF_CELLS = 7;
-	public static String JOB_FILE_NAME = "G://My Drive/Things to do.xlsx";
+	public static int NUMBER_OF_CELLS = 8;
+	public static String JOB_FILE_NAME = "G://My Drive/Things to do Final.xlsx";
 	public static DateFormat dateFormat = new SimpleDateFormat("ddMMyyyy");
 	public static String DEFAULT_PRIORITY = "A1";
 	public static String DEFAULT_THINGS_TO_DO = "UNKNOWN";
+	public static String DEFAULT_CATEGORY = "Task";
 	
 	private Task task;
 
@@ -51,31 +53,42 @@ public class JobTask extends TimerTask {
 		try {
 			//this.readAndSaveExcel();
 			this.fillEmptyFields();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
-	public void fillEmptyFields() throws IOException {
-		XSSFWorkbook myWorkBook = this.readExcel();
-		
-		JobSheet jobSheet = this.readSheet(myWorkBook);
-		
-		List<SheetRow> incompleteSheetRowList = this.calculateIncompleteSheetRowList(jobSheet.getSheetRowList());
-		
-		List<SheetCell> incompleteSheetCellList = this.calculateIncompleteSheetCell(incompleteSheetRowList);
-		
-		this.completeSheetCellList(incompleteSheetCellList);
-		
-		if(incompleteSheetCellList.size() > 0) {
-			this.writeExcel(myWorkBook);
+	public void fillEmptyFields() throws Exception {
+		XSSFWorkbook myWorkBook = null;
+		try {
+			myWorkBook = this.readExcel();
+			
+			JobSheet jobSheet = this.readSheet(myWorkBook);
+			
+			List<SheetRow> incompleteSheetRowList = this.calculateIncompleteSheetRowList(jobSheet.getSheetRowList());
+			
+			List<SheetCell> incompleteSheetCellList = this.calculateIncompleteSheetCell(incompleteSheetRowList);
+			
+			this.completeSheetCellList(incompleteSheetCellList, myWorkBook);
+			
+			if(incompleteSheetCellList.size() > 0) {
+				System.out.println("Saving WorkBook");
+				this.writeExcel(myWorkBook);
+			}
 		}
-		
-		myWorkBook.close();
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+		finally {
+			if(myWorkBook != null) {
+				myWorkBook.close();
+			}
+		}
 	}
+
 	
-	private void completeSheetCellList(List<SheetCell> sheetCellList) {
+	private void completeSheetCellList(List<SheetCell> sheetCellList, XSSFWorkbook myWorkBook) {
 		for(SheetCell sheetCell: sheetCellList) {
 			switch (sheetCell.getSheetCellType()) {
 			case ID:
@@ -90,13 +103,20 @@ public class JobTask extends TimerTask {
 			case THINGS_TO_DO:
 				sheetCell.getCell().setCellValue(DEFAULT_THINGS_TO_DO);
 				break;	
+			case CATEGORY:
+				sheetCell.getCell().setCellValue(DEFAULT_CATEGORY);
+				break;	
 			case STATUS:
-				String formula = "=SI(ESBLANCO(C" + sheetCell.getRowNumber() + ");\"PENDING\";\"COMPLETED\")";
+				String formula = "IF(ISBLANK(C" + sheetCell.getRowNumber() + "),\"PENDING\",\"COMPLETE\")";
 				sheetCell.getCell().setCellFormula(formula);
+				XSSFFormulaEvaluator formulaEvaluator = myWorkBook.getCreationHelper().createFormulaEvaluator();
+				formulaEvaluator.evaluateFormulaCell(sheetCell.getCell());
 				break;
 			default:
 				break;
 			}
+			System.out.println("Completing Row: " + sheetCell.getRowNumber() 
+			+ " / Cell: " + sheetCell.getSheetCellType().getName() + " / Value: " + this.readCell(sheetCell.getCell()));
 		}
 	}
 	
@@ -122,33 +142,43 @@ public class JobTask extends TimerTask {
 		return sheetCell.getSheetCellType().isRequired() && (strCell == null || strCell.trim().equals(""));
 	}
 
-	public void readAndSaveExcel() throws IOException {
-		XSSFWorkbook myWorkBook = this.readExcel();
-		
-		JobSheet jobSheet = this.readSheet(myWorkBook);
-		
-		for(SheetRow sheetRow: jobSheet.getSheetRowList()) {
-			List<String> cellList = this.getStrCellListFromSheetCellList(sheetRow.getSheetCellList());
+	public void readAndSaveExcel() throws Exception {
+		XSSFWorkbook myWorkBook = null;
+		try {
+			myWorkBook = this.readExcel();
 			
-			StringBuffer cellStr = new StringBuffer();
-			for (String c : cellList) {
-				if (cellStr.length() > 0) {
-					cellStr.append(",");
+			JobSheet jobSheet = this.readSheet(myWorkBook);
+			
+			for(SheetRow sheetRow: jobSheet.getSheetRowList()) {
+				List<String> cellList = this.getStrCellListFromSheetCellList(sheetRow.getSheetCellList());
+				
+				StringBuffer cellStr = new StringBuffer();
+				for (String c : cellList) {
+					if (cellStr.length() > 0) {
+						cellStr.append(",");
+					}
+					if (c != null) {
+						cellStr.append(c.replaceAll(",", "__"));
+					} else {
+						cellStr.append("");
+					}
+	
 				}
-				if (c != null) {
-					cellStr.append(c.replaceAll(",", "__"));
-				} else {
-					cellStr.append("");
-				}
-
+				this.saveJob(cellStr.toString());
 			}
-			this.saveJob(cellStr.toString());
 		}
-
-		myWorkBook.close();
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+		finally {
+			if(myWorkBook != null) {
+				myWorkBook.close();
+			}
+		}
+		
 	}
 	
-	private JobSheet readSheet(XSSFWorkbook myWorkBook) {
+	private JobSheet readSheet(XSSFWorkbook myWorkBook) throws Exception {
 		JobSheet jobSheet = new JobSheet(SheetType.THINGS_TO_DO);
 		// Return first sheet from the XLSX workbook
 		XSSFSheet mySheet = myWorkBook.getSheetAt(0);
@@ -157,7 +187,7 @@ public class JobTask extends TimerTask {
 		Iterator<Row> rowIterator = mySheet.iterator();
 		
 		Map<Integer,SheetCellType> sheetCellTypeHashMap = new HashMap<>();
-		int rowNumber = -1;
+		int rowNumber = 0;
 		// Traversing over each row of XLSX file
 		while (rowIterator.hasNext()) {
 			Row row = rowIterator.next();
@@ -173,7 +203,7 @@ public class JobTask extends TimerTask {
 			
 			ValidCellListResponse validCellListResponse = this.validCellList(cellList, rowNumber);
 			if(validCellListResponse == ValidCellListResponse.OK) {
-				if(rowNumber == 0) {
+				if(rowNumber == 1) {
 					for(int i = 0; i < cellList.size(); i++) {
 						sheetCellTypeHashMap.put(i, this.getSheetCellType(cellList.get(i)));
 					}
@@ -187,12 +217,14 @@ public class JobTask extends TimerTask {
 			else {
 				if(validCellListResponse == ValidCellListResponse.INVALID_CELLS_NUMBER) {
 					List<String> strCellList = this.getStrCellList(cellList);
-					System.out.print("ERROR: \t" + strCellList.size() + "\t");
+					System.out.print("ROW: " + rowNumber + " ERROR: \t" + strCellList.size() + "\t");
 					strCellList.stream().forEach(c -> System.out.print(c + "\t"));
 					System.out.println("");
+					throw new Exception("INVALID_CELLS_NUMBER");
 				}
 				if(validCellListResponse == ValidCellListResponse.INVALID_HEADER_CELL_LIST) {
 					System.out.print("ERROR: INVALID_HEADER_CELL_LIST");
+					throw new Exception("INVALID_HEADER_CELL_LIST");
 				}
 			}
 
@@ -210,13 +242,13 @@ public class JobTask extends TimerTask {
 		if(cellList.size() == 0) {
 			return ValidCellListResponse.EMPTY_CELL_LIST;
 		}
-		if(!this.validCell(cellList.get(0))) {
-			return ValidCellListResponse.INVALID_CELL_ID;
-		}
 		if (cellList.size() != NUMBER_OF_CELLS) {
 			return ValidCellListResponse.INVALID_CELLS_NUMBER;
 		}
-		if(rowNumber == 0 && !this.validHeaderCellList(cellList)) {
+		if(!this.validCell(cellList.get(5))) {
+			return ValidCellListResponse.INVALID_THINGS_TO_DO_CELL;
+		}
+		if(rowNumber == 1 && !this.validHeaderCellList(cellList)) {
 			return ValidCellListResponse.INVALID_HEADER_CELL_LIST;
 		}
 		return ValidCellListResponse.OK;
