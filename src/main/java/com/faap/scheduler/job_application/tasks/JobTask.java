@@ -38,7 +38,7 @@ import com.faap.scheduler.job_application.models.job.ValidCellListResponse;
 
 public class JobTask extends TimerTask {
 	public static int NUMBER_OF_CELLS = 8;
-	public static String JOB_FILE_NAME = "G://My Drive/Things to do - Backup.xlsx";
+	public static String JOB_FILE_NAME = "G://My Drive/Things to do - Backup - v2.xlsx";
 	public static DateFormat dateFormat = new SimpleDateFormat("ddMMyyyy");
 	public static String DEFAULT_PRIORITY = "A1";
 	public static String DEFAULT_THINGS_TO_DO = "UNKNOWN";
