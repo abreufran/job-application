@@ -3,6 +3,7 @@ package com.faap.scheduler.job_application;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import com.faap.scheduler.job_application.excel.services.JobExcelService;
 import com.faap.scheduler.job_application.tasks.JobTask;
 import com.faap.scheduler.job_application.tasks.Task;
 import com.faap.scheduler.job_application.tasks.TradeTask;
@@ -31,7 +32,8 @@ public class App
     
     public static void runReadJobFile(Task task) {
     	Timer timer = new Timer();
-        TimerTask jobTask = new JobTask(task);
+    	JobExcelService jobExcelService = new JobExcelService();
+        TimerTask jobTask = new JobTask(task, jobExcelService);
         
         int seconds = 300;
         

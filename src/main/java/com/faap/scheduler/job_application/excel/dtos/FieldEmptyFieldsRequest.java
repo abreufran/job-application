@@ -8,6 +8,16 @@ public class FieldEmptyFieldsRequest {
 	private int numberOfCells;
 	private int requiredCellNumber;
 
+	
+	
+	public FieldEmptyFieldsRequest(String filePath, SheetType sheetType, int numberOfCells, int requiredCellNumber) {
+		super();
+		this.filePath = filePath;
+		this.sheetType = sheetType;
+		this.numberOfCells = numberOfCells;
+		this.requiredCellNumber = requiredCellNumber;
+	}
+
 	public String getFilePath() {
 		return filePath;
 	}

@@ -36,7 +36,7 @@ public abstract class AbstractExcelService {
 	
 	public abstract void completeSheetCellList(List<SheetCell> sheetCellList, XSSFWorkbook myWorkBook);
 
-	protected XSSFWorkbook readExcel(String filePath) throws IOException {
+	public XSSFWorkbook readExcel(String filePath) throws IOException {
 		File myFile = new File(filePath);
 
 		FileInputStream fis = new FileInputStream(myFile);
@@ -122,7 +122,7 @@ public abstract class AbstractExcelService {
 		return incompleteSheetCellList;
 	}
 	
-	protected ExcelSheet readSheet(XSSFWorkbook myWorkBook, 
+	public ExcelSheet readSheet(XSSFWorkbook myWorkBook, 
 			SheetType sheetType, 
 			int numberOfCells, 
 			int requiredCellNumber) throws Exception {
@@ -270,7 +270,7 @@ public abstract class AbstractExcelService {
 		return strCellList;
 	}
 	
-	protected String readCell(Cell cell) {
+	public String readCell(Cell cell) {
 		DateFormat dateFormat = new SimpleDateFormat("ddMMyyyy");
 		
 		switch (cell.getCellType()) {
@@ -288,4 +288,53 @@ public abstract class AbstractExcelService {
 			return null;
 		}
 	}
+	
+//	public boolean sortSheet2(XSSFSheet sheet, int column, int rowStart, int lastRow) {
+//		boolean sorted = false;
+//		boolean sorting = true;
+//		
+//		//List<Integer> integerRowListSorted = this.getIntegerRowListSorted(sheet);
+//		while (sorting == true) {
+//			int finalRowToSort = this.getFinalRowToSort(sheet, column, rowStart, lastRow);
+//			if(finalRowToSort != -1) {
+//			
+//				int initilRowToSort = finalRowToSort - 1;
+//				
+//				sheet.shiftRows(initilRowToSort, initilRowToSort, lastRow - initilRowToSort + 1);
+//				sheet.shiftRows(finalRowToSort, finalRowToSort, -1);
+//				sheet.shiftRows(lastRow + 1, lastRow + 1, (lastRow - initilRowToSort) * -1);
+//				sorted = true;
+//			}
+//			else {
+//				sorting = false;
+//			}
+//		}
+//		
+//		return sorted;
+//	}
+//	
+//	private int getFinalRowToSort(XSSFSheet sheet, int column, int rowStart, int lastRow) {
+//		List<Row> rowList = new ArrayList<>();
+//		for (Row row : sheet) {
+//			//if(row.getCell(7).getRichStringCellValue().toString().equals("PENDING")) {
+//				rowList.add(row);
+//			//}
+//		}
+//		
+//		for (Row row : rowList) {
+//            // skip if this row is before first to sort
+//            if (row.getRowNum()<rowStart) continue;
+//            // end if this is last row
+//            if (lastRow==row.getRowNum()) break;
+//            Row row2 = sheet.getRow(row.getRowNum()+1);
+//            if (row2 == null) continue;
+//            String firstValue = (row.getCell(column) != null) ? row.getCell(column).getStringCellValue() : "";
+//            String secondValue = (row2.getCell(column) != null) ? row2.getCell(column).getStringCellValue() : "";
+//            //compare cell from current row and next row - and switch if secondValue should be before first
+//            if (secondValue.compareToIgnoreCase(firstValue)<0) {
+//            	return row.getRowNum()+1;
+//            }
+//		}
+//		return -1;
+//	}
 }
