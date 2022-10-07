@@ -3,6 +3,8 @@ package com.faap.scheduler.job_application.models.job;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.faap.scheduler.job_application.excel.models.SheetType;
+
 public class JobSheet {
 	
 	private SheetType sheetType;

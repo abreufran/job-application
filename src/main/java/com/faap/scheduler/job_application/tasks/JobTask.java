@@ -29,11 +29,11 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.faap.scheduler.job_application.enums.Flag;
+import com.faap.scheduler.job_application.excel.models.SheetType;
 import com.faap.scheduler.job_application.models.job.JobSheet;
 import com.faap.scheduler.job_application.models.job.SheetCell;
 import com.faap.scheduler.job_application.models.job.SheetCellType;
 import com.faap.scheduler.job_application.models.job.SheetRow;
-import com.faap.scheduler.job_application.models.job.SheetType;
 import com.faap.scheduler.job_application.models.job.ValidCellListResponse;
 
 public class JobTask extends TimerTask {
@@ -336,7 +336,7 @@ public class JobTask extends TimerTask {
 			return ValidCellListResponse.INVALID_CELLS_NUMBER;
 		}
 		if(!this.validCell(cellList.get(5))) {
-			return ValidCellListResponse.INVALID_THINGS_TO_DO_CELL;
+			return ValidCellListResponse.INVALID_REQUIRED_CELL;
 		}
 		if(rowNumber == 1 && !this.validHeaderCellList(cellList)) {
 			return ValidCellListResponse.INVALID_HEADER_CELL_LIST;
