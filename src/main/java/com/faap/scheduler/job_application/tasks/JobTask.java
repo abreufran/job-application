@@ -18,8 +18,11 @@ import java.util.TimerTask;
 import java.util.stream.Collectors;
 
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -35,11 +38,12 @@ import com.faap.scheduler.job_application.models.job.ValidCellListResponse;
 
 public class JobTask extends TimerTask {
 	public static int NUMBER_OF_CELLS = 8;
-	public static String JOB_FILE_NAME = "G://My Drive/Things to do Final.xlsx";
+	public static String JOB_FILE_NAME = "G://My Drive/Things to do - Backup.xlsx";
 	public static DateFormat dateFormat = new SimpleDateFormat("ddMMyyyy");
 	public static String DEFAULT_PRIORITY = "A1";
 	public static String DEFAULT_THINGS_TO_DO = "UNKNOWN";
 	public static String DEFAULT_CATEGORY = "Task";
+	public Map<Integer,SheetCellType> sheetCellTypeHashMap = new HashMap<>();
 	
 	private Task task;
 
@@ -72,7 +76,9 @@ public class JobTask extends TimerTask {
 			
 			this.completeSheetCellList(incompleteSheetCellList, myWorkBook);
 			
-			if(incompleteSheetCellList.size() > 0) {
+			//boolean sorted = this.sortSheet2(myWorkBook.getSheetAt(0), 4, 1, jobSheet.getSheetRowList().size());
+			
+			if(incompleteSheetCellList.size() > 0 /*|| sorted*/) {
 				System.out.println("Saving WorkBook");
 				this.writeExcel(myWorkBook);
 			}
@@ -86,13 +92,63 @@ public class JobTask extends TimerTask {
 			}
 		}
 	}
-
+	
+	
+	
+	public boolean sortSheet2(XSSFSheet sheet, int column, int rowStart, int lastRow) {
+		boolean sorted = false;
+		boolean sorting = true;
+		
+		//List<Integer> integerRowListSorted = this.getIntegerRowListSorted(sheet);
+		while (sorting == true) {
+			int finalRowToSort = this.getFinalRowToSort(sheet, column, rowStart, lastRow);
+			if(finalRowToSort != -1) {
+			
+				int initilRowToSort = finalRowToSort - 1;
+				
+				sheet.shiftRows(initilRowToSort, initilRowToSort, lastRow - initilRowToSort + 1);
+				sheet.shiftRows(finalRowToSort, finalRowToSort, -1);
+				sheet.shiftRows(lastRow + 1, lastRow + 1, (lastRow - initilRowToSort) * -1);
+				sorted = true;
+			}
+			else {
+				sorting = false;
+			}
+		}
+		
+		return sorted;
+	}
+	
+	private int getFinalRowToSort(XSSFSheet sheet, int column, int rowStart, int lastRow) {
+		List<Row> rowList = new ArrayList<>();
+		for (Row row : sheet) {
+			//if(row.getCell(7).getRichStringCellValue().toString().equals("PENDING")) {
+				rowList.add(row);
+			//}
+		}
+		
+		for (Row row : rowList) {
+            // skip if this row is before first to sort
+            if (row.getRowNum()<rowStart) continue;
+            // end if this is last row
+            if (lastRow==row.getRowNum()) break;
+            Row row2 = sheet.getRow(row.getRowNum()+1);
+            if (row2 == null) continue;
+            String firstValue = (row.getCell(column) != null) ? row.getCell(column).getStringCellValue() : "";
+            String secondValue = (row2.getCell(column) != null) ? row2.getCell(column).getStringCellValue() : "";
+            //compare cell from current row and next row - and switch if secondValue should be before first
+            if (secondValue.compareToIgnoreCase(firstValue)<0) {
+            	return row.getRowNum()+1;
+            }
+		}
+		return -1;
+	}
 	
 	private void completeSheetCellList(List<SheetCell> sheetCellList, XSSFWorkbook myWorkBook) {
 		for(SheetCell sheetCell: sheetCellList) {
 			switch (sheetCell.getSheetCellType()) {
 			case ID:
-				sheetCell.getCell().setCellValue(sheetCell.getRowNumber());
+				sheetCell.getCell().setCellValue(String.valueOf(sheetCell.getRowNumber()));
 				break;
 			case INCIDENCE_DATE:
 				sheetCell.getCell().setCellValue(LocalDate.now());
@@ -186,22 +242,26 @@ public class JobTask extends TimerTask {
 		// Get iterator to all the rows in current sheet
 		Iterator<Row> rowIterator = mySheet.iterator();
 		
-		Map<Integer,SheetCellType> sheetCellTypeHashMap = new HashMap<>();
 		int rowNumber = 0;
 		// Traversing over each row of XLSX file
 		while (rowIterator.hasNext()) {
 			Row row = rowIterator.next();
+			this.completeRow(row, myWorkBook);
 			rowNumber++;
 			Iterator<Cell> cellIterator = row.cellIterator();
 			
 			List<Cell> cellList = new ArrayList<>();
 			
 			// For each row, iterate through each columns
-			while (cellIterator.hasNext()) {					
+			while (cellIterator.hasNext()) {	
 				cellList.add(cellIterator.next());
 			}
 			
 			ValidCellListResponse validCellListResponse = this.validCellList(cellList, rowNumber);
+			if(validCellListResponse == ValidCellListResponse.INVALID_CELLS_NUMBER) {
+				
+			}
+			
 			if(validCellListResponse == ValidCellListResponse.OK) {
 				if(rowNumber == 1) {
 					for(int i = 0; i < cellList.size(); i++) {
@@ -232,6 +292,36 @@ public class JobTask extends TimerTask {
 		}
 		
 		return jobSheet;
+	}
+	
+	private void completeRow(Row row, XSSFWorkbook myWorkBook) {
+		List<Cell> cellList = new ArrayList<>();
+		Iterator<Cell> cellIterator = row.cellIterator();
+		// For each row, iterate through each columns
+		while (cellIterator.hasNext()) {	
+			cellList.add(cellIterator.next());
+		}
+		
+		for(int i = 0; i < NUMBER_OF_CELLS; i++) {
+			if(this.existColumnIndex(cellList, i)) {
+				CellType cellType = sheetCellTypeHashMap.get(i).getCellType();
+				Cell cell = row.createCell(i, cellType);
+				cell.setBlank();
+				CellStyle style = myWorkBook.createCellStyle();
+				style.setAlignment(HorizontalAlignment.CENTER);
+				
+				
+				if(sheetCellTypeHashMap.get(i).isDate()) {
+					CreationHelper createHelper = myWorkBook.getCreationHelper();
+					style.setDataFormat(createHelper.createDataFormat().getFormat("dd/mm/yyyy"));	
+				}
+				cell.setCellStyle(style);
+			}
+		}
+	}
+	
+	private boolean existColumnIndex(List<Cell> cellList, int columNumber) {
+		return !cellList.stream().anyMatch(c -> c.getColumnIndex() == columNumber);
 	}
 	
 	private SheetCellType getSheetCellType(Cell cell) {
