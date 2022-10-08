@@ -11,12 +11,13 @@ import java.util.TimerTask;
 import java.util.stream.Stream;
 
 import com.faap.scheduler.job_application.enums.Flag;
+import com.faap.scheduler.job_application.repositories.DataFileRepository;
 
 public class TradeTask extends TimerTask {
-	private Task task;
+	private DataFileRepository dataFileRepository;
 	
-	public TradeTask(Task task) {
-		this.task = task;
+	public TradeTask(DataFileRepository dataFileRepository) {
+		this.dataFileRepository = dataFileRepository;
 	}
 
 	@Override
@@ -51,7 +52,7 @@ public class TradeTask extends TimerTask {
 
 	
 	public void saveTrade(String trade) {
-		task.saveData(trade, Flag.TRADE);
+		dataFileRepository.saveDataFile(trade, Flag.TRADE);
 	}
 	
 	public boolean existFile(String fileName) {

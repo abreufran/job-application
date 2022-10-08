@@ -12,14 +12,19 @@ import com.faap.scheduler.job_application.excel.dtos.FieldEmptyFieldsRequest;
 import com.faap.scheduler.job_application.excel.models.ExcelSheet;
 import com.faap.scheduler.job_application.excel.models.SheetType;
 import com.faap.scheduler.job_application.excel.services.JobExcelService;
+import com.faap.scheduler.job_application.file.services.UtilFileService;
 import com.faap.scheduler.job_application.models.job.SheetCell;
 import com.faap.scheduler.job_application.models.job.SheetRow;
+import com.faap.scheduler.job_application.repositories.DataFileRepository;
+import com.faap.scheduler.job_application.repositories.FileBackupRepository;
 
 public class JobTask extends TimerTask {
-	public static String JOB_FILE_NAME = "G://My Drive/Things to do - Backup - v2.xlsx";
+	public static String BACKUP_PATH = "C://Users/Administrator/Desktop/job_backup";
+	public static String JOB_FILE_NAME = "G://My Drive/Things_to_do.xlsx";
 	public static SheetType SHEET_TYPE = SheetType.THINGS_TO_DO;
 	public static int NUMBER_OF_CELLS = 8;
 	public static int REQUIRED_CELL_NUMBER = 5;
+	
 	
 //	public static DateFormat dateFormat = new SimpleDateFormat("ddMMyyyy");
 //	public static String DEFAULT_PRIORITY = "A1";
@@ -27,26 +32,48 @@ public class JobTask extends TimerTask {
 //	public static String DEFAULT_CATEGORY = "Task";
 //	public Map<Integer,SheetCellType> sheetCellTypeHashMap = new HashMap<>();
 	
-	private Task task;
+	private FileBackupRepository fileBackupRepository;
+	private DataFileRepository dataFileRepository;
 	private JobExcelService jobExcelService;
+	private UtilFileService utilFileService;
 
-	public JobTask(Task task, JobExcelService jobExcelService) {
-		this.task = task;
+	public JobTask(DataFileRepository dataFileRepository, JobExcelService jobExcelService, 
+			UtilFileService utilFileService, FileBackupRepository fileBackupRepository) {
+		this.dataFileRepository = dataFileRepository;
 		this.setJobExcelService(jobExcelService);
+		this.setUtilFileService(utilFileService);
+		this.setFileBackupRepository(fileBackupRepository);
 	}
 
 	@Override
 	public void run() {
 		System.out.println("Job Task: " + LocalDateTime.now());
 		try {
-			//this.readAndSaveExcel();
-			
-			FieldEmptyFieldsRequest req = new FieldEmptyFieldsRequest(JOB_FILE_NAME, SHEET_TYPE, NUMBER_OF_CELLS, REQUIRED_CELL_NUMBER);
-			
-			this.jobExcelService.fillEmptyFields(req);
+			if(this.didOriginFileChange() && this.makeBackup()) {
+				//this.readAndSaveExcel();
+				
+				FieldEmptyFieldsRequest req = new FieldEmptyFieldsRequest(JOB_FILE_NAME, SHEET_TYPE, NUMBER_OF_CELLS, REQUIRED_CELL_NUMBER);
+				
+				this.jobExcelService.fillEmptyFields(req);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public boolean didOriginFileChange() {
+		return !this.fileBackupRepository.existFileBackup(this.utilFileService.getDateModified(JOB_FILE_NAME));
+	}
+	
+	public boolean makeBackup() {
+		System.out.println("Making backup: " + JOB_FILE_NAME);
+		String destinationPath = BACKUP_PATH + this.utilFileService.getFileNameBackup(JOB_FILE_NAME);
+		boolean copied = this.utilFileService.copy(JOB_FILE_NAME, destinationPath);
+		if(copied) {
+			LocalDateTime originFileDateModified = this.utilFileService.getDateModified(JOB_FILE_NAME);
+			this.fileBackupRepository.saveFileBackup(destinationPath, originFileDateModified, Flag.JOB);
+		}
+		return copied;
 	}
 	
 	public void readAndSaveExcel() throws Exception {
@@ -95,7 +122,7 @@ public class JobTask extends TimerTask {
 	}
 	
 	public void saveJob(String job) {
-		task.saveData(job, Flag.JOB);
+		dataFileRepository.saveDataFile(job, Flag.JOB);
 	}
 
 	public JobExcelService getJobExcelService() {
@@ -104,6 +131,22 @@ public class JobTask extends TimerTask {
 
 	public void setJobExcelService(JobExcelService jobExcelService) {
 		this.jobExcelService = jobExcelService;
+	}
+
+	public UtilFileService getUtilFileService() {
+		return utilFileService;
+	}
+
+	public void setUtilFileService(UtilFileService utilFileService) {
+		this.utilFileService = utilFileService;
+	}
+
+	public FileBackupRepository getFileBackupRepository() {
+		return fileBackupRepository;
+	}
+
+	public void setFileBackupRepository(FileBackupRepository fileBackupRepository) {
+		this.fileBackupRepository = fileBackupRepository;
 	}
 	
 //	public void fillEmptyFields() throws Exception {

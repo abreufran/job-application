@@ -63,6 +63,7 @@ public abstract class AbstractExcelService {
 	}
 	
 	public FieldEmptyFieldsResponse fillEmptyFields(FieldEmptyFieldsRequest req) {
+		System.out.println("Fill empty fields. ");
 		XSSFWorkbook myWorkBook = null;
 		try {
 			myWorkBook = this.readExcel(req.getFilePath());
@@ -79,7 +80,7 @@ public abstract class AbstractExcelService {
 			//boolean sorted = this.sortSheet2(myWorkBook.getSheetAt(0), 4, 1, jobSheet.getSheetRowList().size());
 			
 			if(incompleteSheetCellList.size() > 0 /*|| sorted*/) {
-				System.out.println("Saving WorkBook");
+				System.out.println("Saving WorkBook.");
 				this.writeExcel(myWorkBook, req.getFilePath());
 			}
 			

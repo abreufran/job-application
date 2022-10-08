@@ -4,8 +4,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import com.faap.scheduler.job_application.excel.services.JobExcelService;
+import com.faap.scheduler.job_application.file.services.UtilFileService;
+import com.faap.scheduler.job_application.repositories.DataFileRepository;
+import com.faap.scheduler.job_application.repositories.FileBackupRepository;
 import com.faap.scheduler.job_application.tasks.JobTask;
-import com.faap.scheduler.job_application.tasks.Task;
 import com.faap.scheduler.job_application.tasks.TradeTask;
 
 /**
@@ -16,27 +18,31 @@ public class App
 {
     public static void main( String[] args )
     {
-    	Task task = new Task();
-        App.runReadTraderFile(task);
-        App.runReadJobFile(task);
+    	FileBackupRepository fileBackupRepository = new FileBackupRepository();
+    	DataFileRepository dataFileRepository = new DataFileRepository();
+    	JobExcelService jobExcelService = new JobExcelService();
+    	UtilFileService utilFileService = new UtilFileService();
+    	
+        App.runReadTraderFile(dataFileRepository);
+        App.runReadJobFile(dataFileRepository, jobExcelService, utilFileService, fileBackupRepository);
     }
     
-    public static void runReadTraderFile(Task task) {
-    	Timer timer = new Timer();
+    public static void runReadTraderFile(DataFileRepository task) {   	
         TimerTask tradeTask = new TradeTask(task);
         
         int seconds = 300;
         
+        Timer timer = new Timer();
         timer.schedule(tradeTask, 0, seconds * 1000);
     }
     
-    public static void runReadJobFile(Task task) {
-    	Timer timer = new Timer();
-    	JobExcelService jobExcelService = new JobExcelService();
-        TimerTask jobTask = new JobTask(task, jobExcelService);
+    public static void runReadJobFile(DataFileRepository taskRepository, JobExcelService jobExcelService, 
+    		UtilFileService utilFileService, FileBackupRepository fileBackupRepository) {   	
+        TimerTask jobTask = new JobTask(taskRepository, jobExcelService, utilFileService, fileBackupRepository);
         
         int seconds = 300;
         
+        Timer timer = new Timer();
         timer.schedule(jobTask, 0, seconds * 1000);
     }
 }
