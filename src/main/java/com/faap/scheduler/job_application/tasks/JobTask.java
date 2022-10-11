@@ -54,6 +54,8 @@ public class JobTask extends TimerTask {
 				
 				this.jobExcelService.fillEmptyFields(excelRequest);
 				
+				this.jobExcelService.rebuildSheet(excelRequest);
+				
 				this.jobExcelService.sortSheet(excelRequest);
 				
 				this.jobExcelService.setFilter(excelRequest);

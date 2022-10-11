@@ -1,19 +1,19 @@
 package com.faap.scheduler.job_application.excel.models;
 
 public enum SheetType {
-	THINGS_TO_DO(0);
+	THINGS_TO_DO("Things to do");
 	
-	private int sheetNumber;
+	private String sheetName;
 	
-	private SheetType(int sheetNumber) {
-		this.setSheetNumber(sheetNumber);
+	private SheetType(String sheetName) {
+		this.setSheetName(sheetName);
 	}
 
-	public int getSheetNumber() {
-		return sheetNumber;
+	public String getSheetName() {
+		return sheetName;
 	}
 
-	public void setSheetNumber(int sheetNumber) {
-		this.sheetNumber = sheetNumber;
+	public void setSheetName(String sheetName) {
+		this.sheetName = sheetName;
 	}
 }
