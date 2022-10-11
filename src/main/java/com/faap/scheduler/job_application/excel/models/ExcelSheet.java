@@ -5,9 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.faap.scheduler.job_application.models.job.SheetCellType;
-import com.faap.scheduler.job_application.models.job.SheetRow;
-
 public class ExcelSheet {
 	private Map<Integer,SheetCellType> sheetCellTypeHashMap;
 	private SheetType sheetType;

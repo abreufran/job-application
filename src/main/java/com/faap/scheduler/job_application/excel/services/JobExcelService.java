@@ -6,9 +6,14 @@ import java.util.List;
 import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import com.faap.scheduler.job_application.models.job.SheetCell;
+import com.faap.scheduler.job_application.excel.models.SheetCell;
+import com.faap.scheduler.job_application.file.services.UtilDateService;
 
 public class JobExcelService extends AbstractExcelService {
+
+	public JobExcelService(UtilDateService utilDateService) {
+		super(utilDateService);
+	}
 
 	@Override
 	public void completeSheetCellList(List<SheetCell> sheetCellList, XSSFWorkbook myWorkBook) {

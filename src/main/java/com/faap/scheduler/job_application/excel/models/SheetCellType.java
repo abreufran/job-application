@@ -1,4 +1,4 @@
-package com.faap.scheduler.job_application.models.job;
+package com.faap.scheduler.job_application.excel.models;
 
 import org.apache.poi.ss.usermodel.CellType;
 

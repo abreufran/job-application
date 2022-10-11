@@ -1,4 +1,4 @@
-package com.faap.scheduler.job_application.models.job;
+package com.faap.scheduler.job_application.excel.models;
 
 import java.util.List;
 
