@@ -2,6 +2,7 @@ package com.faap.scheduler.job_application.tasks;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.TimerTask;
 
@@ -11,6 +12,7 @@ import com.faap.scheduler.job_application.enums.Flag;
 import com.faap.scheduler.job_application.excel.dtos.ExcelRequest;
 import com.faap.scheduler.job_application.excel.models.ExcelSheet;
 import com.faap.scheduler.job_application.excel.models.SheetCell;
+import com.faap.scheduler.job_application.excel.models.SheetCellType;
 import com.faap.scheduler.job_application.excel.models.SheetRow;
 import com.faap.scheduler.job_application.excel.models.SheetType;
 import com.faap.scheduler.job_application.excel.services.JobExcelService;
@@ -27,7 +29,11 @@ public class JobTask extends TimerTask {
 	public static int CELL_NUMBER_TO_SORT = 4;
 	public static int CELL_NUMBER_TO_FILTER = 7;
 	public static String TOKEN_TO_FILTER = "PENDING";
-	
+	public static List<SheetCellType> SHEET_CELL_TYPE_LIST = 
+			Arrays.asList(SheetCellType.ID, SheetCellType.INCIDENCE_DATE, 
+					SheetCellType.EXECUTION_DATE, SheetCellType.ESTIMATED_DATE,
+					SheetCellType.PRIORITY, SheetCellType.THINGS_TO_DO,
+					SheetCellType.CATEGORY, SheetCellType.STATUS);
 	
 	private FileBackupRepository fileBackupRepository;
 	private DataFileRepository dataFileRepository;
@@ -49,8 +55,8 @@ public class JobTask extends TimerTask {
 			if(this.didOriginFileChange() && this.makeBackup()) {
 				//this.readAndSaveExcel();
 				
-				ExcelRequest excelRequest = new ExcelRequest(JOB_FILE_NAME, SHEET_TYPE, NUMBER_OF_CELLS, 
-						REQUIRED_CELL_NUMBER, CELL_NUMBER_TO_SORT, CELL_NUMBER_TO_FILTER, TOKEN_TO_FILTER);
+				ExcelRequest excelRequest = new ExcelRequest(JOB_FILE_NAME, SHEET_TYPE, SHEET_CELL_TYPE_LIST, 
+						CELL_NUMBER_TO_SORT, CELL_NUMBER_TO_FILTER, TOKEN_TO_FILTER);
 				
 				this.jobExcelService.fillEmptyFields(excelRequest);
 				
@@ -70,7 +76,7 @@ public class JobTask extends TimerTask {
 		try {
 			myWorkBook = this.jobExcelService.readExcel(JOB_FILE_NAME);
 			
-			ExcelSheet jobSheet = this.jobExcelService.readSheet(myWorkBook,SHEET_TYPE, NUMBER_OF_CELLS, REQUIRED_CELL_NUMBER);
+			ExcelSheet jobSheet = this.jobExcelService.readSheet(myWorkBook,SHEET_TYPE, SHEET_CELL_TYPE_LIST);
 			
 			for(SheetRow sheetRow: jobSheet.getSheetRowList()) {
 				List<String> cellList = this.getStrCellListFromSheetCellList(sheetRow.getSheetCellList());

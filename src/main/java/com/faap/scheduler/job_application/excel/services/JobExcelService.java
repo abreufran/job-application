@@ -16,11 +16,13 @@ public class JobExcelService extends AbstractExcelService {
 	}
 
 	@Override
-	public void completeSheetCellList(List<SheetCell> sheetCellList, XSSFWorkbook myWorkBook) {
-		for(SheetCell sheetCell: sheetCellList) {
+	public void completeSheetCellList(List<SheetCell> sheetCellList, XSSFWorkbook myWorkBook, int rowNumber) {
+		List<SheetCell> incompleteSheetCellList = this.calculateIncompleteSheetCell(sheetCellList);
+		
+		for(SheetCell sheetCell: incompleteSheetCellList) {
 			switch (sheetCell.getSheetCellType()) {
 			case ID:
-				sheetCell.getCell().setCellValue(String.valueOf(sheetCell.getRowNumber()));
+				sheetCell.getCell().setCellValue(String.valueOf(rowNumber));
 				break;
 			case INCIDENCE_DATE:
 				sheetCell.getCell().setCellValue(LocalDate.now());
@@ -35,7 +37,7 @@ public class JobExcelService extends AbstractExcelService {
 				sheetCell.getCell().setCellValue(sheetCell.getSheetCellType().getDefaultValue().toString());
 				break;	
 			case STATUS:
-				String formula = "IF(ISBLANK(C" + sheetCell.getRowNumber() + "),\"PENDING\",\"COMPLETE\")";
+				String formula = "IF(ISBLANK(C" + rowNumber + "),\"PENDING\",\"COMPLETE\")";
 				sheetCell.getCell().setCellFormula(formula);
 				XSSFFormulaEvaluator formulaEvaluator = myWorkBook.getCreationHelper().createFormulaEvaluator();
 				formulaEvaluator.evaluateFormulaCell(sheetCell.getCell());
@@ -43,7 +45,7 @@ public class JobExcelService extends AbstractExcelService {
 			default:
 				break;
 			}
-			System.out.println("Completing Row: " + sheetCell.getRowNumber() 
+			System.out.println("Completing Row: " + rowNumber 
 			+ " / Cell: " + sheetCell.getSheetCellType().getName() + " / Value: " + this.readCell(sheetCell.getCell()));
 		}
 		

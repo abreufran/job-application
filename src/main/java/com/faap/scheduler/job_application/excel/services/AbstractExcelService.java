@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.poi.ss.usermodel.Cell;
@@ -46,7 +45,7 @@ public abstract class AbstractExcelService {
 		this.setUtilDateService(utilDateService);
 	}
 
-	public abstract void completeSheetCellList(List<SheetCell> sheetCellList, XSSFWorkbook myWorkBook);
+	public abstract void completeSheetCellList(List<SheetCell> sheetCellList, XSSFWorkbook myWorkBook, int rowNumber);
 
 	public XSSFWorkbook readExcel(String filePath) throws IOException {
 		File myFile = new File(filePath);
@@ -80,12 +79,12 @@ public abstract class AbstractExcelService {
 			myWorkBook = this.readExcel(excelRequest.getFilePath());
 
 			ExcelSheet excelSheet = this.readSheet(myWorkBook, excelRequest.getSheetType(),
-					excelRequest.getNumberOfCells(), excelRequest.getRequiredCellNumber());
+					excelRequest.getSheetCellTypeList());
 
 			this.deleteSheet(myWorkBook, excelRequest.getSheetType());
 			
-			this.createSheet(myWorkBook, excelSheet, excelRequest.getNumberOfCells(), 
-					excelSheet.getSheetRowList().size(), excelRequest.getRequiredCellNumber());
+			this.createSheet(myWorkBook, excelSheet, 
+					excelSheet.getSheetRowList().size(), excelRequest.getSheetCellTypeList());
 			
 			System.out.println("rebuildSheet - Saving WorkBook.");
 			this.writeExcel(myWorkBook, excelRequest.getFilePath());
@@ -114,15 +113,17 @@ public abstract class AbstractExcelService {
 			myWorkBook = this.readExcel(excelRequest.getFilePath());
 
 			ExcelSheet excelSheet = this.readSheet(myWorkBook, excelRequest.getSheetType(),
-					excelRequest.getNumberOfCells(), excelRequest.getRequiredCellNumber());
+					excelRequest.getSheetCellTypeList());
 
 			List<SheetRow> incompleteSheetRowList = this.calculateIncompleteSheetRowList(excelSheet.getSheetRowList());
 
-			List<SheetCell> incompleteSheetCellList = this.calculateIncompleteSheetCell(incompleteSheetRowList);
+			//List<SheetCell> incompleteSheetCellList = this.calculateIncompleteSheetCell(incompleteSheetRowList);
 
-			this.completeSheetCellList(incompleteSheetCellList, myWorkBook);
+			for(SheetRow sheetRow: incompleteSheetRowList) {
+				this.completeSheetCellList(sheetRow.getSheetCellList(), myWorkBook, sheetRow.getRowNumber());
+			}
 
-			if (incompleteSheetCellList.size() > 0) {
+			if (incompleteSheetRowList.size() > 0) {
 
 				System.out.println("fillEmptyFields - Saving WorkBook.");
 				this.writeExcel(myWorkBook, excelRequest.getFilePath());
@@ -151,7 +152,7 @@ public abstract class AbstractExcelService {
 			myWorkBook = this.readExcel(excelRequest.getFilePath());
 
 			ExcelSheet excelSheet = this.readSheet(myWorkBook, excelRequest.getSheetType(),
-					excelRequest.getNumberOfCells(), excelRequest.getRequiredCellNumber());
+					excelRequest.getSheetCellTypeList());
 
 			Comparator<SheetRow> priorityComparator = (sr1, sr2) -> {
 				String cellValueToSort1 = sr1.getSheetCellList().get(excelRequest.getCellNumberToSort()).getCellValue();
@@ -179,7 +180,7 @@ public abstract class AbstractExcelService {
 
 			if (this.didSheetSort(sortedSheetRowList)) {
 				XSSFFormulaEvaluator formulaEvaluator = myWorkBook.getCreationHelper().createFormulaEvaluator();
-				this.sortExcelSheet(sortedSheetRowList, excelSheet.getSheetCellTypeHashMap(), formulaEvaluator);
+				this.sortExcelSheet(sortedSheetRowList, excelRequest.getSheetCellTypeList(), formulaEvaluator);
 
 				System.out.println("sortSheet - Saving WorkBook.");
 				this.writeExcel(myWorkBook, excelRequest.getFilePath());
@@ -207,7 +208,7 @@ public abstract class AbstractExcelService {
 			myWorkBook = this.readExcel(excelRequest.getFilePath());
 
 			ExcelSheet excelSheet = this.readSheet(myWorkBook, excelRequest.getSheetType(),
-					excelRequest.getNumberOfCells(), excelRequest.getRequiredCellNumber());
+					excelRequest.getSheetCellTypeList());
 
 			int lastRow = excelSheet.getSheetRowList().size();
 
@@ -266,7 +267,7 @@ public abstract class AbstractExcelService {
 
 	}
 
-	private void sortExcelSheet(List<SheetRow> sortedSheetRowList, Map<Integer, SheetCellType> sheetCellTypeHashMap,
+	private void sortExcelSheet(List<SheetRow> sortedSheetRowList, List<SheetCellType> sheetCellTypeList,
 			XSSFFormulaEvaluator formulaEvaluator) {
 		for (int i = 0; i < sortedSheetRowList.size(); i++) {
 			SheetRow sheetRowToMove = sortedSheetRowList.get(i);
@@ -279,47 +280,46 @@ public abstract class AbstractExcelService {
 				List<CellType> doNotReplaceCellTypeList = new ArrayList<>();
 				doNotReplaceCellTypeList.add(CellType.FORMULA);
 				
-				this.replaceSheetCellList(sheetRowToReplace, sheetRowToMove, sheetCellTypeHashMap, 
+				this.replaceSheetCellList(sheetRowToReplace, sheetRowToMove, sheetCellTypeList, 
 						formulaEvaluator, doNotReplaceSheetCellTypeList, doNotReplaceCellTypeList);
 			}
 		}
 	}
 
 	private void replaceSheetCellList(SheetRow sheetRowToReplace, SheetRow sheetRowToMove,
-			Map<Integer, SheetCellType> sheetCellTypeHashMap, 
+			List<SheetCellType> sheetCellTypeList, 
 			XSSFFormulaEvaluator formulaEvaluator, 
 			List<SheetCellType> doNotReplaceSheetCellTypeList, 
 			List<CellType> doNotReplaceCellTypeList) {
 		
 	
-		for (int i = 0; i < sheetRowToReplace.getSheetCellList().size(); i++) {
-			SheetCell sheetCellToReplace = sheetRowToReplace.getSheetCellList().get(i);
+		for (SheetCell sheetCell: sheetRowToReplace.getSheetCellList()) {
 			
 			if(
 				(
 					doNotReplaceSheetCellTypeList == null || 
-					doNotReplaceSheetCellTypeList.stream().allMatch(rsct -> rsct != sheetCellToReplace.getSheetCellType())
+					doNotReplaceSheetCellTypeList.stream().allMatch(rsct -> rsct != sheetCell.getSheetCellType())
 				)
 				&&
 				(
 					doNotReplaceCellTypeList == null || 
-						doNotReplaceCellTypeList.stream().allMatch(rsct -> rsct != sheetCellToReplace.getSheetCellType().getCellType())
+						doNotReplaceCellTypeList.stream().allMatch(rsct -> rsct != sheetCell.getSheetCellType().getCellType())
 				)	
 			) {
 			
-				SheetCell sheetCellToMove = sheetRowToMove.getSheetCellList().get(i);
+				SheetCell sheetCellToMove = sheetRowToMove.getSheetCellList().get(sheetCell.getSheetCellType().getColumnIndex());
 
-				Cell cellToReplace = sheetCellToReplace.getCell();
+				Cell cellToReplace = sheetCell.getCell();
 
 				cellToReplace.setBlank();
 
-				if (sheetCellTypeHashMap.get(i).isDate()) {
+				if (sheetCell.getSheetCellType().isDate()) {
 					if (sheetCellToMove.getCellValue() != null) {
 						cellToReplace
 								.setCellValue(this.getUtilDateService().getLocalDate(sheetCellToMove.getCellValue()));
 					}
-				} else if (sheetCellTypeHashMap.get(i).getCellType() == CellType.FORMULA) {
-					cellToReplace.setCellFormula(sheetCellToMove.getCellFormula());
+				} else if (sheetCell.getSheetCellType().getCellType() == CellType.FORMULA) {
+					cellToReplace.setCellFormula(sheetCellToMove.getSheetCellType().getSheetFormula().getFormula());
 					formulaEvaluator.evaluateFormulaCell(cellToReplace);
 
 				} else {
@@ -342,7 +342,7 @@ public abstract class AbstractExcelService {
 		return false;
 	}
 	
-	private void createSheet(XSSFWorkbook myWorkBook, ExcelSheet excelSheet, int numberOfCells, int lastRow, int requiredCellNumber) {
+	private void createSheet(XSSFWorkbook myWorkBook, ExcelSheet excelSheet, int lastRow, List<SheetCellType> sheetCellTypeList) {
 		XSSFSheet sheet = myWorkBook.createSheet(excelSheet.getSheetType().getSheetName());
 		sheet.setColumnWidth(0, 6000);
 		sheet.setColumnWidth(1, 4000);
@@ -364,17 +364,17 @@ public abstract class AbstractExcelService {
 		font.setBold(true);
 		headerStyle.setFont(font);
 
-		for (int i = 0; i < numberOfCells; i++) {
-			String headerCellValue = excelSheet.getSheetCellTypeHashMap().get(i).getName();
+		for (SheetCellType sheetCellType: sheetCellTypeList) {
+			String headerCellValue = sheetCellType.getName();
 
-			Cell headerCell = header.createCell(i);
+			Cell headerCell = header.createCell(sheetCellType.getColumnIndex());
 			headerCell.setCellValue(headerCellValue);
 			headerCell.setCellStyle(headerStyle);
 		}
 
 		for (int i = 1; i <= lastRow; i++) {
 			Row row = sheet.createRow(i);
-			this.completeRow(row, myWorkBook, numberOfCells, requiredCellNumber, excelSheet.getSheetCellTypeHashMap());
+			this.completeRow(row, myWorkBook, sheetCellTypeList);
 			
 			XSSFFormulaEvaluator formulaEvaluator = myWorkBook.getCreationHelper().createFormulaEvaluator();
 			
@@ -386,22 +386,22 @@ public abstract class AbstractExcelService {
 				cellList.add(cellIterator.next());
 			}
 			List<SheetCell> sheetCellList = this.getSheetCellList(cellList,
-					excelSheet.getSheetCellTypeHashMap(), row.getRowNum());
+					sheetCellTypeList, row.getRowNum());
 			
 			SheetRow sheetRowToReplace = new SheetRow(sheetCellList, row.getRowNum());
 			SheetRow sheetRowToMove = excelSheet.getSheetRowList().get(i - 1);
 			
-			this.replaceSheetCellList(sheetRowToReplace, sheetRowToMove, excelSheet.getSheetCellTypeHashMap(), 
+			this.replaceSheetCellList(sheetRowToReplace, sheetRowToMove, sheetCellTypeList, 
 					formulaEvaluator, null, null);
 		}
 		
-		this.setAutoSizeColumn(sheet, excelSheet.getSheetCellTypeHashMap(), numberOfCells);
+		this.setAutoSizeColumn(sheet, sheetCellTypeList);
 	}
 	
-	private void setAutoSizeColumn(XSSFSheet sheet, Map<Integer, SheetCellType> sheetCellTypeHashMap, int numberOfCells) {
+	private void setAutoSizeColumn(XSSFSheet sheet, List<SheetCellType> sheetCellTypeList) {
 		
-		for (int i = 0; i < numberOfCells; i++) {	
-			sheet.setColumnWidth(i, sheetCellTypeHashMap.get(i).getColumnWidth() * 256);
+		for (SheetCellType sheetCellType: sheetCellTypeList) {	
+			sheet.setColumnWidth(sheetCellType.getColumnIndex(), sheetCellType.getColumnWidth() * 256);
 		}
 	}
 
@@ -427,17 +427,12 @@ public abstract class AbstractExcelService {
 		return sheetCell.getSheetCellType().isRequired() && (strCell == null || strCell.trim().equals(""));
 	}
 
-	private List<SheetCell> calculateIncompleteSheetCell(List<SheetRow> incompleteSheetRowList) {
-		List<SheetCell> incompleteSheetCellList = new ArrayList<>();
-		for (SheetRow sheetRow : incompleteSheetRowList) {
-			List<SheetCell> sheetCellList = sheetRow.getSheetCellList().stream()
+	protected List<SheetCell> calculateIncompleteSheetCell(List<SheetCell> incompleteSheetCellList) {
+			return incompleteSheetCellList.stream()
 					.filter(sc -> this.incompleteSheetCell(sc)).collect(Collectors.toList());
-			incompleteSheetCellList.addAll(sheetCellList);
-		}
-		return incompleteSheetCellList;
 	}
 
-	public ExcelSheet readSheet(XSSFWorkbook myWorkBook, SheetType sheetType, int numberOfCells, int requiredCellNumber)
+	public ExcelSheet readSheet(XSSFWorkbook myWorkBook, SheetType sheetType, List<SheetCellType> sheeCellTypeList)
 			throws Exception {
 
 		ExcelSheet excelSheet = new ExcelSheet(sheetType);
@@ -451,7 +446,7 @@ public abstract class AbstractExcelService {
 		// Traversing over each row of XLSX file
 		while (rowIterator.hasNext()) {
 			Row row = rowIterator.next();
-			this.completeRow(row, myWorkBook, numberOfCells, requiredCellNumber, excelSheet.getSheetCellTypeHashMap());
+			this.completeRow(row, myWorkBook, sheeCellTypeList);
 			Iterator<Cell> cellIterator = row.cellIterator();
 
 			List<Cell> cellList = new ArrayList<>();
@@ -461,20 +456,15 @@ public abstract class AbstractExcelService {
 				cellList.add(cellIterator.next());
 			}
 
-			ValidCellListResponse validCellListResponse = this.validCellList(cellList, row.getRowNum(), numberOfCells,
-					requiredCellNumber);
+			ValidCellListResponse validCellListResponse = this.validCellList(cellList, row.getRowNum(), sheeCellTypeList);
 			if (validCellListResponse == ValidCellListResponse.INVALID_CELLS_NUMBER) {
 
 			}
 
 			if (validCellListResponse == ValidCellListResponse.OK) {
-				if (row.getRowNum() == 0) {
-					for (int i = 0; i < cellList.size(); i++) {
-						excelSheet.getSheetCellTypeHashMap().put(i, this.getSheetCellType(cellList.get(i)));
-					}
-				} else {
+				if (row.getRowNum() > 0) {
 					List<SheetCell> sheetCellList = this.getSheetCellList(cellList,
-							excelSheet.getSheetCellTypeHashMap(), row.getRowNum());
+							sheeCellTypeList, row.getRowNum());
 					excelSheet.getSheetRowList().add(new SheetRow(sheetCellList, row.getRowNum()));
 				}
 
@@ -509,7 +499,7 @@ public abstract class AbstractExcelService {
 			if (!String.valueOf(sheetRow.getRowNumber()).equals(sheetCellId.getCellValue())) {
 				// System.out.println("checkCellId - Sheet Row Number: " +
 				// sheetRow.getRowNumber() + " / rowNumber: " + sheetCellId.getCellValue());
-				String newCellValue = String.valueOf(sheetCellId.getRowNumber());
+				String newCellValue = String.valueOf(sheetRow.getRowNumber());
 				sheetCellId.getCell().setCellValue(newCellValue);
 				sheetCellId.setCellValue(newCellValue);
 			}
@@ -522,7 +512,7 @@ public abstract class AbstractExcelService {
 			List<SheetCell> sheetDateCells = sheetRow.getSheetCellList().stream()
 					.filter(sc -> sc.getSheetCellType().isDate()).collect(Collectors.toList());
 			for (SheetCell sheetCell : sheetDateCells) {
-				if (sheetCell.getCellType() != CellType.NUMERIC || !DateUtil.isCellDateFormatted(sheetCell.getCell())) {
+				if (sheetCell.getSheetCellType().getCellType() != CellType.NUMERIC || !DateUtil.isCellDateFormatted(sheetCell.getCell())) {
 					// System.out.println("checkDateCell - Sheet Row Number: " +
 					// sheetRow.getRowNumber() + " / cellValue: " + sheetCell.getCellValue());
 					this.setBlankCellAndCellStyle(myWorkBook, sheetCell.getCell(), true, false, HorizontalAlignment.CENTER);
@@ -552,23 +542,22 @@ public abstract class AbstractExcelService {
 		cell.setCellStyle(style);
 	}
 
-	private SheetCellType getSheetCellType(Cell cell) {
-		return Arrays.stream(SheetCellType.values()).filter(sct -> sct.getName().equals(this.readCell(cell)))
-				.findFirst().orElse(null);
-	}
-
-	private List<SheetCell> getSheetCellList(List<Cell> cellList, Map<Integer, SheetCellType> sheetCellTypeHashMap,
+	private List<SheetCell> getSheetCellList(List<Cell> cellList, List<SheetCellType> sheetCellTypeList,
 			int rowNumber) {
 		List<SheetCell> sheetCellList = new ArrayList<>();
-		for (int i = 0; i < cellList.size(); i++) {
-			sheetCellList.add(new SheetCell(sheetCellTypeHashMap.get(i), cellList.get(i), rowNumber,
-					this.readCell(cellList.get(i))));
+		for (Cell cell: cellList) {
+			
+			SheetCellType sheetCellType = sheetCellTypeList.stream().filter(ct -> ct.getColumnIndex() == cell.getColumnIndex()).findFirst().orElse(null);
+					
+			sheetCellList.add(new SheetCell(
+					sheetCellType, 
+					this.readCell(cell), 
+					cell));
 		}
 		return sheetCellList;
 	}
 
-	private void completeRow(Row row, XSSFWorkbook myWorkBook, int numberOfCells, int requiredCellNumber,
-			Map<Integer, SheetCellType> sheetCellTypeHashMap) {
+	private void completeRow(Row row, XSSFWorkbook myWorkBook, List<SheetCellType> sheeCellTypeList) {
 		List<Cell> cellList = new ArrayList<>();
 		Iterator<Cell> cellIterator = row.cellIterator();
 		// For each row, iterate through each columns
@@ -576,19 +565,19 @@ public abstract class AbstractExcelService {
 			cellList.add(cellIterator.next());
 		}
 
-		for (int i = 0; i < numberOfCells; i++) {
-			if (this.existColumnIndex(cellList, i)) {
-				CellType cellType = sheetCellTypeHashMap.get(i).getCellType();
-				Cell cell = row.createCell(i, cellType);
+		for (SheetCellType sheetCellType: sheeCellTypeList) {
+			if (this.existColumnIndex(cellList, sheetCellType.getColumnIndex())) {
+				CellType cellType = sheetCellType.getCellType();
+				Cell cell = row.createCell(sheetCellType.getColumnIndex(), cellType);
 				
 				HorizontalAlignment horizontalAlignment = HorizontalAlignment.CENTER;
-				if(i == requiredCellNumber) {
+				if(sheetCellType.isRequired()) {
 					horizontalAlignment = HorizontalAlignment.LEFT;
 				}
 				
 				boolean isText = cell.getCellType() == CellType.STRING;
 				
-				this.setBlankCellAndCellStyle(myWorkBook, cell, sheetCellTypeHashMap.get(i).isDate(), isText, horizontalAlignment);
+				this.setBlankCellAndCellStyle(myWorkBook, cell, sheetCellType.isDate(), isText, horizontalAlignment);
 			}
 		}
 	}
@@ -597,14 +586,14 @@ public abstract class AbstractExcelService {
 		return !cellList.stream().anyMatch(c -> c.getColumnIndex() == columNumber);
 	}
 
-	private ValidCellListResponse validCellList(List<Cell> cellList, int rowNumber, int numberOfCells,
-			int requiredCellNumber) {
+	private ValidCellListResponse validCellList(List<Cell> cellList, int rowNumber, List<SheetCellType> sheeCellTypeList) {
 		if (cellList.size() == 0) {
 			return ValidCellListResponse.EMPTY_CELL_LIST;
 		}
-		if (cellList.size() != numberOfCells) {
+		if (cellList.size() != sheeCellTypeList.size()) {
 			return ValidCellListResponse.INVALID_CELLS_NUMBER;
 		}
+		int requiredCellNumber = sheeCellTypeList.stream().filter(ct -> ct.isRequired()).findFirst().orElse(null).getColumnIndex();
 		if (!this.validCell(cellList.get(requiredCellNumber))) {
 			return ValidCellListResponse.INVALID_REQUIRED_CELL;
 		}

@@ -3,14 +3,15 @@ package com.faap.scheduler.job_application.excel.models;
 import org.apache.poi.ss.usermodel.CellType;
 
 public enum SheetCellType {
-	ID("ID", true, CellType.STRING, false, null, 5), 
-	INCIDENCE_DATE("Incidence Date", true, CellType.NUMERIC, true, null, 20),
-	EXECUTION_DATE("Execution Date", false, CellType.NUMERIC, true, null, 20),
-	ESTIMATED_DATE("Estimated Date", false, CellType.NUMERIC, true, null, 20),
-	PRIORITY("Priority", true, CellType.STRING, false, "A1", 10),
-	THINGS_TO_DO("Things to do", true, CellType.STRING, false, "UNKNOWN", 40),
-	CATEGORY("Category", true, CellType.STRING, false, "Task", 20),
-	STATUS("Status", true, CellType.FORMULA, false, null, 20);
+	ID("ID", true, CellType.STRING, false, null, 5, 0, null), 
+	INCIDENCE_DATE("Incidence Date", true, CellType.NUMERIC, true, null, 20, 1, null),
+	EXECUTION_DATE("Execution Date", false, CellType.NUMERIC, true, null, 20, 2, null),
+	ESTIMATED_DATE("Estimated Date", false, CellType.NUMERIC, true, null, 20, 3, null),
+	PRIORITY("Priority", true, CellType.STRING, false, "A1", 10, 4, null),
+	THINGS_TO_DO("Things to do", true, CellType.STRING, false, "UNKNOWN", 40, 5, null),
+	CATEGORY("Category", true, CellType.STRING, false, "Task", 20, 6, null),
+	STATUS("Status", true, CellType.FORMULA, false, null, 20, 7, 
+			new SheetFormula("IF(ISBLANK(C_rowNumber_),\"PENDING\",\"COMPLETE\")", "_rowNumber_", SheetFormulaValue.ROW_NUMBER));
 	
 	private String name;
 	private boolean required;
@@ -18,15 +19,21 @@ public enum SheetCellType {
 	private boolean date;
 	private Object defaultValue;
 	private int columnWidth;
+	private int columnIndex;
+	private SheetFormula sheetFormula;
 	
 	private SheetCellType(String name, boolean required, CellType cellType, 
-			boolean date, Object defaultValue, int columnWidth) {
+			boolean date, Object defaultValue, int columnWidth, int columnIndex,
+			SheetFormula sheetFormula) {
 		this.setName(name);
 		this.setRequired(required);
 		this.setCellType(cellType);
 		this.setDate(date);
 		this.setDefaultValue(defaultValue);
 		this.setColumnWidth(columnWidth);
+		this.setColumnIndex(columnIndex);
+		this.setSheetFormula(sheetFormula);
+		
 	}
 
 	public String getName() {
@@ -75,5 +82,21 @@ public enum SheetCellType {
 
 	public void setColumnWidth(int columnWidth) {
 		this.columnWidth = columnWidth;
+	}
+
+	public int getColumnIndex() {
+		return columnIndex;
+	}
+
+	public void setColumnIndex(int columnIndex) {
+		this.columnIndex = columnIndex;
+	}
+
+	public SheetFormula getSheetFormula() {
+		return sheetFormula;
+	}
+
+	public void setSheetFormula(SheetFormula sheetFormula) {
+		this.sheetFormula = sheetFormula;
 	}
 }

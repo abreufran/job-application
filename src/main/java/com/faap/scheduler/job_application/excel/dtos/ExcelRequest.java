@@ -1,26 +1,26 @@
 package com.faap.scheduler.job_application.excel.dtos;
 
+import java.util.List;
+
+import com.faap.scheduler.job_application.excel.models.SheetCellType;
 import com.faap.scheduler.job_application.excel.models.SheetType;
 
 public class ExcelRequest {
 	private String filePath;
 	private SheetType sheetType; 
-	private int numberOfCells;
-	private int requiredCellNumber;
+	private List<SheetCellType> sheetCellTypeList;
 	private int cellNumberToSort;
 	private int cellNumberToFilter;
 	private String tokenToFilter;
 
 	
 	
-	public ExcelRequest(String filePath, SheetType sheetType, int numberOfCells, 
-			int requiredCellNumber, int cellNumberToSort, int cellNumberToFilter,
+	public ExcelRequest(String filePath, SheetType sheetType, List<SheetCellType> sheetCellTypeList, int cellNumberToSort, int cellNumberToFilter,
 			String tokenToFilter) {
 		super();
 		this.filePath = filePath;
 		this.sheetType = sheetType;
-		this.numberOfCells = numberOfCells;
-		this.requiredCellNumber = requiredCellNumber;
+		this.setSheetCellTypeList(sheetCellTypeList);
 		this.setCellNumberToSort(cellNumberToSort);
 		this.setCellNumberToFilter(cellNumberToFilter);
 		this.setTokenToFilter(tokenToFilter);
@@ -40,22 +40,6 @@ public class ExcelRequest {
 
 	public void setSheetType(SheetType sheetType) {
 		this.sheetType = sheetType;
-	}
-
-	public int getNumberOfCells() {
-		return numberOfCells;
-	}
-
-	public void setNumberOfCells(int numberOfCells) {
-		this.numberOfCells = numberOfCells;
-	}
-
-	public int getRequiredCellNumber() {
-		return requiredCellNumber;
-	}
-
-	public void setRequiredCellNumber(int requiredCellNumber) {
-		this.requiredCellNumber = requiredCellNumber;
 	}
 
 	public int getCellNumberToSort() {
@@ -80,6 +64,14 @@ public class ExcelRequest {
 
 	public void setTokenToFilter(String tokenToFilter) {
 		this.tokenToFilter = tokenToFilter;
+	}
+
+	public List<SheetCellType> getSheetCellTypeList() {
+		return sheetCellTypeList;
+	}
+
+	public void setSheetCellTypeList(List<SheetCellType> sheetCellTypeList) {
+		this.sheetCellTypeList = sheetCellTypeList;
 	}
 	
 	
