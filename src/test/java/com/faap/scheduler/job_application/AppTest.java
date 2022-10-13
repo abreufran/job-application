@@ -22,8 +22,10 @@ import com.faap.scheduler.job_application.excel.models.ExcelSheet;
 import com.faap.scheduler.job_application.excel.models.SheetCell;
 import com.faap.scheduler.job_application.excel.models.SheetCellType;
 import com.faap.scheduler.job_application.excel.models.SheetRow;
-import com.faap.scheduler.job_application.excel.models.SheetType;
+import com.faap.scheduler.job_application.excel.services.ExcelReadService;
+import com.faap.scheduler.job_application.excel.services.ExcelWriteService;
 import com.faap.scheduler.job_application.excel.services.JobExcelService;
+import com.faap.scheduler.job_application.excel.services.UtilExcelService;
 import com.faap.scheduler.job_application.file.services.UtilDateService;
 
 import junit.framework.Test;
@@ -37,6 +39,9 @@ public class AppTest
     extends TestCase
 {
 	private UtilDateService utilDateService;
+	private UtilExcelService utilExcelService;
+	private ExcelWriteService excelWriteService;
+	private ExcelReadService excelReadService; 
 	
 	private JobExcelService jobExcelService;
     /**
@@ -65,17 +70,26 @@ public class AppTest
     public void testApp()
     {
     	//this.createExcelTest1();
-    	this.createExcelTest2();
+    	//this.createExcelTest2();
+    	this.fillSortAndSplitSheetTest();
         assertTrue( true );
     }
     
-    private void createExcelTest2() {
-    	
+    private void fillSortAndSplitSheetTest() {
     	this.utilDateService = new UtilDateService();
-    	this.jobExcelService = new JobExcelService(utilDateService);
+    	this.utilExcelService = new UtilExcelService(utilDateService);
+    	this.excelReadService = new ExcelReadService(utilDateService, utilExcelService);
+    	this.excelWriteService = new ExcelWriteService(utilDateService);
+    	this.jobExcelService = new JobExcelService(utilDateService, utilExcelService, excelReadService, excelWriteService);
     	
     	String initialFilePath = "/Users/acidlabs/Desktop/job_backup/Things_to_do.xlsx";
     	String finalFilePath = "/Users/acidlabs/Desktop/job_backup/Things_to_do_prueba.xlsx";
+    	String SHEET_NAME = "Things to do";
+    	String COMPLETE_SHEET_NAME = "Complete Things";
+    	
+    	int COLUMN_INDEX_TO_SORT = 4;
+    	int COLUMN_INDEX_TO_FILTER = 7;
+    	String TOKEN_TO_FILTER = "PENDING";
     	
     	List<SheetCellType> SHEET_CELL_TYPE_LIST = 
     			Arrays.asList(SheetCellType.ID, SheetCellType.INCIDENCE_DATE, 
@@ -83,20 +97,39 @@ public class AppTest
     					SheetCellType.PRIORITY, SheetCellType.THINGS_TO_DO,
     					SheetCellType.CATEGORY, SheetCellType.STATUS);
     	
-    	this.duplicateExcelSheet(initialFilePath, finalFilePath, SheetType.THINGS_TO_DO, SHEET_CELL_TYPE_LIST);
+    	this.jobExcelService.fillSortSplitAndSaveSheet(initialFilePath, finalFilePath, SHEET_NAME, COMPLETE_SHEET_NAME,
+    			SHEET_CELL_TYPE_LIST, COLUMN_INDEX_TO_SORT, COLUMN_INDEX_TO_FILTER, TOKEN_TO_FILTER);
+    	
+    }
+    
+    public void createExcelTest2() {
+    	
+    	this.utilDateService = new UtilDateService();
+    	this.jobExcelService = new JobExcelService(utilDateService, utilExcelService, excelReadService, excelWriteService);
+    	String initialFilePath = "/Users/acidlabs/Desktop/job_backup/Things_to_do.xlsx";
+    	String finalFilePath = "/Users/acidlabs/Desktop/job_backup/Things_to_do_prueba.xlsx";
+    	String SHEET_NAME = "Things to do";
+    	
+    	List<SheetCellType> SHEET_CELL_TYPE_LIST = 
+    			Arrays.asList(SheetCellType.ID, SheetCellType.INCIDENCE_DATE, 
+    					SheetCellType.EXECUTION_DATE, SheetCellType.ESTIMATED_DATE,
+    					SheetCellType.PRIORITY, SheetCellType.THINGS_TO_DO,
+    					SheetCellType.CATEGORY, SheetCellType.STATUS);
+    	
+    	this.duplicateExcelSheet(initialFilePath, finalFilePath, SHEET_NAME, SHEET_CELL_TYPE_LIST);
     	
     	
     }
     
-    private boolean duplicateExcelSheet(String initialFilePath, String finalFilePath, SheetType sheetType, List<SheetCellType> sheetCellTypeList) {	
+    private boolean duplicateExcelSheet(String initialFilePath, String finalFilePath, String sheetName, List<SheetCellType> sheetCellTypeList) {	
     	XSSFWorkbook myWorkBook = null;
 		try {
-			myWorkBook = this.jobExcelService.readExcel(initialFilePath);
+			myWorkBook = this.excelReadService.readExcel(initialFilePath);
 			
-			ExcelSheet excelSheet = this.jobExcelService.readSheet(myWorkBook, sheetType,
+			ExcelSheet excelSheet = this.excelReadService.readSheet(myWorkBook, sheetName,
 					sheetCellTypeList);
 			
-			this.createExcel(sheetType.getSheetName(), sheetCellTypeList, excelSheet.getSheetRowList(), finalFilePath);
+			this.createExcel(sheetName, sheetCellTypeList, excelSheet.getSheetRowList(), finalFilePath);
 			
 			return true;
 		}
@@ -143,26 +176,7 @@ public class AppTest
     	try {
     	
 	    	myWorkBook = new XSSFWorkbook();
-	    	XSSFSheet sheet = myWorkBook.createSheet(sheetName);
-	    	System.out.println("createSheet: " + sheetName);
-			sheet.setColumnWidth(0, 6000);
-			sheet.setColumnWidth(1, 4000);
-	    	
-	    	System.out.println("Created");
-	    	
-	    	myWorkBook.setSheetOrder(sheetName, 0);
-			myWorkBook.setSelectedTab(0);
-			myWorkBook.setActiveSheet(0);
-	
-			this.createHeaderRow(myWorkBook, sheet, sheetCellTypeList);
-	
-			for (SheetRow sheetRow: sheetRowList) {
-				this.createBodyRow(myWorkBook, sheet, sheetRow);
-			}
-			
-			for (SheetCellType sheetCellType: sheetCellTypeList) {	
-				sheet.setColumnWidth(sheetCellType.getColumnIndex(), sheetCellType.getColumnWidth() * 256);
-			}
+	    	this.addSheetToExcel(myWorkBook, sheetName, sheetCellTypeList, sheetRowList);
 			
 	    	this.writeExcel(myWorkBook, filePaht);
 	    	
@@ -179,6 +193,31 @@ public class AppTest
 				}
 			}
 		}
+    }
+    
+    private void addSheetToExcel(XSSFWorkbook myWorkBook, String sheetName, List<SheetCellType> sheetCellTypeList, List<SheetRow> sheetRowList) {
+
+    	XSSFSheet sheet = myWorkBook.createSheet(sheetName);
+    	System.out.println("createSheet: " + sheetName);
+		sheet.setColumnWidth(0, 6000);
+		sheet.setColumnWidth(1, 4000);
+    	
+    	System.out.println("Created");
+    	
+    	myWorkBook.setSheetOrder(sheetName, 0);
+		myWorkBook.setSelectedTab(0);
+		myWorkBook.setActiveSheet(0);
+
+		this.createHeaderRow(myWorkBook, sheet, sheetCellTypeList);
+
+		for (SheetRow sheetRow: sheetRowList) {
+			this.createBodyRow(myWorkBook, sheet, sheetRow);
+		}
+		
+		for (SheetCellType sheetCellType: sheetCellTypeList) {	
+			sheet.setColumnWidth(sheetCellType.getColumnIndex(), sheetCellType.getColumnWidth() * 256);
+		}
+
     }
     
     private void createHeaderRow(XSSFWorkbook myWorkBook, XSSFSheet sheet, List<SheetCellType> sheeCellTypeList) {

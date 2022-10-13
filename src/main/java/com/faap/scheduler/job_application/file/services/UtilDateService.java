@@ -17,6 +17,12 @@ public class UtilDateService {
 		return dateFormat.format(date);
 	}
 	
+	public String getStrDate(LocalDate date) {
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(READ_EXCEL_DATE_FORMAT);
+		return date.format(formatter);
+
+	}
+	
 	public LocalDate getLocalDate(String date) {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(READ_EXCEL_DATE_FORMAT);
 		//convert String to LocalDate

@@ -4,23 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ExcelSheet {
-	private SheetType sheetType;
+	private String sheetName;
 	private List<SheetRow> sheetRowList;
 	
 	
-	public ExcelSheet(SheetType sheetType) {
-		this.sheetType = sheetType;
+	public ExcelSheet(String sheetName) {
+		this.setSheetName(sheetName);
 		this.sheetRowList = new ArrayList<>();
-	}
-
-
-	public SheetType getSheetType() {
-		return sheetType;
-	}
-
-
-	public void setSheetType(SheetType sheetType) {
-		this.sheetType = sheetType;
 	}
 
 
@@ -31,6 +21,20 @@ public class ExcelSheet {
 
 	public void setSheetRowList(List<SheetRow> sheetRowList) {
 		this.sheetRowList = sheetRowList;
+	}
+
+
+
+
+	public String getSheetName() {
+		return sheetName;
+	}
+
+
+
+
+	public void setSheetName(String sheetName) {
+		this.sheetName = sheetName;
 	}
 	
 	

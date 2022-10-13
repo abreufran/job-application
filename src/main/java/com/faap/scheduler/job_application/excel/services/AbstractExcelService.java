@@ -28,12 +28,10 @@ import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTAutoFilter;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTFilterColumn;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTFilters;
 
-import com.faap.scheduler.job_application.excel.dtos.ExcelRequest;
 import com.faap.scheduler.job_application.excel.models.ExcelSheet;
 import com.faap.scheduler.job_application.excel.models.SheetCell;
 import com.faap.scheduler.job_application.excel.models.SheetCellType;
 import com.faap.scheduler.job_application.excel.models.SheetRow;
-import com.faap.scheduler.job_application.excel.models.SheetType;
 import com.faap.scheduler.job_application.file.services.UtilDateService;
 import com.faap.scheduler.job_application.models.job.ValidCellListResponse;
 
@@ -72,22 +70,22 @@ public abstract class AbstractExcelService {
 		outputStream = null;
 	}
 
-	public boolean rebuildSheet(ExcelRequest excelRequest) {
+	public boolean rebuildSheet(String filePath, String sheetName, List<SheetCellType> sheetCellTypeList) {
 		System.out.println("rebuildSheet. ");
 		XSSFWorkbook myWorkBook = null;
 		try {
-			myWorkBook = this.readExcel(excelRequest.getFilePath());
+			myWorkBook = this.readExcel(filePath);
 
-			ExcelSheet excelSheet = this.readSheet(myWorkBook, excelRequest.getSheetType(),
-					excelRequest.getSheetCellTypeList());
+			ExcelSheet excelSheet = this.readSheet(myWorkBook, sheetName,
+					sheetCellTypeList);
 
-			this.deleteSheet(myWorkBook, excelRequest.getSheetType());
+			this.deleteSheet(myWorkBook, sheetName);
 			
 			this.createSheet(myWorkBook, excelSheet, 
-					excelSheet.getSheetRowList().size(), excelRequest.getSheetCellTypeList());
+					excelSheet.getSheetRowList().size(), sheetCellTypeList);
 			
 			System.out.println("rebuildSheet - Saving WorkBook.");
-			this.writeExcel(myWorkBook, excelRequest.getFilePath());
+			this.writeExcel(myWorkBook, filePath);
 
 			return true;
 		} catch (Exception e) {
@@ -106,14 +104,14 @@ public abstract class AbstractExcelService {
 
 	
 
-	public boolean fillEmptyFields(ExcelRequest excelRequest) {
+	public boolean fillEmptyFields(String filePath, String sheetName, List<SheetCellType> sheetCellTypeList) {
 		System.out.println("Fill empty fields. ");
 		XSSFWorkbook myWorkBook = null;
 		try {
-			myWorkBook = this.readExcel(excelRequest.getFilePath());
+			myWorkBook = this.readExcel(filePath);
 
-			ExcelSheet excelSheet = this.readSheet(myWorkBook, excelRequest.getSheetType(),
-					excelRequest.getSheetCellTypeList());
+			ExcelSheet excelSheet = this.readSheet(myWorkBook, sheetName,
+					sheetCellTypeList);
 
 			List<SheetRow> incompleteSheetRowList = this.calculateIncompleteSheetRowList(excelSheet.getSheetRowList());
 
@@ -126,7 +124,7 @@ public abstract class AbstractExcelService {
 			if (incompleteSheetRowList.size() > 0) {
 
 				System.out.println("fillEmptyFields - Saving WorkBook.");
-				this.writeExcel(myWorkBook, excelRequest.getFilePath());
+				this.writeExcel(myWorkBook, filePath);
 
 			}
 
@@ -145,31 +143,32 @@ public abstract class AbstractExcelService {
 		}
 	}
 
-	public boolean sortSheet(ExcelRequest excelRequest) {
+	public boolean sortSheet(String filePath, String sheetName, List<SheetCellType> sheetCellTypeList, 
+			int columnIndexToSort, int columnIndexToFilter, String tokenToFilter) {
 		System.out.println("Sort Sheet. ");
 		XSSFWorkbook myWorkBook = null;
 		try {
-			myWorkBook = this.readExcel(excelRequest.getFilePath());
+			myWorkBook = this.readExcel(filePath);
 
-			ExcelSheet excelSheet = this.readSheet(myWorkBook, excelRequest.getSheetType(),
-					excelRequest.getSheetCellTypeList());
+			ExcelSheet excelSheet = this.readSheet(myWorkBook, sheetName,
+					sheetCellTypeList);
 
 			Comparator<SheetRow> priorityComparator = (sr1, sr2) -> {
-				String cellValueToSort1 = sr1.getSheetCellList().get(excelRequest.getCellNumberToSort()).getCellValue();
-				String cellValueToSort2 = sr2.getSheetCellList().get(excelRequest.getCellNumberToSort()).getCellValue();
+				String cellValueToSort1 = sr1.getSheetCellList().get(columnIndexToSort).getCellValue();
+				String cellValueToSort2 = sr2.getSheetCellList().get(columnIndexToSort).getCellValue();
 				return cellValueToSort1.compareTo(cellValueToSort2);
 			};
 
 			Comparator<SheetRow> filterComparator = (sr1, sr2) -> {
-				String cellValueToSort1 = sr1.getSheetCellList().get(excelRequest.getCellNumberToFilter())
+				String cellValueToSort1 = sr1.getSheetCellList().get(columnIndexToFilter)
 						.getCellValue();
-				String cellValueToSort2 = sr2.getSheetCellList().get(excelRequest.getCellNumberToFilter())
+				String cellValueToSort2 = sr2.getSheetCellList().get(columnIndexToFilter)
 						.getCellValue();
 
-				if (excelRequest.getTokenToFilter().equals(cellValueToSort1)) {
+				if (tokenToFilter.equals(cellValueToSort1)) {
 					cellValueToSort1 = "A_" + cellValueToSort1;
 				}
-				if (excelRequest.getTokenToFilter().equals(cellValueToSort2)) {
+				if (tokenToFilter.equals(cellValueToSort2)) {
 					cellValueToSort2 = "A_" + cellValueToSort2;
 				}
 				return cellValueToSort1.compareTo(cellValueToSort2);
@@ -180,10 +179,10 @@ public abstract class AbstractExcelService {
 
 			if (this.didSheetSort(sortedSheetRowList)) {
 				XSSFFormulaEvaluator formulaEvaluator = myWorkBook.getCreationHelper().createFormulaEvaluator();
-				this.sortExcelSheet(sortedSheetRowList, excelRequest.getSheetCellTypeList(), formulaEvaluator);
+				this.sortExcelSheet(sortedSheetRowList, sheetCellTypeList, formulaEvaluator);
 
 				System.out.println("sortSheet - Saving WorkBook.");
-				this.writeExcel(myWorkBook, excelRequest.getFilePath());
+				this.writeExcel(myWorkBook, filePath);
 			}
 
 			return true;
@@ -201,24 +200,25 @@ public abstract class AbstractExcelService {
 		}
 	}
 
-	public boolean setFilter(ExcelRequest excelRequest) throws Exception {
+	public boolean setFilter(String filePath, String sheetName, List<SheetCellType> sheetCellTypeList, 
+			int columnIndexToFilter, String tokenToFilter) throws Exception {
 		System.out.println("setFilter. ");
 		XSSFWorkbook myWorkBook = null;
 		try {
-			myWorkBook = this.readExcel(excelRequest.getFilePath());
+			myWorkBook = this.readExcel(filePath);
 
-			ExcelSheet excelSheet = this.readSheet(myWorkBook, excelRequest.getSheetType(),
-					excelRequest.getSheetCellTypeList());
+			ExcelSheet excelSheet = this.readSheet(myWorkBook, sheetName,
+					sheetCellTypeList);
 
 			int lastRow = excelSheet.getSheetRowList().size();
 
-			XSSFSheet mySheet = myWorkBook.getSheet(excelRequest.getSheetType().getSheetName());
+			XSSFSheet mySheet = myWorkBook.getSheet(sheetName);
 
-			this.setCriteriaFilter(mySheet, excelRequest.getCellNumberToFilter(), 1, lastRow,
-					excelRequest.getTokenToFilter());
+			this.setCriteriaFilter(mySheet, columnIndexToFilter, 1, lastRow,
+					tokenToFilter);
 
 			System.out.println("setFilter - Saving WorkBook.");
-			this.writeExcel(myWorkBook, excelRequest.getFilePath());
+			this.writeExcel(myWorkBook, filePath);
 
 			return true;
 		} catch (Exception e) {
@@ -343,11 +343,11 @@ public abstract class AbstractExcelService {
 	}
 	
 	private void createSheet(XSSFWorkbook myWorkBook, ExcelSheet excelSheet, int lastRow, List<SheetCellType> sheetCellTypeList) {
-		XSSFSheet sheet = myWorkBook.createSheet(excelSheet.getSheetType().getSheetName());
+		XSSFSheet sheet = myWorkBook.createSheet(excelSheet.getSheetName());
 		sheet.setColumnWidth(0, 6000);
 		sheet.setColumnWidth(1, 4000);
 		
-		myWorkBook.setSheetOrder(excelSheet.getSheetType().getSheetName(), 0);
+		myWorkBook.setSheetOrder(excelSheet.getSheetName(), 0);
 		myWorkBook.setSelectedTab(0);
 		myWorkBook.setActiveSheet(0);
 
@@ -405,9 +405,9 @@ public abstract class AbstractExcelService {
 		}
 	}
 
-	private void deleteSheet(XSSFWorkbook myWorkBook, SheetType sheetType) {
+	private void deleteSheet(XSSFWorkbook myWorkBook, String sheetName) {
 		int index = 0;
-		XSSFSheet mySheet = myWorkBook.getSheet(sheetType.getSheetName());
+		XSSFSheet mySheet = myWorkBook.getSheet(sheetName);
 		if (mySheet != null) {
 			index = myWorkBook.getSheetIndex(mySheet);
 			myWorkBook.removeSheetAt(index);
@@ -432,12 +432,12 @@ public abstract class AbstractExcelService {
 					.filter(sc -> this.incompleteSheetCell(sc)).collect(Collectors.toList());
 	}
 
-	public ExcelSheet readSheet(XSSFWorkbook myWorkBook, SheetType sheetType, List<SheetCellType> sheeCellTypeList)
+	public ExcelSheet readSheet(XSSFWorkbook myWorkBook, String sheetName, List<SheetCellType> sheeCellTypeList)
 			throws Exception {
 
-		ExcelSheet excelSheet = new ExcelSheet(sheetType);
+		ExcelSheet excelSheet = new ExcelSheet(sheetName);
 		// Return first sheet from the XLSX workbook
-		XSSFSheet mySheet = myWorkBook.getSheet(sheetType.getSheetName());
+		XSSFSheet mySheet = myWorkBook.getSheet(sheetName);
 
 		// Get iterator to all the rows in current sheet
 		Iterator<Row> rowIterator = mySheet.iterator();
@@ -457,9 +457,6 @@ public abstract class AbstractExcelService {
 			}
 
 			ValidCellListResponse validCellListResponse = this.validCellList(cellList, row.getRowNum(), sheeCellTypeList);
-			if (validCellListResponse == ValidCellListResponse.INVALID_CELLS_NUMBER) {
-
-			}
 
 			if (validCellListResponse == ValidCellListResponse.OK) {
 				if (row.getRowNum() > 0) {
@@ -469,15 +466,8 @@ public abstract class AbstractExcelService {
 				}
 
 			} else {
-				if (validCellListResponse == ValidCellListResponse.INVALID_CELLS_NUMBER) {
-					List<String> strCellList = this.getStrCellList(cellList);
-					System.out.print("ROW: " + row.getRowNum() + " ERROR: \t" + strCellList.size() + "\t");
-					strCellList.stream().forEach(c -> System.out.print(c + "\t"));
-					System.out.println("");
-					throw new Exception("INVALID_CELLS_NUMBER");
-				}
 				if (validCellListResponse == ValidCellListResponse.INVALID_HEADER_CELL_LIST) {
-					System.out.print("ERROR: INVALID_HEADER_CELL_LIST");
+					System.out.println("ERROR: INVALID_HEADER_CELL_LIST");
 					throw new Exception("INVALID_HEADER_CELL_LIST");
 				}
 			}
@@ -587,12 +577,6 @@ public abstract class AbstractExcelService {
 	}
 
 	private ValidCellListResponse validCellList(List<Cell> cellList, int rowNumber, List<SheetCellType> sheeCellTypeList) {
-		if (cellList.size() == 0) {
-			return ValidCellListResponse.EMPTY_CELL_LIST;
-		}
-		if (cellList.size() != sheeCellTypeList.size()) {
-			return ValidCellListResponse.INVALID_CELLS_NUMBER;
-		}
 		int requiredCellNumber = sheeCellTypeList.stream().filter(ct -> ct.isRequired()).findFirst().orElse(null).getColumnIndex();
 		if (!this.validCell(cellList.get(requiredCellNumber))) {
 			return ValidCellListResponse.INVALID_REQUIRED_CELL;

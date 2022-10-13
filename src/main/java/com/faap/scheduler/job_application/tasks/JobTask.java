@@ -9,12 +9,10 @@ import java.util.TimerTask;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.faap.scheduler.job_application.enums.Flag;
-import com.faap.scheduler.job_application.excel.dtos.ExcelRequest;
 import com.faap.scheduler.job_application.excel.models.ExcelSheet;
 import com.faap.scheduler.job_application.excel.models.SheetCell;
 import com.faap.scheduler.job_application.excel.models.SheetCellType;
 import com.faap.scheduler.job_application.excel.models.SheetRow;
-import com.faap.scheduler.job_application.excel.models.SheetType;
 import com.faap.scheduler.job_application.excel.services.JobExcelService;
 import com.faap.scheduler.job_application.file.services.UtilFileService;
 import com.faap.scheduler.job_application.repositories.DataFileRepository;
@@ -23,11 +21,11 @@ import com.faap.scheduler.job_application.repositories.FileBackupRepository;
 public class JobTask extends TimerTask {
 	public static String BACKUP_PATH = "C://Users/Administrator/Desktop/job_backup";
 	public static String JOB_FILE_NAME = "G://My Drive/Things_to_do.xlsx";
-	public static SheetType SHEET_TYPE = SheetType.THINGS_TO_DO;
+	public static String SHEET_NAME = "Things to do";
 	public static int NUMBER_OF_CELLS = 8;
 	public static int REQUIRED_CELL_NUMBER = 5;
-	public static int CELL_NUMBER_TO_SORT = 4;
-	public static int CELL_NUMBER_TO_FILTER = 7;
+	public static int COLUMN_INDEX_TO_SORT = 4;
+	public static int COLUMN_INDEX_TO_FILTER = 7;
 	public static String TOKEN_TO_FILTER = "PENDING";
 	public static List<SheetCellType> SHEET_CELL_TYPE_LIST = 
 			Arrays.asList(SheetCellType.ID, SheetCellType.INCIDENCE_DATE, 
@@ -55,16 +53,15 @@ public class JobTask extends TimerTask {
 			if(this.didOriginFileChange() && this.makeBackup()) {
 				//this.readAndSaveExcel();
 				
-				ExcelRequest excelRequest = new ExcelRequest(JOB_FILE_NAME, SHEET_TYPE, SHEET_CELL_TYPE_LIST, 
-						CELL_NUMBER_TO_SORT, CELL_NUMBER_TO_FILTER, TOKEN_TO_FILTER);
+				//this.jobExcelService.fillAndSaveEmptyFields(JOB_FILE_NAME, SHEET_NAME, SHEET_CELL_TYPE_LIST);
 				
-				this.jobExcelService.fillEmptyFields(excelRequest);
+				//this.jobExcelService.rebuildSheet(JOB_FILE_NAME, SHEET_NAME, SHEET_CELL_TYPE_LIST);
 				
-				this.jobExcelService.rebuildSheet(excelRequest);
+				this.jobExcelService.fillSortAndSaveSheet(JOB_FILE_NAME, JOB_FILE_NAME, SHEET_NAME, SHEET_CELL_TYPE_LIST,
+						COLUMN_INDEX_TO_SORT, COLUMN_INDEX_TO_FILTER, TOKEN_TO_FILTER);
 				
-				this.jobExcelService.sortSheet(excelRequest);
-				
-				this.jobExcelService.setFilter(excelRequest);
+				//this.jobExcelService.setFilter(JOB_FILE_NAME, SHEET_NAME, SHEET_CELL_TYPE_LIST,
+				//		COLUMN_INDEX_TO_FILTER, TOKEN_TO_FILTER);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -74,9 +71,9 @@ public class JobTask extends TimerTask {
 	public void readAndSaveExcel() throws Exception {
 		XSSFWorkbook myWorkBook = null;
 		try {
-			myWorkBook = this.jobExcelService.readExcel(JOB_FILE_NAME);
+			myWorkBook = this.jobExcelService.getExcelReadService().readExcel(JOB_FILE_NAME);
 			
-			ExcelSheet jobSheet = this.jobExcelService.readSheet(myWorkBook,SHEET_TYPE, SHEET_CELL_TYPE_LIST);
+			ExcelSheet jobSheet = this.jobExcelService.getExcelReadService().readSheet(myWorkBook,SHEET_NAME, SHEET_CELL_TYPE_LIST);
 			
 			for(SheetRow sheetRow: jobSheet.getSheetRowList()) {
 				List<String> cellList = this.getStrCellListFromSheetCellList(sheetRow.getSheetCellList());
@@ -111,7 +108,7 @@ public class JobTask extends TimerTask {
 		List<String> strCellList = new ArrayList<>();
 		
 		for(SheetCell sheetCell: sheetCellList) {
-			strCellList.add(this.jobExcelService.readCell(sheetCell.getCell()));
+			strCellList.add(this.jobExcelService.getUtilExcelService().readCell(sheetCell.getCell()));
 		}
 		return strCellList;
 	}

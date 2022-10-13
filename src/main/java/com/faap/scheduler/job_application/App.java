@@ -3,7 +3,10 @@ package com.faap.scheduler.job_application;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import com.faap.scheduler.job_application.excel.services.ExcelReadService;
+import com.faap.scheduler.job_application.excel.services.ExcelWriteService;
 import com.faap.scheduler.job_application.excel.services.JobExcelService;
+import com.faap.scheduler.job_application.excel.services.UtilExcelService;
 import com.faap.scheduler.job_application.file.services.UtilDateService;
 import com.faap.scheduler.job_application.file.services.UtilFileService;
 import com.faap.scheduler.job_application.repositories.DataFileRepository;
@@ -22,7 +25,10 @@ public class App
     	FileBackupRepository fileBackupRepository = new FileBackupRepository();
     	DataFileRepository dataFileRepository = new DataFileRepository();
     	UtilDateService utilDateService = new UtilDateService();
-    	JobExcelService jobExcelService = new JobExcelService(utilDateService);
+    	UtilExcelService utilExcelService = new UtilExcelService(utilDateService);
+    	ExcelReadService excelReadService = new ExcelReadService(utilDateService, utilExcelService);
+    	ExcelWriteService excelWriteService = new ExcelWriteService(utilDateService);
+    	JobExcelService jobExcelService = new JobExcelService(utilDateService, utilExcelService, excelReadService, excelWriteService);
     	UtilFileService utilFileService = new UtilFileService();
     	
         App.runReadTraderFile(dataFileRepository);
