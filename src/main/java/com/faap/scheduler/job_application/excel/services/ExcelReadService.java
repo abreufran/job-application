@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -82,7 +81,6 @@ public class ExcelReadService {
 
 		}
 
-		this.getUtilExcelService().updateCellIdValue(excelSheet.getSheetRowList());
 		this.checkDateCell(myWorkBook, excelSheet.getSheetRowList());
 
 		return excelSheet;
@@ -130,7 +128,7 @@ public class ExcelReadService {
 		if (!this.validCellList(requiredCellList)) {
 			return ValidCellListResponse.INVALID_REQUIRED_CELL;
 		}
-		if (rowNumber == 0 && !this.validHeaderCellList(cellList)) {
+		if (rowNumber == 0 && !this.validHeaderCellList(cellList, sheeCellTypeList)) {
 			return ValidCellListResponse.INVALID_HEADER_CELL_LIST;
 		}
 		return ValidCellListResponse.OK;
@@ -154,10 +152,10 @@ public class ExcelReadService {
 				|| cell.getCellType() == CellType.FORMULA;
 	}
 	
-	private boolean validHeaderCellList(List<Cell> cellList) {
+	private boolean validHeaderCellList(List<Cell> cellList, List<SheetCellType> sheetCellTypeList) {
 		List<String> strCellList = this.getStrCellList(cellList);
 
-		return Arrays.stream(SheetCellType.values()).allMatch(sct -> {
+		return sheetCellTypeList.stream().allMatch(sct -> {
 			boolean match = strCellList.stream().filter(sc -> sct.getName().equals(sc)).findFirst().isPresent();
 			return match;
 		});

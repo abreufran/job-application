@@ -31,6 +31,8 @@ public abstract class AbstractApiExcelService {
 	
 	public abstract void completeSheetCellList(List<SheetCell> sheetCellList, XSSFWorkbook myWorkBook, int rowNumber);
 	
+	public abstract void updateCellIdValue(List<SheetRow> sheetRowList);
+	
 	public boolean fillSortSplitAndSaveSheet(String initialFilePath, String finalFilePath, String sheetNameOfTokenFilter, 
 			String sheetNameNoTokenFilter, List<SheetCellType> sheetCellTypeList, 
 			int columnIndexToSort, int columnIndexToFilter, String tokenToFilter) {
@@ -66,10 +68,10 @@ public abstract class AbstractApiExcelService {
 			}
 
 			//Read sheet
-			ExcelSheet excelSheetOfTokenFilet = this.getExcelReadService().readSheet(workbookResponse.getMyWorkBook(), sheetNameOfTokenFilter,
+			ExcelSheet excelSheetOfTokenFilet = this.readSheet(workbookResponse.getMyWorkBook(), sheetNameOfTokenFilter,
 					sheetCellTypeList);
 			
-			ExcelSheet excelSheetNoTokenFilet = this.getExcelReadService().readSheet(workbookResponse.getMyWorkBook(), sheetNameNoTokenFilter,
+			ExcelSheet excelSheetNoTokenFilet = this.readSheet(workbookResponse.getMyWorkBook(), sheetNameNoTokenFilter,
 					sheetCellTypeList);
 			
 			//Split sheet by token filter
@@ -209,7 +211,7 @@ public abstract class AbstractApiExcelService {
 		try {
 			myWorkBook = this.getExcelReadService().readExcel(initialFilePath);
 
-			ExcelSheet excelSheet = this.getExcelReadService().readSheet(myWorkBook, sheetName,
+			ExcelSheet excelSheet = this.readSheet(myWorkBook, sheetName,
 					sheetCellTypeList);
 
 			List<SheetRow> incompleteSheetRowList = this.getUtilExcelService().calculateIncompleteSheetRowList(excelSheet.getSheetRowList());
@@ -250,7 +252,7 @@ public abstract class AbstractApiExcelService {
 		System.out.println("Sort Sheet. ");
 		try {
 
-			ExcelSheet excelSheet = this.getExcelReadService().readSheet(myWorkBook, sheetName,
+			ExcelSheet excelSheet = this.readSheet(myWorkBook, sheetName,
 					sheetCellTypeList);
 			
 			List<SheetRow> sortedSheetRowList = this.getUtilExcelService().sortSheetRowList(
@@ -281,13 +283,21 @@ public abstract class AbstractApiExcelService {
 		} 
 	}
 	
+	public ExcelSheet readSheet(XSSFWorkbook myWorkBook, String sheetName, List<SheetCellType> sheeCellTypeList) throws Exception {
+		ExcelSheet excelSheet = this.getExcelReadService().readSheet(myWorkBook, sheetName, sheeCellTypeList);
+		this.updateCellIdValue(excelSheet.getSheetRowList());
+		return excelSheet;
+		
+	}
+	
+	
 	private void updateRowNumber(List<SheetRow> sortedSheetRowList) {
 		int rowNumber = 0; //Header
 		for (SheetRow sheetRow: sortedSheetRowList) {
 			rowNumber++;
 			sheetRow.setRowNumber(rowNumber);
 		}
-		this.getUtilExcelService().updateCellIdValue(sortedSheetRowList);
+		this.updateCellIdValue(sortedSheetRowList);
 	}
 
 

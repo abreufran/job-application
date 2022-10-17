@@ -2,7 +2,17 @@ package com.faap.scheduler.job_application.excel.models;
 
 import org.apache.poi.ss.usermodel.CellType;
 
-public class SheetCellType {
+public enum ThingToDoColumnType {
+	ID("ID", true, CellType.STRING, false, null, 5, 0, null), 
+	INCIDENCE_DATE("Incidence Date", true, CellType.NUMERIC, true, null, 20, 1, null),
+	EXECUTION_DATE("Execution Date", false, CellType.NUMERIC, true, null, 20, 2, null),
+	ESTIMATED_DATE("Estimated Date", false, CellType.NUMERIC, true, null, 20, 3, null),
+	PRIORITY("Priority", true, CellType.STRING, false, "A1", 10, 4, null),
+	THINGS_TO_DO("Things to do", true, CellType.STRING, false, "UNKNOWN", 40, 5, null),
+	CATEGORY("Category", true, CellType.STRING, false, "Task", 20, 6, null),
+	STATUS("Status", true, CellType.FORMULA, false, null, 20, 7, 
+			new SheetFormula("IF(ISBLANK(C_rowNumber_),\"PENDING\",\"COMPLETE\")", "_rowNumber_", SheetFormulaValue.ROW_NUMBER));
+	
 	private String name;
 	private boolean required;
 	private CellType cellType;
@@ -12,66 +22,81 @@ public class SheetCellType {
 	private int columnIndex;
 	private SheetFormula sheetFormula;
 	
-	
-	public SheetCellType(ThingToDoColumnType thingToDoColumnType) {
-		this.name = thingToDoColumnType.getName();
-		this.required = thingToDoColumnType.isRequired();
-		this.cellType = thingToDoColumnType.getCellType();
-		this.date = thingToDoColumnType.isDate();
-		this.defaultValue = thingToDoColumnType.getDefaultValue();
-		this.columnWidth = thingToDoColumnType.getColumnWidth();
-		this.columnIndex = thingToDoColumnType.getColumnIndex();
-		this.sheetFormula = thingToDoColumnType.getSheetFormula();
+	private ThingToDoColumnType(String name, boolean required, CellType cellType, 
+			boolean date, Object defaultValue, int columnWidth, int columnIndex,
+			SheetFormula sheetFormula) {
+		this.setName(name);
+		this.setRequired(required);
+		this.setCellType(cellType);
+		this.setDate(date);
+		this.setDefaultValue(defaultValue);
+		this.setColumnWidth(columnWidth);
+		this.setColumnIndex(columnIndex);
+		this.setSheetFormula(sheetFormula);
+		
 	}
-	
+
 	public String getName() {
 		return name;
 	}
-	public void setName(String name) {
+
+	private void setName(String name) {
 		this.name = name;
 	}
+
 	public boolean isRequired() {
 		return required;
 	}
-	public void setRequired(boolean required) {
+
+	private void setRequired(boolean required) {
 		this.required = required;
 	}
+
 	public CellType getCellType() {
 		return cellType;
 	}
+
 	public void setCellType(CellType cellType) {
 		this.cellType = cellType;
 	}
+
 	public boolean isDate() {
 		return date;
 	}
+
 	public void setDate(boolean date) {
 		this.date = date;
 	}
+
 	public Object getDefaultValue() {
 		return defaultValue;
 	}
+
 	public void setDefaultValue(Object defaultValue) {
 		this.defaultValue = defaultValue;
 	}
+
 	public int getColumnWidth() {
 		return columnWidth;
 	}
+
 	public void setColumnWidth(int columnWidth) {
 		this.columnWidth = columnWidth;
 	}
+
 	public int getColumnIndex() {
 		return columnIndex;
 	}
+
 	public void setColumnIndex(int columnIndex) {
 		this.columnIndex = columnIndex;
 	}
+
 	public SheetFormula getSheetFormula() {
 		return sheetFormula;
 	}
+
 	public void setSheetFormula(SheetFormula sheetFormula) {
 		this.sheetFormula = sheetFormula;
 	}
-	
-	
 }

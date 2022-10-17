@@ -28,7 +28,7 @@ public class ExcelWriteService {
 		this.utilDateService = utilDateService;
 	}
 
-	public boolean createExcel(String sheetName, int columnIndex, List<SheetCellType> sheetCellTypeList, List<SheetRow> sheetRowList, String filePaht)  {
+	protected boolean createExcel(String sheetName, int columnIndex, List<SheetCellType> sheetCellTypeList, List<SheetRow> sheetRowList, String filePaht)  {
     	XSSFWorkbook myWorkBook = null;
     	try {
     	
@@ -52,7 +52,7 @@ public class ExcelWriteService {
 		}
     }
 	
-	public void addEmptySheetToExcel(XSSFWorkbook myWorkBook, String sheetName, int columnIndex, List<SheetCellType> sheetCellTypeList) {
+	protected void addEmptySheetToExcel(XSSFWorkbook myWorkBook, String sheetName, int columnIndex, List<SheetCellType> sheetCellTypeList) {
 		XSSFSheet sheet = myWorkBook.createSheet(sheetName);
     	System.out.println("addEmptySheetToExcel: " + sheetName);
 		sheet.setColumnWidth(0, 6000);
@@ -71,7 +71,7 @@ public class ExcelWriteService {
 		}
 	}
 	
-	public void addSheetToExcel(XSSFWorkbook myWorkBook, String sheetName, int columnIndex, List<SheetCellType> sheetCellTypeList, List<SheetRow> sheetRowList) {
+	protected void addSheetToExcel(XSSFWorkbook myWorkBook, String sheetName, int columnIndex, List<SheetCellType> sheetCellTypeList, List<SheetRow> sheetRowList) {
 
     	XSSFSheet sheet = myWorkBook.createSheet(sheetName);
     	System.out.println("addSheetToExcel: " + sheetName);
@@ -96,7 +96,7 @@ public class ExcelWriteService {
 
     }
 	
-	public void deleteSheet(XSSFWorkbook myWorkBook, String sheetName) {
+	protected void deleteSheet(XSSFWorkbook myWorkBook, String sheetName) {
 		int index = 0;
 		XSSFSheet mySheet = myWorkBook.getSheet(sheetName);
 		if (mySheet != null) {
@@ -105,7 +105,7 @@ public class ExcelWriteService {
 		}
 	}
 	
-	private void createHeaderRow(XSSFWorkbook myWorkBook, XSSFSheet sheet, List<SheetCellType> sheeCellTypeList) {
+	protected void createHeaderRow(XSSFWorkbook myWorkBook, XSSFSheet sheet, List<SheetCellType> sheeCellTypeList) {
     	Row header = sheet.createRow(0);
     	System.out.println("createRow - Header: " + header.getRowNum());
 
@@ -127,7 +127,7 @@ public class ExcelWriteService {
 		}
     }
     
-    private void createBodyRow(XSSFWorkbook myWorkBook, XSSFSheet sheet, SheetRow sheetRow) {
+	protected void createBodyRow(XSSFWorkbook myWorkBook, XSSFSheet sheet, SheetRow sheetRow) {
     	Row row = sheet.createRow(sheetRow.getRowNumber());
 		System.out.println("createRow - Body: " + row.getRowNum());
 
@@ -157,7 +157,7 @@ public class ExcelWriteService {
 		}
     }
     
-    private String calculateFormula(SheetCell sheetCell, int rowNumber) {
+	protected String calculateFormula(SheetCell sheetCell, int rowNumber) {
     	String formula = sheetCell.getSheetCellType().getSheetFormula().getFormula();
     	if(sheetCell.getSheetCellType().getSheetFormula().getSheetFormulaValue() != null) {
 	    	switch (sheetCell.getSheetCellType().getSheetFormula().getSheetFormulaValue()) {
@@ -171,7 +171,7 @@ public class ExcelWriteService {
 		return formula;
     }
     
-    private void setBlankCellAndCellStyle(XSSFWorkbook myWorkBook, Cell cell, boolean isDate, boolean isText, HorizontalAlignment horizontalAlignment) {
+	protected void setBlankCellAndCellStyle(XSSFWorkbook myWorkBook, Cell cell, boolean isDate, boolean isText, HorizontalAlignment horizontalAlignment) {
 		cell.setBlank();
 		CellStyle style = myWorkBook.createCellStyle();
 		style.setAlignment(horizontalAlignment);
@@ -186,7 +186,7 @@ public class ExcelWriteService {
 		cell.setCellStyle(style);
 	}
     
-    protected void writeExcel(XSSFWorkbook myWorkBook, String filePath) throws IOException {
+	protected void writeExcel(XSSFWorkbook myWorkBook, String filePath) throws IOException {
 		File myFile = new File(filePath);
 
 		FileOutputStream outputStream = new FileOutputStream(myFile);

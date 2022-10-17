@@ -9,7 +9,6 @@ import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.faap.scheduler.job_application.excel.models.SheetCell;
-import com.faap.scheduler.job_application.excel.models.SheetCellType;
 import com.faap.scheduler.job_application.excel.models.SheetRow;
 import com.faap.scheduler.job_application.file.services.UtilDateService;
 
@@ -82,18 +81,6 @@ public class UtilExcelService {
 
 		return sheetRowList.stream()
 				.sorted(filterComparator.thenComparing(priorityComparator)).collect(Collectors.toList());
-	}
-	
-	public void updateCellIdValue(List<SheetRow> sheetRowList) {
-		for (SheetRow sheetRow : sheetRowList) {
-			
-			SheetCell sheetCellId = sheetRow.getSheetCellList().stream()
-					.filter(sc -> sc.getSheetCellType() == SheetCellType.ID).findFirst().orElse(null);
-			
-			if (!String.valueOf(sheetRow.getRowNumber() + 1).equals(sheetCellId.getCellValue())) {
-				sheetCellId.setCellValue(String.valueOf(sheetRow.getRowNumber() + 1));
-			}
-		}
 	}
 	
 	public boolean didSheetSort(List<SheetRow> sortedSheetRowList) {
