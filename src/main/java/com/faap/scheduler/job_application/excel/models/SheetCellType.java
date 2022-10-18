@@ -24,6 +24,17 @@ public class SheetCellType {
 		this.sheetFormula = thingToDoColumnType.getSheetFormula();
 	}
 	
+	public SheetCellType(PeriodicTask periodicTask) {
+		this.name = periodicTask.getName();
+		this.required = periodicTask.isRequired();
+		this.cellType = periodicTask.getCellType();
+		this.date = periodicTask.isDate();
+		this.defaultValue = periodicTask.getDefaultValue();
+		this.columnWidth = periodicTask.getColumnWidth();
+		this.columnIndex = periodicTask.getColumnIndex();
+		this.sheetFormula = periodicTask.getSheetFormula();
+	}
+	
 	public String getName() {
 		return name;
 	}

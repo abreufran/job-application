@@ -32,7 +32,7 @@ public class App
     	UtilFileService utilFileService = new UtilFileService();
     	
         App.runReadTraderFile(dataFileRepository);
-        App.runReadJobFile(dataFileRepository, jobExcelService, utilFileService, fileBackupRepository);
+        App.runReadJobFile(dataFileRepository, jobExcelService, utilExcelService, utilFileService, fileBackupRepository);
     }
     
     public static void runReadTraderFile(DataFileRepository task) {   	
@@ -45,8 +45,9 @@ public class App
     }
     
     public static void runReadJobFile(DataFileRepository taskRepository, JobExcelService jobExcelService, 
+    		UtilExcelService utilExcelService,
     		UtilFileService utilFileService, FileBackupRepository fileBackupRepository) {   	
-        TimerTask jobTask = new JobTask(taskRepository, jobExcelService, utilFileService, fileBackupRepository);
+        TimerTask jobTask = new JobTask(taskRepository, jobExcelService, utilExcelService, utilFileService, fileBackupRepository);
         
         int seconds = 300;
         

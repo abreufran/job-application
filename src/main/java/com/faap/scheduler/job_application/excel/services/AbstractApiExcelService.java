@@ -16,10 +16,10 @@ import com.faap.scheduler.job_application.file.services.UtilDateService;
 
 public abstract class AbstractApiExcelService {
 	
-	private UtilDateService utilDateService;
-	private UtilExcelService utilExcelService;
-	private ExcelReadService excelReadService;
-	private ExcelWriteService excelWriteService;
+	protected UtilDateService utilDateService;
+	protected UtilExcelService utilExcelService;
+	protected ExcelReadService excelReadService;
+	protected ExcelWriteService excelWriteService;
 	
 	public AbstractApiExcelService(UtilDateService utilDateService, UtilExcelService utilExcelService, 
 			ExcelReadService excelReadService, ExcelWriteService excelWriteService) {
@@ -57,13 +57,13 @@ public abstract class AbstractApiExcelService {
 			boolean sortChanged = workbookResponse.isChanged();
 			
 			//Add sheet if doesn't it exist
-			if(!this.getUtilExcelService().existSheet(workbookResponse.getMyWorkBook(), sheetNameOfTokenFilter)) {
-				this.getExcelWriteService().addEmptySheetToExcel(workbookResponse.getMyWorkBook(), sheetNameOfTokenFilter, 0, sheetCellTypeList);
+			if(!this.utilExcelService.existSheet(workbookResponse.getMyWorkBook(), sheetNameOfTokenFilter)) {
+				this.addEmptySheetToExcel(workbookResponse.getMyWorkBook(), sheetNameOfTokenFilter, 0, sheetCellTypeList);
 			}
 			
 			//Add sheet if doesn't it exist
-			if(!this.getUtilExcelService().existSheet(workbookResponse.getMyWorkBook(), sheetNameNoTokenFilter)) {	
-				this.getExcelWriteService().addEmptySheetToExcel(workbookResponse.getMyWorkBook(), sheetNameNoTokenFilter, 
+			if(!this.utilExcelService.existSheet(workbookResponse.getMyWorkBook(), sheetNameNoTokenFilter)) {	
+				this.addEmptySheetToExcel(workbookResponse.getMyWorkBook(), sheetNameNoTokenFilter, 
 						workbookResponse.getMyWorkBook().getNumberOfSheets(),sheetCellTypeList);
 			}
 
@@ -102,16 +102,16 @@ public abstract class AbstractApiExcelService {
 				this.updateRowNumber(sheetRowOfTokenFilterList);
 				this.updateRowNumber(sheetRowNoTokenFilterList);
 				
-				this.getExcelWriteService().deleteSheet(workbookResponse.getMyWorkBook(), sheetNameOfTokenFilter);
-				this.getExcelWriteService().addSheetToExcel(workbookResponse.getMyWorkBook(), sheetNameOfTokenFilter, 0, sheetCellTypeList, sheetRowOfTokenFilterList);
+				this.deleteSheet(workbookResponse.getMyWorkBook(), sheetNameOfTokenFilter);
+				this.addSheetToExcel(workbookResponse.getMyWorkBook(), sheetNameOfTokenFilter, 0, sheetCellTypeList, sheetRowOfTokenFilterList);
 				
-				this.getExcelWriteService().deleteSheet(workbookResponse.getMyWorkBook(), sheetNameNoTokenFilter);
-				this.getExcelWriteService().addSheetToExcel(workbookResponse.getMyWorkBook(), sheetNameNoTokenFilter, 
+				this.deleteSheet(workbookResponse.getMyWorkBook(), sheetNameNoTokenFilter);
+				this.addSheetToExcel(workbookResponse.getMyWorkBook(), sheetNameNoTokenFilter, 
 						workbookResponse.getMyWorkBook().getNumberOfSheets(), sheetCellTypeList, sheetRowNoTokenFilterList);
 
 
 				System.out.println("splitSheet - Saving WorkBook.");
-				this.getExcelWriteService().writeExcel(workbookResponse.getMyWorkBook(), finalFilePath);
+				this.writeExcel(workbookResponse.getMyWorkBook(), finalFilePath);
 				return true;
 			}
 			else {
@@ -152,7 +152,7 @@ public abstract class AbstractApiExcelService {
 
 			if (fillChanged || workbookResponse.isChanged()) {
 				System.out.println("sortSheet - Saving WorkBook.");
-				this.getExcelWriteService().writeExcel(workbookResponse.getMyWorkBook(), finalFilePath);
+				this.writeExcel(workbookResponse.getMyWorkBook(), finalFilePath);
 				return true;
 			}
 			else {
@@ -184,7 +184,7 @@ public abstract class AbstractApiExcelService {
 
 			if (workbookResponse.isChanged()) {
 				System.out.println("fillEmptyFields - Saving WorkBook.");
-				this.getExcelWriteService().writeExcel(workbookResponse.getMyWorkBook(), finalFilePath);
+				this.writeExcel(workbookResponse.getMyWorkBook(), finalFilePath);
 				return true;
 			}
 			else {
@@ -209,20 +209,20 @@ public abstract class AbstractApiExcelService {
 		System.out.println("Fill empty fields. ");
 		XSSFWorkbook myWorkBook = null;
 		try {
-			myWorkBook = this.getExcelReadService().readExcel(initialFilePath);
+			myWorkBook = this.excelReadService.readExcel(initialFilePath);
 
 			ExcelSheet excelSheet = this.readSheet(myWorkBook, sheetName,
 					sheetCellTypeList);
 
-			List<SheetRow> incompleteSheetRowList = this.getUtilExcelService().calculateIncompleteSheetRowList(excelSheet.getSheetRowList());
+			List<SheetRow> incompleteSheetRowList = this.utilExcelService.calculateIncompleteSheetRowList(excelSheet.getSheetRowList());
 
 			for(SheetRow sheetRow: incompleteSheetRowList) {
 				this.completeSheetCellList(sheetRow.getSheetCellList(), myWorkBook, sheetRow.getRowNumber());
 			}
 
 			if (incompleteSheetRowList.size() > 0) {
-				this.getExcelWriteService().deleteSheet(myWorkBook, sheetName);
-				this.getExcelWriteService().addSheetToExcel(myWorkBook, sheetName, 0, sheetCellTypeList, excelSheet.getSheetRowList());
+				this.deleteSheet(myWorkBook, sheetName);
+				this.addSheetToExcel(myWorkBook, sheetName, 0, sheetCellTypeList, excelSheet.getSheetRowList());
 				return new WorkbookResponse(myWorkBook, true, true);
 			}
 			else {
@@ -255,15 +255,15 @@ public abstract class AbstractApiExcelService {
 			ExcelSheet excelSheet = this.readSheet(myWorkBook, sheetName,
 					sheetCellTypeList);
 			
-			List<SheetRow> sortedSheetRowList = this.getUtilExcelService().sortSheetRowList(
+			List<SheetRow> sortedSheetRowList = this.utilExcelService.sortSheetRowList(
 					excelSheet.getSheetRowList(), columnIndexToSort, columnIndexToFilter, tokenToFilter);
 
 
-			if (this.getUtilExcelService().didSheetSort(sortedSheetRowList)) {
+			if (this.utilExcelService.didSheetSort(sortedSheetRowList)) {
 				this.updateRowNumber(sortedSheetRowList);
 				
-				this.getExcelWriteService().deleteSheet(myWorkBook, sheetName);
-				this.getExcelWriteService().addSheetToExcel(myWorkBook, sheetName, 0, sheetCellTypeList, sortedSheetRowList);
+				this.deleteSheet(myWorkBook, sheetName);
+				this.addSheetToExcel(myWorkBook, sheetName, 0, sheetCellTypeList, sortedSheetRowList);
 				return new WorkbookResponse(myWorkBook, true, true);
 			}
 			else {
@@ -283,11 +283,32 @@ public abstract class AbstractApiExcelService {
 		} 
 	}
 	
+	public void addEmptySheetToExcel(XSSFWorkbook myWorkBook, String sheetName, int columnIndex, List<SheetCellType> sheetCellTypeList) {
+		this.excelWriteService.addEmptySheetToExcel(myWorkBook, sheetName, columnIndex, sheetCellTypeList);
+	}
+	
+	public void addSheetToExcel(XSSFWorkbook myWorkBook, String sheetName, int columnIndex, List<SheetCellType> sheetCellTypeList, List<SheetRow> sheetRowList) {
+		this.excelWriteService.addSheetToExcel(myWorkBook, sheetName, columnIndex, sheetCellTypeList, sheetRowList);
+	}
+
+	
+	public void deleteSheet(XSSFWorkbook myWorkBook, String sheetName) {
+		this.excelWriteService.deleteSheet(myWorkBook, sheetName);
+	}
+	
+	public void writeExcel(XSSFWorkbook myWorkBook, String filePath) throws IOException {
+		this.excelWriteService.writeExcel(myWorkBook, filePath);
+	}
+	
 	public ExcelSheet readSheet(XSSFWorkbook myWorkBook, String sheetName, List<SheetCellType> sheeCellTypeList) throws Exception {
-		ExcelSheet excelSheet = this.getExcelReadService().readSheet(myWorkBook, sheetName, sheeCellTypeList);
+		ExcelSheet excelSheet = this.excelReadService.readSheet(myWorkBook, sheetName, sheeCellTypeList);
 		this.updateCellIdValue(excelSheet.getSheetRowList());
 		return excelSheet;
 		
+	}
+	
+	public XSSFWorkbook readExcel(String filePath) throws IOException {
+		return this.excelReadService.readExcel(filePath);
 	}
 	
 	
@@ -301,32 +322,16 @@ public abstract class AbstractApiExcelService {
 	}
 
 
-	public UtilDateService getUtilDateService() {
-		return utilDateService;
-	}
-
 	public void setUtilDateService(UtilDateService utilDateService) {
 		this.utilDateService = utilDateService;
-	}
-
-	public ExcelReadService getExcelReadService() {
-		return excelReadService;
 	}
 
 	public void setExcelReadService(ExcelReadService excelReadService) {
 		this.excelReadService = excelReadService;
 	}
 
-	public ExcelWriteService getExcelWriteService() {
-		return excelWriteService;
-	}
-
 	public void setExcelWriteService(ExcelWriteService excelWriteService) {
 		this.excelWriteService = excelWriteService;
-	}
-
-	public UtilExcelService getUtilExcelService() {
-		return utilExcelService;
 	}
 
 	public void setUtilExcelService(UtilExcelService utilExcelService) {

@@ -35,7 +35,7 @@ public class ExcelReadService {
 		this.setUtilExcelService(utilExcelService);
 	}
 
-	public ExcelSheet readSheet(XSSFWorkbook myWorkBook, String sheetName, List<SheetCellType> sheeCellTypeList)
+	protected ExcelSheet readSheet(XSSFWorkbook myWorkBook, String sheetName, List<SheetCellType> sheeCellTypeList)
 			throws Exception {
 
 		ExcelSheet excelSheet = new ExcelSheet(sheetName);
@@ -56,7 +56,10 @@ public class ExcelReadService {
 
 			// For each row, iterate through each columns
 			while (cellIterator.hasNext()) {
-				cellList.add(cellIterator.next());
+				Cell cell = cellIterator.next();
+				if(cell.getColumnIndex() < sheeCellTypeList.size()) {
+					cellList.add(cell);
+				}
 			}
 
 			ValidCellListResponse validCellListResponse = this.validCellList(cellList, row.getRowNum(), sheeCellTypeList);
@@ -97,7 +100,7 @@ public class ExcelReadService {
 					if (sheetCell.getSheetCellType().isRequired()) {
 						System.out.println("WARNING: RowNumber: " + (sheetRow.getRowNumber() + 1) 
 								+ " / Required Date columnIdex: " + sheetCell.getSheetCellType().getColumnIndex() + " / Fixed.");
-						sheetCell.setCellValue(this.getUtilDateService().getStrDate(LocalDate.now()));
+						sheetCell.setCellValue(this.utilDateService.getStrDate(LocalDate.now()));
 					}
 
 				}
@@ -114,7 +117,7 @@ public class ExcelReadService {
 					
 			sheetCellList.add(new SheetCell(
 					sheetCellType, 
-					this.getUtilExcelService().readCell(cell), 
+					this.utilExcelService.readCell(cell), 
 					cell));
 		}
 		return sheetCellList;
@@ -137,7 +140,7 @@ public class ExcelReadService {
 	private boolean validCellList(List<Cell> cellList) {
 		for(Cell cell: cellList) {
 			if(this.validCell(cell)) {
-				String cellValue = this.getUtilExcelService().readCell(cell);
+				String cellValue = this.utilExcelService.readCell(cell);
 				if(cellValue != null && !cellValue.trim().equals("")) {
 					return true;
 				}
@@ -157,6 +160,9 @@ public class ExcelReadService {
 
 		return sheetCellTypeList.stream().allMatch(sct -> {
 			boolean match = strCellList.stream().filter(sc -> sct.getName().equals(sc)).findFirst().isPresent();
+			if(!match) {
+				System.out.println("Header Column (" + sct.getName() + "): " + match + " Do Not Match");
+			}
 			return match;
 		});
 
@@ -166,7 +172,7 @@ public class ExcelReadService {
 		List<String> strCellList = new ArrayList<>();
 
 		for (Cell cell : cellList) {
-			strCellList.add(this.getUtilExcelService().readCell(cell));
+			strCellList.add(this.utilExcelService.readCell(cell));
 		}
 		return strCellList;
 	}
@@ -176,7 +182,10 @@ public class ExcelReadService {
 		Iterator<Cell> cellIterator = row.cellIterator();
 		// For each row, iterate through each columns
 		while (cellIterator.hasNext()) {
-			cellList.add(cellIterator.next());
+			Cell cell = cellIterator.next();
+			if(cell.getColumnIndex() < sheeCellTypeList.size()) {
+				cellList.add(cell);
+			}
 		}
 
 		for (SheetCellType sheetCellType: sheeCellTypeList) {
@@ -216,7 +225,7 @@ public class ExcelReadService {
 	}
 	
     
-    public XSSFWorkbook readExcel(String filePath) throws IOException {
+    protected XSSFWorkbook readExcel(String filePath) throws IOException {
 		File myFile = new File(filePath);
 
 		FileInputStream fis = new FileInputStream(myFile);
@@ -229,16 +238,8 @@ public class ExcelReadService {
 		return myWorkbook;
 	}
 
-	public UtilDateService getUtilDateService() {
-		return utilDateService;
-	}
-
 	public void setUtilDateService(UtilDateService utilDateService) {
 		this.utilDateService = utilDateService;
-	}
-
-	public UtilExcelService getUtilExcelService() {
-		return utilExcelService;
 	}
 
 	public void setUtilExcelService(UtilExcelService utilExcelService) {

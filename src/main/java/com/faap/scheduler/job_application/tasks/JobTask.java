@@ -2,7 +2,6 @@ package com.faap.scheduler.job_application.tasks;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.TimerTask;
 
@@ -13,7 +12,9 @@ import com.faap.scheduler.job_application.excel.models.ExcelSheet;
 import com.faap.scheduler.job_application.excel.models.SheetCell;
 import com.faap.scheduler.job_application.excel.models.SheetCellType;
 import com.faap.scheduler.job_application.excel.models.SheetRow;
+import com.faap.scheduler.job_application.excel.models.ThingToDoColumnType;
 import com.faap.scheduler.job_application.excel.services.JobExcelService;
+import com.faap.scheduler.job_application.excel.services.UtilExcelService;
 import com.faap.scheduler.job_application.file.services.UtilFileService;
 import com.faap.scheduler.job_application.repositories.DataFileRepository;
 import com.faap.scheduler.job_application.repositories.FileBackupRepository;
@@ -27,21 +28,20 @@ public class JobTask extends TimerTask {
 	public static int COLUMN_INDEX_TO_SORT = 4;
 	public static int COLUMN_INDEX_TO_FILTER = 7;
 	public static String TOKEN_TO_FILTER = "PENDING";
-	public static List<SheetCellType> SHEET_CELL_TYPE_LIST = 
-			Arrays.asList(SheetCellType.ID, SheetCellType.INCIDENCE_DATE, 
-					SheetCellType.EXECUTION_DATE, SheetCellType.ESTIMATED_DATE,
-					SheetCellType.PRIORITY, SheetCellType.THINGS_TO_DO,
-					SheetCellType.CATEGORY, SheetCellType.STATUS);
+
 	
 	private FileBackupRepository fileBackupRepository;
 	private DataFileRepository dataFileRepository;
 	private JobExcelService jobExcelService;
+	private UtilExcelService utilExcelService;
 	private UtilFileService utilFileService;
 
 	public JobTask(DataFileRepository dataFileRepository, JobExcelService jobExcelService, 
+			UtilExcelService utilExcelService,
 			UtilFileService utilFileService, FileBackupRepository fileBackupRepository) {
 		this.dataFileRepository = dataFileRepository;
 		this.setJobExcelService(jobExcelService);
+		this.setUtilExcelService(utilExcelService);
 		this.setUtilFileService(utilFileService);
 		this.setFileBackupRepository(fileBackupRepository);
 	}
@@ -56,8 +56,13 @@ public class JobTask extends TimerTask {
 				//this.jobExcelService.fillAndSaveEmptyFields(JOB_FILE_NAME, SHEET_NAME, SHEET_CELL_TYPE_LIST);
 				
 				//this.jobExcelService.rebuildSheet(JOB_FILE_NAME, SHEET_NAME, SHEET_CELL_TYPE_LIST);
+				List<SheetCellType> sheetCellTypeList = new ArrayList<>();
+		    	
+		    	for(ThingToDoColumnType thingToDoColumnType: ThingToDoColumnType.values()) {
+		    		sheetCellTypeList.add(new SheetCellType(thingToDoColumnType));
+		    	}
 				
-				this.jobExcelService.fillSortAndSaveSheet(JOB_FILE_NAME, JOB_FILE_NAME, SHEET_NAME, SHEET_CELL_TYPE_LIST,
+				this.jobExcelService.fillSortAndSaveSheet(JOB_FILE_NAME, JOB_FILE_NAME, SHEET_NAME, sheetCellTypeList,
 						COLUMN_INDEX_TO_SORT, COLUMN_INDEX_TO_FILTER, TOKEN_TO_FILTER);
 				
 				//this.jobExcelService.setFilter(JOB_FILE_NAME, SHEET_NAME, SHEET_CELL_TYPE_LIST,
@@ -71,9 +76,15 @@ public class JobTask extends TimerTask {
 	public void readAndSaveExcel() throws Exception {
 		XSSFWorkbook myWorkBook = null;
 		try {
-			myWorkBook = this.jobExcelService.getExcelReadService().readExcel(JOB_FILE_NAME);
+			myWorkBook = this.jobExcelService.readExcel(JOB_FILE_NAME);
 			
-			ExcelSheet jobSheet = this.jobExcelService.getExcelReadService().readSheet(myWorkBook,SHEET_NAME, SHEET_CELL_TYPE_LIST);
+			List<SheetCellType> sheetCellTypeList = new ArrayList<>();
+	    	
+	    	for(ThingToDoColumnType thingToDoColumnType: ThingToDoColumnType.values()) {
+	    		sheetCellTypeList.add(new SheetCellType(thingToDoColumnType));
+	    	}
+			
+			ExcelSheet jobSheet = this.jobExcelService.readSheet(myWorkBook,SHEET_NAME, sheetCellTypeList);
 			
 			for(SheetRow sheetRow: jobSheet.getSheetRowList()) {
 				List<String> cellList = this.getStrCellListFromSheetCellList(sheetRow.getSheetCellList());
@@ -108,7 +119,7 @@ public class JobTask extends TimerTask {
 		List<String> strCellList = new ArrayList<>();
 		
 		for(SheetCell sheetCell: sheetCellList) {
-			strCellList.add(this.jobExcelService.getUtilExcelService().readCell(sheetCell.getCell()));
+			strCellList.add(this.utilExcelService.readCell(sheetCell.getCell()));
 		}
 		return strCellList;
 	}
@@ -154,6 +165,14 @@ public class JobTask extends TimerTask {
 			this.fileBackupRepository.saveFileBackup(destinationPath, originFileDateModified, Flag.JOB);
 		}
 		return copied;
+	}
+
+	public UtilExcelService getUtilExcelService() {
+		return utilExcelService;
+	}
+
+	public void setUtilExcelService(UtilExcelService utilExcelService) {
+		this.utilExcelService = utilExcelService;
 	}
 
 }

@@ -1,12 +1,15 @@
 package com.faap.scheduler.job_application.excel.services;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import com.faap.scheduler.job_application.excel.models.ExcelSheet;
 import com.faap.scheduler.job_application.excel.models.SheetCell;
+import com.faap.scheduler.job_application.excel.models.SheetCellType;
 import com.faap.scheduler.job_application.excel.models.SheetRow;
 import com.faap.scheduler.job_application.excel.models.ThingToDoColumnType;
 import com.faap.scheduler.job_application.file.services.UtilDateService;
@@ -18,10 +21,39 @@ public class JobExcelService extends AbstractApiExcelService {
 		super(utilDateService, utilExcelService, 
 				excelReadService,excelWriteService);
 	}
+	
+	public void loadPeriodicTasks(JobExcelService jobExcelService, String initialFilePath, String finalFilePath,
+    		List<SheetCellType> sheetCellTypeList) {
+		System.out.println("Load Periodic Task.");
+		XSSFWorkbook myWorkBook = null;
+		try {
+			myWorkBook = this.readExcel(initialFilePath);
+
+			ExcelSheet excelSheet = this.jobExcelService.readSheet(myWorkBook, sheetName,
+					sheetCellTypeList);
+			
+			this.jobExcelService.deleteSheet(myWorkBook, sheetName);
+			this.jobExcelService.addSheetToExcel(myWorkBook, sheetName, myWorkBook.getNumberOfSheets(), sheetCellTypeList, excelSheet.getSheetRowList());
+			System.out.println("readAndSaveSheet - Saving WorkBook.");
+			this.jobExcelService.writeExcel(myWorkBook, finalFilePath);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			if (myWorkBook != null) {
+				try {
+					myWorkBook.close();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+			}
+
+		}
+		
+	}
 
 	@Override
 	public void completeSheetCellList(List<SheetCell> sheetCellList, XSSFWorkbook myWorkBook, int rowNumber) {
-		List<SheetCell> incompleteSheetCellList = this.getUtilExcelService().calculateIncompleteSheetCell(sheetCellList);
+		List<SheetCell> incompleteSheetCellList = this.utilExcelService.calculateIncompleteSheetCell(sheetCellList);
 		
 		for(SheetCell sheetCell: incompleteSheetCellList) {
 			ThingToDoColumnType thingToDoColumnType = Arrays.asList(ThingToDoColumnType.values()).stream().filter(tct -> tct.getName().equals(sheetCell.getSheetCellType().getName())).findFirst().orElse(null);
@@ -32,7 +64,7 @@ public class JobExcelService extends AbstractApiExcelService {
 						+ " / columnName: " + sheetCell.getSheetCellType().getName() + " / Value: " + sheetCell.getCellValue());
 				break;
 			case INCIDENCE_DATE:
-				sheetCell.setCellValue(this.getUtilDateService().getStrDate(LocalDate.now()));
+				sheetCell.setCellValue(this.utilDateService.getStrDate(LocalDate.now()));
 				break;
 			case PRIORITY:
 				sheetCell.setCellValue(sheetCell.getSheetCellType().getDefaultValue().toString());
