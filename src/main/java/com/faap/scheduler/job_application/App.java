@@ -5,8 +5,8 @@ import java.util.TimerTask;
 
 import com.faap.scheduler.job_application.excel.services.ExcelReadService;
 import com.faap.scheduler.job_application.excel.services.ExcelWriteService;
-import com.faap.scheduler.job_application.excel.services.JobExcelService;
 import com.faap.scheduler.job_application.excel.services.UtilExcelService;
+import com.faap.scheduler.job_application.excel.services.job.JobExcelService;
 import com.faap.scheduler.job_application.file.services.UtilDateService;
 import com.faap.scheduler.job_application.file.services.UtilFileService;
 import com.faap.scheduler.job_application.repositories.DataFileRepository;

@@ -2,7 +2,7 @@ package com.faap.scheduler.job_application.excel.models;
 
 import org.apache.poi.ss.usermodel.CellType;
 
-public enum PeriodicTask {
+public enum PeriodicTask implements ISheetCellTypeEnum {
 	ID("ID", true, CellType.STRING, false, null, 5, 0, null), 
 	INITIAL_DATE("Initial Date", true, CellType.NUMERIC, true, null, 15, 1, null),
 	FINAL_DATE("Final Date", false, CellType.NUMERIC, true, null, 15, 2, null),
@@ -37,6 +37,7 @@ public enum PeriodicTask {
 		
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}

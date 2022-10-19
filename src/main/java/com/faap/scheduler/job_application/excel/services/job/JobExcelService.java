@@ -1,4 +1,4 @@
-package com.faap.scheduler.job_application.excel.services;
+package com.faap.scheduler.job_application.excel.services.job;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -12,9 +12,15 @@ import com.faap.scheduler.job_application.excel.models.SheetCell;
 import com.faap.scheduler.job_application.excel.models.SheetCellType;
 import com.faap.scheduler.job_application.excel.models.SheetRow;
 import com.faap.scheduler.job_application.excel.models.ThingToDoColumnType;
+import com.faap.scheduler.job_application.excel.services.AbstractApiExcelService;
+import com.faap.scheduler.job_application.excel.services.ExcelReadService;
+import com.faap.scheduler.job_application.excel.services.ExcelWriteService;
+import com.faap.scheduler.job_application.excel.services.UtilExcelService;
 import com.faap.scheduler.job_application.file.services.UtilDateService;
 
 public class JobExcelService extends AbstractApiExcelService {
+	private static String THINGS_TO_DO_SHEET_NAME = "Things to do";
+	private static String PERIODIC_TASKS_SHEET_NAME = "Periodic Tasks";
 
 	public JobExcelService(UtilDateService utilDateService, UtilExcelService utilExcelService, 
 			ExcelReadService excelReadService, ExcelWriteService excelWriteService) {
@@ -29,13 +35,20 @@ public class JobExcelService extends AbstractApiExcelService {
 		try {
 			myWorkBook = this.readExcel(initialFilePath);
 
-			ExcelSheet excelSheet = this.jobExcelService.readSheet(myWorkBook, sheetName,
+			ExcelSheet periodicTasksExcelSheet = this.readSheet(myWorkBook, PERIODIC_TASKS_SHEET_NAME,
 					sheetCellTypeList);
 			
-			this.jobExcelService.deleteSheet(myWorkBook, sheetName);
-			this.jobExcelService.addSheetToExcel(myWorkBook, sheetName, myWorkBook.getNumberOfSheets(), sheetCellTypeList, excelSheet.getSheetRowList());
-			System.out.println("readAndSaveSheet - Saving WorkBook.");
-			this.jobExcelService.writeExcel(myWorkBook, finalFilePath);
+			ExcelSheet thingsToDoExcelSheet = this.readSheet(myWorkBook, THINGS_TO_DO_SHEET_NAME,
+					sheetCellTypeList);
+			
+			List<SheetRow> periodicTasksSheetRowList = periodicTasksExcelSheet.getSheetRowList();
+			List<SheetRow> thingsToDoSheetRowList = thingsToDoExcelSheet.getSheetRowList();
+			
+			this.deleteSheet(myWorkBook, THINGS_TO_DO_SHEET_NAME);
+			this.addSheetToExcel(myWorkBook, THINGS_TO_DO_SHEET_NAME, 0, sheetCellTypeList, sheetRowList);
+			
+			System.out.println("loadPeriodicTasks - Saving WorkBook.");
+			this.writeExcel(myWorkBook, finalFilePath);
 			
 		} catch (Exception e) {
 			e.printStackTrace();

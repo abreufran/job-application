@@ -2,7 +2,7 @@ package com.faap.scheduler.job_application.excel.models;
 
 import org.apache.poi.ss.usermodel.CellType;
 
-public enum ThingToDoColumnType {
+public enum ThingToDoColumnType implements ISheetCellTypeEnum {
 	ID("ID", true, CellType.STRING, false, null, 5, 0, null), 
 	INCIDENCE_DATE("Incidence Date", true, CellType.NUMERIC, true, null, 20, 1, null),
 	EXECUTION_DATE("Execution Date", false, CellType.NUMERIC, true, null, 20, 2, null),
@@ -36,6 +36,7 @@ public enum ThingToDoColumnType {
 		
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}

@@ -12,8 +12,8 @@ import com.faap.scheduler.job_application.excel.models.SheetCellType;
 import com.faap.scheduler.job_application.excel.models.ThingToDoColumnType;
 import com.faap.scheduler.job_application.excel.services.ExcelReadService;
 import com.faap.scheduler.job_application.excel.services.ExcelWriteService;
-import com.faap.scheduler.job_application.excel.services.JobExcelService;
 import com.faap.scheduler.job_application.excel.services.UtilExcelService;
+import com.faap.scheduler.job_application.excel.services.job.JobExcelService;
 import com.faap.scheduler.job_application.file.services.UtilDateService;
 
 import junit.framework.Test;

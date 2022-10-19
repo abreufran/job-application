@@ -1,5 +1,6 @@
 package com.faap.scheduler.job_application.excel.services;
 
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -8,8 +9,10 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import com.faap.scheduler.job_application.excel.models.ISheetCellTypeEnum;
 import com.faap.scheduler.job_application.excel.models.SheetCell;
 import com.faap.scheduler.job_application.excel.models.SheetRow;
+import com.faap.scheduler.job_application.excel.models.ThingToDoColumnType;
 import com.faap.scheduler.job_application.file.services.UtilDateService;
 
 public class UtilExcelService {
@@ -92,6 +95,11 @@ public class UtilExcelService {
 			}
 		}
 		return false;
+	}
+	
+	public ISheetCellTypeEnum getSheetCellTypeEnum(ISheetCellTypeEnum sheetCellTypeEnum) {
+		ThingToDoColumnType thingToDoColumnType = Arrays.asList(ThingToDoColumnType.values()).stream().filter(tct -> tct.getName().equals(sheetCellTypeEnum.getSheetCellType().getName())).findFirst().orElse(null);
+		
 	}
 	
 	public boolean existSheet(XSSFWorkbook myWorkBook, String sheetName) {
