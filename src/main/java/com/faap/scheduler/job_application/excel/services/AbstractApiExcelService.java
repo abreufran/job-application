@@ -38,6 +38,15 @@ public abstract class AbstractApiExcelService {
 	public boolean fillSortSplitAndSaveSheet(String initialFilePath, String finalFilePath, String sheetNameOfTokenFilter, 
 			String sheetNameNoTokenFilter, List<SheetCellType> sheetCellTypeList, 
 			int columnIndexToSort, int columnIndexToFilter, String tokenToFilter) {
+		WorkbookResponse workbookResponse = this.fillSortSplitSheet(initialFilePath, finalFilePath, 
+				sheetNameOfTokenFilter, sheetNameNoTokenFilter, sheetCellTypeList, columnIndexToSort, columnIndexToFilter, tokenToFilter);
+		
+		return this.saveWorkbookResponse(workbookResponse, finalFilePath, "SplitSheet");
+	}
+	
+	public WorkbookResponse fillSortSplitSheet(String initialFilePath, String finalFilePath, String sheetNameOfTokenFilter, 
+			String sheetNameNoTokenFilter, List<SheetCellType> sheetCellTypeList, 
+			int columnIndexToSort, int columnIndexToFilter, String tokenToFilter) {
 
 		WorkbookResponse workbookResponse = null;
 		try {
@@ -45,7 +54,7 @@ public abstract class AbstractApiExcelService {
 			
 			if(!workbookResponse.isSuccess()) {
 				
-				return false;
+				return new WorkbookResponse(workbookResponse.getMyWorkBook(), false, false);
 			}
 			
 			boolean fillChanged = workbookResponse.isChanged();
@@ -53,7 +62,7 @@ public abstract class AbstractApiExcelService {
 			workbookResponse = this.sortSheet(workbookResponse.getMyWorkBook(), sheetNameOfTokenFilter, sheetCellTypeList, columnIndexToSort, columnIndexToFilter, tokenToFilter);
 			
 			if(!workbookResponse.isSuccess()) {
-				return false;
+				return new WorkbookResponse(workbookResponse.getMyWorkBook(), false, false);
 			}
 			
 			boolean sortChanged = workbookResponse.isChanged();
@@ -112,99 +121,89 @@ public abstract class AbstractApiExcelService {
 						workbookResponse.getMyWorkBook().getNumberOfSheets(), sheetCellTypeList, sheetRowNoTokenFilterList);
 
 
-				System.out.println("splitSheet - Saving WorkBook.");
-				this.writeExcel(workbookResponse.getMyWorkBook(), finalFilePath);
-				return true;
+				return new WorkbookResponse(workbookResponse.getMyWorkBook(), true, true);
 			}
 			else {
-				return false;
+				return new WorkbookResponse(workbookResponse.getMyWorkBook(), false, true);
 			}
 				
 
 			
 		} catch (Exception e) {
 			e.printStackTrace();
-			return false;
+			return new WorkbookResponse(workbookResponse.getMyWorkBook(), false, false);
 		} finally {
-			if (workbookResponse.getMyWorkBook() != null) {
-				try {
-					workbookResponse.getMyWorkBook().close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
+			this.closeWorkBook(workbookResponse.getMyWorkBook());
 		}
 	}
 	
 	public boolean fillSortAndSaveSheet(String initialFilePath, String finalFilePath, String sheetName, List<SheetCellType> sheetCellTypeList, 
 			int columnIndexToSort, int columnIndexToFilter, String tokenToFilter) {
 
-		WorkbookResponse workbookResponse = null;
-		try {
-			workbookResponse = this.fillEmptyFields(initialFilePath, finalFilePath, sheetName, sheetCellTypeList);
-			
-			if(!workbookResponse.isSuccess()) {
-				
-				return false;
-			}
-			
-			boolean fillChanged = workbookResponse.isChanged();
-			
-			workbookResponse = this.sortSheet(workbookResponse.getMyWorkBook(), sheetName, sheetCellTypeList, columnIndexToSort, columnIndexToFilter, tokenToFilter);
+		WorkbookResponse workbookResponse = this.fillSortSheet(initialFilePath, finalFilePath, 
+				sheetName, sheetCellTypeList, columnIndexToSort, columnIndexToFilter, tokenToFilter);
+		
+		return this.saveWorkbookResponse(workbookResponse, finalFilePath, "SortSheet");
+	}
+	
+	public WorkbookResponse fillSortSheet(String initialFilePath, String finalFilePath, String sheetName, List<SheetCellType> sheetCellTypeList, 
+			int columnIndexToSort, int columnIndexToFilter, String tokenToFilter) {
 
-			if (fillChanged || workbookResponse.isChanged()) {
-				System.out.println("sortSheet - Saving WorkBook.");
-				this.writeExcel(workbookResponse.getMyWorkBook(), finalFilePath);
-				return true;
-			}
-			else {
-				return false;
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			return false;
-		} finally {
-			if (workbookResponse.getMyWorkBook() != null) {
-				try {
-					workbookResponse.getMyWorkBook().close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
+		WorkbookResponse workbookResponse = this.fillEmptyFields(initialFilePath, finalFilePath, sheetName, sheetCellTypeList);
+			
+		if(!workbookResponse.isSuccess()) {
+			
+			return new WorkbookResponse(workbookResponse.getMyWorkBook(), false, false);
 		}
+		
+		boolean fillChanged = workbookResponse.isChanged();
+		
+		workbookResponse = this.sortSheet(workbookResponse.getMyWorkBook(), sheetName, sheetCellTypeList, columnIndexToSort, columnIndexToFilter, tokenToFilter);
+
+		workbookResponse.setChanged(fillChanged || workbookResponse.isChanged());
+		
+		return workbookResponse;
 	}
 
 	
-	public boolean fillAndSaveEmptyFields(String initialFilePath, String finalFilePath, String sheetName, List<SheetCellType> sheetCellTypeList) {
-		WorkbookResponse workbookResponse = null;
+	private WorkbookResponse sortSheet(XSSFWorkbook myWorkBook, String sheetName, List<SheetCellType> sheetCellTypeList, 
+			int columnIndexToSort, int columnIndexToFilter, String tokenToFilter) {
+		System.out.println("Sort Sheet. ");
 		try {
-			workbookResponse = this.fillEmptyFields(initialFilePath, finalFilePath, sheetName, sheetCellTypeList);
-			
-			if(!workbookResponse.isSuccess()) {
-				return false;
-			}
 
-			if (workbookResponse.isChanged()) {
-				System.out.println("fillEmptyFields - Saving WorkBook.");
-				this.writeExcel(workbookResponse.getMyWorkBook(), finalFilePath);
-				return true;
+			ExcelSheet excelSheet = this.readSheet(myWorkBook, sheetName,
+					sheetCellTypeList);
+			
+			List<SheetRow> sortedSheetRowList = this.utilExcelService.sortSheetRowList(
+					excelSheet.getSheetRowList(), columnIndexToSort, columnIndexToFilter, tokenToFilter);
+
+
+			if (this.utilExcelService.didSheetSort(sortedSheetRowList)) {
+				this.updateRowNumber(sortedSheetRowList);
+				
+				this.deleteSheet(myWorkBook, sheetName);
+				this.addSheetToExcel(myWorkBook, sheetName, 0, sheetCellTypeList, sortedSheetRowList);
+				return new WorkbookResponse(myWorkBook, true, true);
 			}
 			else {
-				return false;
+				return new WorkbookResponse(myWorkBook, false, true);
 			}
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
-			return false;
-		} finally {
-			if (workbookResponse.getMyWorkBook() != null) {
-				try {
-					workbookResponse.getMyWorkBook().close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
+			this.closeWorkBook(myWorkBook);
+			return new WorkbookResponse(null, false, false);
+		} 
+	}
+	
+	public boolean fillAndSaveEmptyFields(String filePath, String sheetName, List<SheetCellType> sheetCellTypeList) {
+		return this.fillAndSaveEmptyFields(filePath, filePath, sheetName, sheetCellTypeList);
+	}
+	
+	public boolean fillAndSaveEmptyFields(String initialFilePath, String finalFilePath, String sheetName, List<SheetCellType> sheetCellTypeList) {
+		WorkbookResponse workbookResponse = this.fillEmptyFields(initialFilePath, finalFilePath, sheetName, sheetCellTypeList);
+		
+		return this.saveWorkbookResponse(workbookResponse, finalFilePath, "FillSheet");
 	}
 	
 	private WorkbookResponse fillEmptyFields(String initialFilePath, String finalFilePath, String sheetName, List<SheetCellType> sheetCellTypeList) {
@@ -234,55 +233,43 @@ public abstract class AbstractApiExcelService {
 			
 		} catch (Exception e) {
 			e.printStackTrace();
-			if (myWorkBook != null) {
-				try {
-					myWorkBook.close();
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
-			}
 			return new WorkbookResponse(null, false, false);
+		} finally {
+			this.closeWorkBook(myWorkBook);
 		}
 	}
-
-	public boolean fillAndSaveEmptyFields(String filePath, String sheetName, List<SheetCellType> sheetCellTypeList) {
-		return this.fillAndSaveEmptyFields(filePath, filePath, sheetName, sheetCellTypeList);
-	}
 	
-	private WorkbookResponse sortSheet(XSSFWorkbook myWorkBook, String sheetName, List<SheetCellType> sheetCellTypeList, 
-			int columnIndexToSort, int columnIndexToFilter, String tokenToFilter) {
-		System.out.println("Sort Sheet. ");
+	public boolean saveWorkbookResponse(WorkbookResponse workbookResponse, String finalFilePath, String operationName) {
 		try {
+			if(!workbookResponse.isSuccess()) {
+				return false;
+			}
 
-			ExcelSheet excelSheet = this.readSheet(myWorkBook, sheetName,
-					sheetCellTypeList);
-			
-			List<SheetRow> sortedSheetRowList = this.utilExcelService.sortSheetRowList(
-					excelSheet.getSheetRowList(), columnIndexToSort, columnIndexToFilter, tokenToFilter);
-
-
-			if (this.utilExcelService.didSheetSort(sortedSheetRowList)) {
-				this.updateRowNumber(sortedSheetRowList);
-				
-				this.deleteSheet(myWorkBook, sheetName);
-				this.addSheetToExcel(myWorkBook, sheetName, 0, sheetCellTypeList, sortedSheetRowList);
-				return new WorkbookResponse(myWorkBook, true, true);
+			if (workbookResponse.isChanged()) {
+				System.out.println(operationName + " - Saving WorkBook.");
+				this.writeExcel(workbookResponse.getMyWorkBook(), finalFilePath);
+				return true;
 			}
 			else {
-				return new WorkbookResponse(myWorkBook, false, true);
+				return false;
 			}
-
+			
 		} catch (Exception e) {
 			e.printStackTrace();
-			if (myWorkBook != null) {
-				try {
-					myWorkBook.close();
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
+			return false;
+		} finally {
+			this.closeWorkBook(workbookResponse.getMyWorkBook());
+		}
+	}
+	
+	private void closeWorkBook(XSSFWorkbook myWorkBook) {
+		if (myWorkBook != null) {
+			try {
+				myWorkBook.close();
+			} catch (IOException e1) {
+				e1.printStackTrace();
 			}
-			return new WorkbookResponse(null, false, false);
-		} 
+		}
 	}
 	
 	public void addEmptySheetToExcel(XSSFWorkbook myWorkBook, String sheetName, int columnIndex, List<SheetCellType> sheetCellTypeList) {

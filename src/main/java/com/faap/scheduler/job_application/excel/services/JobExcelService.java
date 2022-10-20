@@ -9,6 +9,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import com.faap.scheduler.job_application.excel.dtos.WorkbookResponse;
 import com.faap.scheduler.job_application.excel.models.ExcelSheet;
 import com.faap.scheduler.job_application.excel.models.PeriodicTaskColumnType;
 import com.faap.scheduler.job_application.excel.models.SheetCell;
@@ -20,6 +21,9 @@ import com.faap.scheduler.job_application.file.services.UtilDateService;
 public class JobExcelService extends AbstractApiExcelService {
 	private static String THINGS_TO_DO_SHEET_NAME = "Things to do";
 	private static String PERIODIC_TASKS_SHEET_NAME = "Periodic Tasks";
+	public static int COLUMN_INDEX_TO_SORT = 4;
+	public static int COLUMN_INDEX_TO_FILTER = 7;
+	public static String TOKEN_TO_FILTER = "PENDING";
 
 	public JobExcelService(UtilDateService utilDateService, UtilExcelService utilExcelService, 
 			ExcelReadService excelReadService, ExcelWriteService excelWriteService) {
@@ -27,71 +31,77 @@ public class JobExcelService extends AbstractApiExcelService {
 				excelReadService,excelWriteService);
 	}
 	
-	public void loadPeriodicTasks(JobExcelService jobExcelService, String initialFilePath, String finalFilePath,
-    		List<SheetCellType> periodicTasksSheetCellTypeList, List<SheetCellType> thingsToDoSheetCellTypeList) {
+	public void loadThingsToDoSheet(JobExcelService jobExcelService, String initialFilePath, String finalFilePath,
+    		List<SheetCellType> initialSheetCellTypeList, List<SheetCellType> finalSheetCellTypeList) {
 		System.out.println("Load Periodic Task.");
+		WorkbookResponse workbookResponse = null;
 		XSSFWorkbook myWorkBook = null;
 		try {
-			myWorkBook = this.readExcel(initialFilePath);
-
-			ExcelSheet periodicTasksExcelSheet = this.readSheet(myWorkBook, PERIODIC_TASKS_SHEET_NAME,
-					periodicTasksSheetCellTypeList);
+			workbookResponse = this.fillSortSheet(initialFilePath, finalFilePath, 
+					THINGS_TO_DO_SHEET_NAME, finalSheetCellTypeList, COLUMN_INDEX_TO_SORT, COLUMN_INDEX_TO_FILTER, TOKEN_TO_FILTER);
 			
-			ExcelSheet thingsToDoExcelSheet = this.readSheet(myWorkBook, THINGS_TO_DO_SHEET_NAME,
-					thingsToDoSheetCellTypeList);
-			
-			
-			for(SheetRow periodicTasksSheetRow: periodicTasksExcelSheet.getSheetRowList()) {
-				//String estimatedDate = null;
-				String priority = null;
-				String thingsToDo = null;
-				String category = null;
-				//String periodicity = null;
-				//String weekday = null;
+			if(workbookResponse.isSuccess()) {
+				myWorkBook = workbookResponse.getMyWorkBook();
 				
-				for(SheetCell periodicTasksSheetCell: periodicTasksSheetRow.getSheetCellList()) {
-					PeriodicTaskColumnType periodicTaskColumnType = Arrays.asList(PeriodicTaskColumnType.values()).stream().filter(ptct -> ptct.getName().equals(periodicTasksSheetCell.getSheetCellType().getName())).findFirst().orElse(null);
-					switch (periodicTaskColumnType) {
-					case TASK:
-						thingsToDo = periodicTasksSheetCell.getCellValue();
-						break;
-					case PRIORITY:
-						priority = periodicTasksSheetCell.getCellValue();
-						break;
-					case CATEGORY: 
-						category = periodicTasksSheetCell.getCellValue();
-						break;
-					case PERIODICITY: 
-						//periodicity = periodicTasksSheetCell.getCellValue();
-						break;
-					case WEEKDAY: 
-						//weekday = periodicTasksSheetCell.getCellValue();
-						break;	
-					default:
-						break;
+				ExcelSheet initialExcelSheet = this.readSheet(myWorkBook, PERIODIC_TASKS_SHEET_NAME,
+						initialSheetCellTypeList);
+				
+				ExcelSheet finalExcelSheet = this.readSheet(myWorkBook, THINGS_TO_DO_SHEET_NAME,
+						finalSheetCellTypeList);
+				
+				
+				for(SheetRow initialSheetRow: initialExcelSheet.getSheetRowList()) {
+					//String estimatedDate = null;
+					String priority = null;
+					String thingsToDo = null;
+					String category = null;
+					//String periodicity = null;
+					//String weekday = null;
+					
+					for(SheetCell initialSheetCell: initialSheetRow.getSheetCellList()) {
+						PeriodicTaskColumnType initialColumnType = Arrays.asList(PeriodicTaskColumnType.values()).stream().filter(ptct -> ptct.getName().equals(initialSheetCell.getSheetCellType().getName())).findFirst().orElse(null);
+						switch (initialColumnType) {
+						case TASK:
+							thingsToDo = initialSheetCell.getCellValue();
+							break;
+						case PRIORITY:
+							priority = initialSheetCell.getCellValue();
+							break;
+						case CATEGORY: 
+							category = initialSheetCell.getCellValue();
+							break;
+						case PERIODICITY: 
+							//periodicity = initialSheetCell.getCellValue();
+							break;
+						case WEEKDAY: 
+							//weekday = initialSheetCell.getCellValue();
+							break;	
+						default:
+							break;
+						}
 					}
+					
+					if(!this.existSheetCell(finalExcelSheet.getSheetRowList(), thingsToDo, this.utilDateService.getStrDate(LocalDate.now()))) {
+						Row row = this.createBodyRow(myWorkBook, myWorkBook.getSheet(THINGS_TO_DO_SHEET_NAME), finalSheetCellTypeList);
+						
+						List<Cell> cellList = this.utilExcelService.getCellList(row, finalSheetCellTypeList);
+						
+						SheetRow sheetRow = this.excelReadService.addSheetRow(finalExcelSheet, cellList, finalSheetCellTypeList, row);
+						
+						for(SheetCell sheetCell: sheetRow.getSheetCellList()) {
+							this.completeSheetCell(sheetCell, row.getRowNum(), null, priority, thingsToDo, category);
+						}
+					}
+					
+					
 				}
 				
-				if(!this.existSheetCell(thingsToDoExcelSheet.getSheetRowList(), thingsToDo, this.utilDateService.getStrDate(LocalDate.now()))) {
-					Row row = this.createBodyRow(myWorkBook, myWorkBook.getSheet(THINGS_TO_DO_SHEET_NAME), thingsToDoSheetCellTypeList);
-					
-					List<Cell> cellList = this.utilExcelService.getCellList(row, thingsToDoSheetCellTypeList);
-					
-					SheetRow sheetRow = this.excelReadService.addSheetRow(thingsToDoExcelSheet, cellList, thingsToDoSheetCellTypeList, row);
-					
-					for(SheetCell sheetCell: sheetRow.getSheetCellList()) {
-						this.completeSheetCell(sheetCell, row.getRowNum(), null, priority, thingsToDo, category);
-					}
-				}
+				this.deleteSheet(myWorkBook, THINGS_TO_DO_SHEET_NAME);
+				this.addSheetToExcel(myWorkBook, THINGS_TO_DO_SHEET_NAME, 0, finalSheetCellTypeList, finalExcelSheet.getSheetRowList());
 				
-				
+				System.out.println("loadPeriodicTasks - Saving WorkBook.");
+				this.writeExcel(myWorkBook, finalFilePath);	
 			}
-			
-			this.deleteSheet(myWorkBook, THINGS_TO_DO_SHEET_NAME);
-			this.addSheetToExcel(myWorkBook, THINGS_TO_DO_SHEET_NAME, 0, thingsToDoSheetCellTypeList, thingsToDoExcelSheet.getSheetRowList());
-			
-			System.out.println("loadPeriodicTasks - Saving WorkBook.");
-			this.writeExcel(myWorkBook, finalFilePath);
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -194,11 +204,11 @@ public class JobExcelService extends AbstractApiExcelService {
 			boolean incidenceDateMatched = false;
 			for(SheetCell sheetCell: sr.getSheetCellList()) {
 				ThingToDoColumnType thingToDoColumnType = this.getThingToDoColumnType(sheetCell);
-				if(thingToDoColumnType == ThingToDoColumnType.THINGS_TO_DO && sheetCell.getCellValue().equals(thingsToDo)) {
+				if(thingToDoColumnType == ThingToDoColumnType.THINGS_TO_DO && thingsToDo.equals(sheetCell.getCellValue())) {
 					thingsToDoMatched = true;
 				}
 				
-				if(thingToDoColumnType == ThingToDoColumnType.INCIDENCE_DATE && sheetCell.getCellValue().equals(incidenceDate)) {
+				if(thingToDoColumnType == ThingToDoColumnType.INCIDENCE_DATE && incidenceDate.equals(sheetCell.getCellValue())) {
 					incidenceDateMatched = true;
 				}
 			}

@@ -59,9 +59,38 @@ public class AppTest
     {
     	//this.createExcelTest1();
     	//this.createExcelTest2();
-    	//this.fillSortAndSplitSheetTest();
-    	this.readPeriodicTasks();
+    	this.fillSortAndSplitSheetTest();
+    	//this.readPeriodicTasks();
+    	//this.loadPeriodicTasks();
         assertTrue( true );
+    }
+    
+    public void loadPeriodicTasks() {
+    	this.utilDateService = new UtilDateService();
+    	this.utilExcelService = new UtilExcelService(utilDateService);
+    	this.excelReadService = new ExcelReadService(utilDateService, utilExcelService);
+    	this.excelWriteService = new ExcelWriteService(utilDateService, utilExcelService);
+    	this.jobExcelService = new JobExcelService(utilDateService, utilExcelService, excelReadService, excelWriteService);
+    	
+    	String initialFilePath = "/Users/acidlabs/Desktop/job_backup/Things_to_do.xlsx";
+    	String finalFilePath = "/Users/acidlabs/Desktop/job_backup/Things_to_do_prueba.xlsx";
+    	//String initialSheetName = "Periodic Tasks";
+    	//String finalSheetName = "Things to do";
+    	
+    	List<SheetCellType> initialSheetCellTypeList = new ArrayList<>();
+    	
+    	for(PeriodicTaskColumnType periodicTask: PeriodicTaskColumnType.values()) {
+    		initialSheetCellTypeList.add(new SheetCellType(periodicTask));
+    	}
+    	
+    	List<SheetCellType> finalSheetCellTypeList = new ArrayList<>();
+    	
+    	for(ThingToDoColumnType thingToDoColumnType: ThingToDoColumnType.values()) {
+    		finalSheetCellTypeList.add(new SheetCellType(thingToDoColumnType));
+    	}
+    	
+    	this.jobExcelService.loadThingsToDoSheet(jobExcelService, initialFilePath, finalFilePath, initialSheetCellTypeList, finalSheetCellTypeList);
+    	
     }
     
     public void readPeriodicTasks() {
