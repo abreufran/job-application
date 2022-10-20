@@ -7,13 +7,13 @@ import java.util.List;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.faap.scheduler.job_application.excel.models.ExcelSheet;
-import com.faap.scheduler.job_application.excel.models.PeriodicTask;
+import com.faap.scheduler.job_application.excel.models.PeriodicTaskColumnType;
 import com.faap.scheduler.job_application.excel.models.SheetCellType;
 import com.faap.scheduler.job_application.excel.models.ThingToDoColumnType;
 import com.faap.scheduler.job_application.excel.services.ExcelReadService;
 import com.faap.scheduler.job_application.excel.services.ExcelWriteService;
+import com.faap.scheduler.job_application.excel.services.JobExcelService;
 import com.faap.scheduler.job_application.excel.services.UtilExcelService;
-import com.faap.scheduler.job_application.excel.services.job.JobExcelService;
 import com.faap.scheduler.job_application.file.services.UtilDateService;
 
 import junit.framework.Test;
@@ -69,7 +69,7 @@ public class AppTest
     	this.utilDateService = new UtilDateService();
     	this.utilExcelService = new UtilExcelService(utilDateService);
     	this.excelReadService = new ExcelReadService(utilDateService, utilExcelService);
-    	this.excelWriteService = new ExcelWriteService(utilDateService);
+    	this.excelWriteService = new ExcelWriteService(utilDateService, utilExcelService);
     	this.jobExcelService = new JobExcelService(utilDateService, utilExcelService, excelReadService, excelWriteService);
     	
     	String initialFilePath = "/Users/acidlabs/Desktop/job_backup/Things_to_do.xlsx";
@@ -79,7 +79,7 @@ public class AppTest
     	
     	List<SheetCellType> sheetCellTypeList = new ArrayList<>();
     	
-    	for(PeriodicTask periodicTask: PeriodicTask.values()) {
+    	for(PeriodicTaskColumnType periodicTask: PeriodicTaskColumnType.values()) {
     		sheetCellTypeList.add(new SheetCellType(periodicTask));
     	}
     	
@@ -119,7 +119,7 @@ public class AppTest
     	this.utilDateService = new UtilDateService();
     	this.utilExcelService = new UtilExcelService(utilDateService);
     	this.excelReadService = new ExcelReadService(utilDateService, utilExcelService);
-    	this.excelWriteService = new ExcelWriteService(utilDateService);
+    	this.excelWriteService = new ExcelWriteService(utilDateService, utilExcelService);
     	this.jobExcelService = new JobExcelService(utilDateService, utilExcelService, excelReadService, excelWriteService);
     	
     	String initialFilePath = "/Users/acidlabs/Desktop/job_backup/Things_to_do.xlsx";

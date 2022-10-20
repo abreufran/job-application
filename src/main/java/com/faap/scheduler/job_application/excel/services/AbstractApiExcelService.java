@@ -5,6 +5,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.faap.scheduler.job_application.excel.dtos.WorkbookResponse;
@@ -305,6 +307,10 @@ public abstract class AbstractApiExcelService {
 		this.updateCellIdValue(excelSheet.getSheetRowList());
 		return excelSheet;
 		
+	}
+	
+	public Row createBodyRow(XSSFWorkbook myWorkBook, XSSFSheet sheet, List<SheetCellType> sheeCellTypeList) {
+		return this.excelWriteService.createBodyRow(myWorkBook, sheet, sheeCellTypeList);
 	}
 	
 	public XSSFWorkbook readExcel(String filePath) throws IOException {

@@ -24,7 +24,7 @@ public class SheetCellType {
 		this.sheetFormula = thingToDoColumnType.getSheetFormula();
 	}
 	
-	public SheetCellType(PeriodicTask periodicTask) {
+	public SheetCellType(PeriodicTaskColumnType periodicTask) {
 		this.name = periodicTask.getName();
 		this.required = periodicTask.isRequired();
 		this.cellType = periodicTask.getCellType();

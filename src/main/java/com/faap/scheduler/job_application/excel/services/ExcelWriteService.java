@@ -23,9 +23,11 @@ import com.faap.scheduler.job_application.file.services.UtilDateService;
 
 public class ExcelWriteService {
 	private UtilDateService utilDateService;
+	private UtilExcelService utilExcelService;
 
-	public ExcelWriteService(UtilDateService utilDateService) {
+	public ExcelWriteService(UtilDateService utilDateService, UtilExcelService utilExcelService) {
 		this.utilDateService = utilDateService;
+		this.utilExcelService = utilExcelService;
 	}
 
 	protected boolean createExcel(String sheetName, int columnIndex, List<SheetCellType> sheetCellTypeList, List<SheetRow> sheetRowList, String filePaht)  {
@@ -126,6 +128,13 @@ public class ExcelWriteService {
 			headerCell.setCellStyle(headerStyle);
 		}
     }
+	
+	protected Row createBodyRow(XSSFWorkbook myWorkBook, XSSFSheet sheet, List<SheetCellType> sheeCellTypeList) {
+		Row row = sheet.createRow(sheet.getLastRowNum());
+		System.out.println("createRow - Body: " + row.getRowNum());
+		this.utilExcelService.completeRow(row, myWorkBook, sheeCellTypeList);
+		return row;
+	}
     
 	protected void createBodyRow(XSSFWorkbook myWorkBook, XSSFSheet sheet, SheetRow sheetRow) {
     	Row row = sheet.createRow(sheetRow.getRowNumber());

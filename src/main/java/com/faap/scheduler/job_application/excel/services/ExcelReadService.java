@@ -10,11 +10,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.DateUtil;
-import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -35,7 +32,7 @@ public class ExcelReadService {
 		this.setUtilExcelService(utilExcelService);
 	}
 
-	protected ExcelSheet readSheet(XSSFWorkbook myWorkBook, String sheetName, List<SheetCellType> sheeCellTypeList)
+	protected ExcelSheet readSheet(XSSFWorkbook myWorkBook, String sheetName, List<SheetCellType> sheetCellTypeList)
 			throws Exception {
 
 		ExcelSheet excelSheet = new ExcelSheet(sheetName);
@@ -49,27 +46,15 @@ public class ExcelReadService {
 		// Traversing over each row of XLSX file
 		while (rowIterator.hasNext()) {
 			Row row = rowIterator.next();
-			this.completeRow(row, myWorkBook, sheeCellTypeList);
-			Iterator<Cell> cellIterator = row.cellIterator();
+			this.utilExcelService.completeRow(row, myWorkBook, sheetCellTypeList);
 
-			List<Cell> cellList = new ArrayList<>();
+			List<Cell> cellList = this.utilExcelService.getCellList(row, sheetCellTypeList);
 
-			// For each row, iterate through each columns
-			while (cellIterator.hasNext()) {
-				Cell cell = cellIterator.next();
-				if(cell.getColumnIndex() < sheeCellTypeList.size()) {
-					cellList.add(cell);
-				}
-			}
-
-			ValidCellListResponse validCellListResponse = this.validCellList(cellList, row.getRowNum(), sheeCellTypeList);
+			ValidCellListResponse validCellListResponse = this.validCellList(cellList, row.getRowNum(), sheetCellTypeList);
 
 			if (validCellListResponse == ValidCellListResponse.OK) {
 				if (row.getRowNum() > 0) {
-					System.out.println("INFO: Row Number: " + (row.getRowNum() + 1) + " / Reading");
-					List<SheetCell> sheetCellList = this.getSheetCellList(cellList,
-							sheeCellTypeList, row.getRowNum());
-					excelSheet.getSheetRowList().add(new SheetRow(sheetCellList, row.getRowNum()));
+					this.addSheetRow(excelSheet, cellList, sheetCellTypeList, row);
 				}
 
 			} else {
@@ -108,7 +93,7 @@ public class ExcelReadService {
 		}
 	}
 	
-	private List<SheetCell> getSheetCellList(List<Cell> cellList, List<SheetCellType> sheetCellTypeList,
+	public List<SheetCell> getSheetCellList(List<Cell> cellList, List<SheetCellType> sheetCellTypeList,
 			int rowNumber) {
 		List<SheetCell> sheetCellList = new ArrayList<>();
 		for (Cell cell: cellList) {
@@ -168,6 +153,16 @@ public class ExcelReadService {
 
 	}
 	
+	public SheetRow addSheetRow(ExcelSheet excelSheet, List<Cell> cellList, List<SheetCellType> sheetCellTypeList, Row row) {
+		System.out.println("INFO: Row Number: " + (row.getRowNum() + 1) + " / Reading");
+		List<SheetCell> sheetCellList = this.getSheetCellList(cellList,
+				sheetCellTypeList, row.getRowNum());
+		SheetRow sheetRow = new SheetRow(sheetCellList, row.getRowNum());
+		excelSheet.getSheetRowList().add(sheetRow);
+		
+		return sheetRow;
+	}
+	
 	private List<String> getStrCellList(List<Cell> cellList) {
 		List<String> strCellList = new ArrayList<>();
 
@@ -175,53 +170,6 @@ public class ExcelReadService {
 			strCellList.add(this.utilExcelService.readCell(cell));
 		}
 		return strCellList;
-	}
-	
-	private void completeRow(Row row, XSSFWorkbook myWorkBook, List<SheetCellType> sheeCellTypeList) {
-		List<Cell> cellList = new ArrayList<>();
-		Iterator<Cell> cellIterator = row.cellIterator();
-		// For each row, iterate through each columns
-		while (cellIterator.hasNext()) {
-			Cell cell = cellIterator.next();
-			if(cell.getColumnIndex() < sheeCellTypeList.size()) {
-				cellList.add(cell);
-			}
-		}
-
-		for (SheetCellType sheetCellType: sheeCellTypeList) {
-			if (this.existColumnIndex(cellList, sheetCellType.getColumnIndex())) {
-				CellType cellType = sheetCellType.getCellType();
-				Cell cell = row.createCell(sheetCellType.getColumnIndex(), cellType);
-				
-				HorizontalAlignment horizontalAlignment = HorizontalAlignment.CENTER;
-				if(sheetCellType.isRequired()) {
-					horizontalAlignment = HorizontalAlignment.LEFT;
-				}
-				
-				boolean isText = cell.getCellType() == CellType.STRING;
-				
-				this.setBlankCellAndCellStyle(myWorkBook, cell, sheetCellType.isDate(), isText, horizontalAlignment);
-			}
-		}
-	}
-	
-	private boolean existColumnIndex(List<Cell> cellList, int columNumber) {
-		return !cellList.stream().anyMatch(c -> c.getColumnIndex() == columNumber);
-	}
-	
-	private void setBlankCellAndCellStyle(XSSFWorkbook myWorkBook, Cell cell, boolean isDate, boolean isText, HorizontalAlignment horizontalAlignment) {
-		cell.setBlank();
-		CellStyle style = myWorkBook.createCellStyle();
-		style.setAlignment(horizontalAlignment);
-		if(isText) {
-			style.setWrapText(true);
-		}
-
-		if (isDate) {
-			CreationHelper createHelper = myWorkBook.getCreationHelper();
-			style.setDataFormat(createHelper.createDataFormat().getFormat(UtilDateService.WRITE_EXCEL_DATE_FORMAT));
-		}
-		cell.setCellStyle(style);
 	}
 	
     
