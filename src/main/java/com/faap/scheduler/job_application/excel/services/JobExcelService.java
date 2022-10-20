@@ -82,7 +82,8 @@ public class JobExcelService extends AbstractApiExcelService {
 					}
 					
 					if(!this.existSheetCell(finalExcelSheet.getSheetRowList(), thingsToDo, this.utilDateService.getStrDate(LocalDate.now()))) {
-						Row row = this.createBodyRow(myWorkBook, myWorkBook.getSheet(THINGS_TO_DO_SHEET_NAME), finalSheetCellTypeList);
+						int lastRowNumber = finalExcelSheet.getSheetRowList().get(finalExcelSheet.getSheetRowList().size() - 1).getRowNumber();
+						Row row = this.createBodyRow(myWorkBook, myWorkBook.getSheet(THINGS_TO_DO_SHEET_NAME), finalSheetCellTypeList, lastRowNumber + 1);
 						
 						List<Cell> cellList = this.utilExcelService.getCellList(row, finalSheetCellTypeList);
 						

@@ -131,9 +131,8 @@ public abstract class AbstractApiExcelService {
 			
 		} catch (Exception e) {
 			e.printStackTrace();
-			return new WorkbookResponse(workbookResponse.getMyWorkBook(), false, false);
-		} finally {
 			this.closeWorkBook(workbookResponse.getMyWorkBook());
+			return new WorkbookResponse(workbookResponse.getMyWorkBook(), false, false);
 		}
 	}
 	
@@ -233,9 +232,8 @@ public abstract class AbstractApiExcelService {
 			
 		} catch (Exception e) {
 			e.printStackTrace();
-			return new WorkbookResponse(null, false, false);
-		} finally {
 			this.closeWorkBook(myWorkBook);
+			return new WorkbookResponse(null, false, false);
 		}
 	}
 	
@@ -296,8 +294,8 @@ public abstract class AbstractApiExcelService {
 		
 	}
 	
-	public Row createBodyRow(XSSFWorkbook myWorkBook, XSSFSheet sheet, List<SheetCellType> sheeCellTypeList) {
-		return this.excelWriteService.createBodyRow(myWorkBook, sheet, sheeCellTypeList);
+	public Row createBodyRow(XSSFWorkbook myWorkBook, XSSFSheet sheet, List<SheetCellType> sheeCellTypeList, int rowNumber) {
+		return this.excelWriteService.createBodyRow(myWorkBook, sheet, sheeCellTypeList, rowNumber);
 	}
 	
 	public XSSFWorkbook readExcel(String filePath) throws IOException {

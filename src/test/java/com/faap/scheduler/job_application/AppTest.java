@@ -59,9 +59,9 @@ public class AppTest
     {
     	//this.createExcelTest1();
     	//this.createExcelTest2();
-    	this.fillSortAndSplitSheetTest();
+    	//this.fillSortAndSplitSheetTest();
     	//this.readPeriodicTasks();
-    	//this.loadPeriodicTasks();
+    	this.loadPeriodicTasks();
         assertTrue( true );
     }
     

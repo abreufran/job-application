@@ -129,16 +129,16 @@ public class ExcelWriteService {
 		}
     }
 	
-	protected Row createBodyRow(XSSFWorkbook myWorkBook, XSSFSheet sheet, List<SheetCellType> sheeCellTypeList) {
-		Row row = sheet.createRow(sheet.getLastRowNum());
-		System.out.println("createRow - Body: " + row.getRowNum());
+	protected Row createBodyRow(XSSFWorkbook myWorkBook, XSSFSheet sheet, List<SheetCellType> sheeCellTypeList, int rowNumber) {
+		Row row = sheet.createRow(rowNumber);
+		System.out.println("createRow - Body: " + (row.getRowNum() + 1));
 		this.utilExcelService.completeRow(row, myWorkBook, sheeCellTypeList);
 		return row;
 	}
     
 	protected void createBodyRow(XSSFWorkbook myWorkBook, XSSFSheet sheet, SheetRow sheetRow) {
     	Row row = sheet.createRow(sheetRow.getRowNumber());
-		System.out.println("createRow - Body: " + row.getRowNum());
+		System.out.println("createRow - Body: " + (row.getRowNum() + 1));
 
 		for(SheetCell sheetCell: sheetRow.getSheetCellList()) {
 			Cell cell = row.createCell(sheetCell.getSheetCellType().getColumnIndex(), sheetCell.getSheetCellType().getCellType());
