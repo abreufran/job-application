@@ -1,7 +1,6 @@
 package com.faap.scheduler.job_application.excel.services;
 
 import java.io.IOException;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,16 +36,16 @@ public abstract class AbstractApiExcelService {
 	
 	public boolean fillSortSplitAndSaveSheet(String initialFilePath, String finalFilePath, String sheetNameOfTokenFilter, 
 			String sheetNameNoTokenFilter, List<SheetCellType> sheetCellTypeList, 
-			int columnIndexToSort, int columnIndexToFilter, String tokenToFilter) {
+			List<Integer> columnIndexToSortList, int columnIndexToFilter, String tokenToFilter) {
 		WorkbookResponse workbookResponse = this.fillSortSplitSheet(initialFilePath, finalFilePath, 
-				sheetNameOfTokenFilter, sheetNameNoTokenFilter, sheetCellTypeList, columnIndexToSort, columnIndexToFilter, tokenToFilter);
+				sheetNameOfTokenFilter, sheetNameNoTokenFilter, sheetCellTypeList, columnIndexToSortList, columnIndexToFilter, tokenToFilter);
 		
 		return this.saveWorkbookResponse(workbookResponse, finalFilePath, "SplitSheet");
 	}
 	
 	public WorkbookResponse fillSortSplitSheet(String initialFilePath, String finalFilePath, String sheetNameOfTokenFilter, 
 			String sheetNameNoTokenFilter, List<SheetCellType> sheetCellTypeList, 
-			int columnIndexToSort, int columnIndexToFilter, String tokenToFilter) {
+			List<Integer> columnIndexToSortList, int columnIndexToFilter, String tokenToFilter) {
 
 		WorkbookResponse workbookResponse = null;
 		try {
@@ -59,7 +58,7 @@ public abstract class AbstractApiExcelService {
 			
 			boolean fillChanged = workbookResponse.isChanged();
 			
-			workbookResponse = this.sortSheet(workbookResponse.getMyWorkBook(), sheetNameOfTokenFilter, sheetCellTypeList, columnIndexToSort, columnIndexToFilter, tokenToFilter);
+			workbookResponse = this.sortSheet(workbookResponse.getMyWorkBook(), sheetNameOfTokenFilter, sheetCellTypeList, columnIndexToSortList, columnIndexToFilter, tokenToFilter);
 			
 			if(!workbookResponse.isSuccess()) {
 				return new WorkbookResponse(workbookResponse.getMyWorkBook(), false, false);
@@ -99,13 +98,7 @@ public abstract class AbstractApiExcelService {
 			sheetRowNoTokenFilterList.addAll(excelSheetNoTokenFilet.getSheetRowList());
 			
 			//Sort records of NO token filter
-			Comparator<SheetRow> priorityComparator = (sr1, sr2) -> {
-				String cellValueToSort1 = sr1.getSheetCellList().get(columnIndexToSort).getCellValue();
-				String cellValueToSort2 = sr2.getSheetCellList().get(columnIndexToSort).getCellValue();
-				return cellValueToSort1.compareTo(cellValueToSort2);
-			};
-			sheetRowNoTokenFilterList = sheetRowNoTokenFilterList.stream().sorted(priorityComparator).collect(Collectors.toList());
-
+			sheetRowNoTokenFilterList = this.utilExcelService.sortSheetRowList(sheetRowNoTokenFilterList, columnIndexToSortList, null);
 
 			if (excelSheetOfTokenFilet.getSheetRowList().size() != sheetRowOfTokenFilterList.size()
 					|| excelSheetNoTokenFilet.getSheetRowList().size() != sheetRowNoTokenFilterList.size()
@@ -137,16 +130,16 @@ public abstract class AbstractApiExcelService {
 	}
 	
 	public boolean fillSortAndSaveSheet(String initialFilePath, String finalFilePath, String sheetName, List<SheetCellType> sheetCellTypeList, 
-			int columnIndexToSort, int columnIndexToFilter, String tokenToFilter) {
+			List<Integer> columnIndexToSortList, int columnIndexToFilter, String tokenToFilter) {
 
 		WorkbookResponse workbookResponse = this.fillSortSheet(initialFilePath, finalFilePath, 
-				sheetName, sheetCellTypeList, columnIndexToSort, columnIndexToFilter, tokenToFilter);
+				sheetName, sheetCellTypeList, columnIndexToSortList, columnIndexToFilter, tokenToFilter);
 		
 		return this.saveWorkbookResponse(workbookResponse, finalFilePath, "SortSheet");
 	}
 	
 	public WorkbookResponse fillSortSheet(String initialFilePath, String finalFilePath, String sheetName, List<SheetCellType> sheetCellTypeList, 
-			int columnIndexToSort, int columnIndexToFilter, String tokenToFilter) {
+			List<Integer> columnIndexToSortList, int columnIndexToFilter, String tokenToFilter) {
 
 		WorkbookResponse workbookResponse = this.fillEmptyFields(initialFilePath, finalFilePath, sheetName, sheetCellTypeList);
 			
@@ -157,7 +150,7 @@ public abstract class AbstractApiExcelService {
 		
 		boolean fillChanged = workbookResponse.isChanged();
 		
-		workbookResponse = this.sortSheet(workbookResponse.getMyWorkBook(), sheetName, sheetCellTypeList, columnIndexToSort, columnIndexToFilter, tokenToFilter);
+		workbookResponse = this.sortSheet(workbookResponse.getMyWorkBook(), sheetName, sheetCellTypeList, columnIndexToSortList, columnIndexToFilter, tokenToFilter);
 
 		workbookResponse.setChanged(fillChanged || workbookResponse.isChanged());
 		
@@ -166,7 +159,7 @@ public abstract class AbstractApiExcelService {
 
 	
 	private WorkbookResponse sortSheet(XSSFWorkbook myWorkBook, String sheetName, List<SheetCellType> sheetCellTypeList, 
-			int columnIndexToSort, int columnIndexToFilter, String tokenToFilter) {
+			List<Integer> columnIndexToSortList, int columnIndexToFilter, String tokenToFilter) {
 		System.out.println("Sort Sheet. ");
 		try {
 
@@ -174,7 +167,7 @@ public abstract class AbstractApiExcelService {
 					sheetCellTypeList);
 			
 			List<SheetRow> sortedSheetRowList = this.utilExcelService.sortSheetRowList(
-					excelSheet.getSheetRowList(), columnIndexToSort, columnIndexToFilter, tokenToFilter);
+					excelSheet.getSheetRowList(), columnIndexToSortList, columnIndexToFilter, tokenToFilter);
 
 
 			if (this.utilExcelService.didSheetSort(sortedSheetRowList)) {

@@ -66,21 +66,44 @@ public class UtilExcelService {
 		}
 	}
 	
-	public List<SheetRow> sortSheetRowList(List<SheetRow> sheetRowList, int columnIndexToSort, int columnIndexToFilter, String tokenToFilter) {
-		Comparator<SheetRow> priorityComparator = (sr1, sr2) -> {
-			String cellValueToSort1 = sr1.getSheetCellList().get(columnIndexToSort).getCellValue();
-			String cellValueToSort2 = sr2.getSheetCellList().get(columnIndexToSort).getCellValue();
-			
-			if(sr1.getSheetCellList().get(columnIndexToSort).getSheetCellType().isDate()
-					&& cellValueToSort1 != null && cellValueToSort2 != null) {
-				LocalDate cellDateToSort1 = this.utilDateService.getLocalDate(cellValueToSort1);
-				LocalDate cellDateToSort2 = this.utilDateService.getLocalDate(cellValueToSort2);
+	public List<SheetRow> sortSheetRowList(List<SheetRow> sheetRowList, 
+			List<Integer> columnIndexToSortList, Comparator<SheetRow> finalComparator) {
+		
+		for(int columnIndexToSort: columnIndexToSortList) {
+			Comparator<SheetRow> priorityComparator = (sr1, sr2) -> {
+				String cellValueToSort1 = sr1.getSheetCellList().get(columnIndexToSort).getCellValue();
+				String cellValueToSort2 = sr2.getSheetCellList().get(columnIndexToSort).getCellValue();
 				
-				return cellDateToSort2.compareTo(cellDateToSort1);
+				if(sr1.getSheetCellList().get(columnIndexToSort).getSheetCellType().isDate()
+						&& cellValueToSort1 != null && cellValueToSort2 != null) {
+					LocalDate cellDateToSort1 = this.utilDateService.getLocalDate(cellValueToSort1);
+					LocalDate cellDateToSort2 = this.utilDateService.getLocalDate(cellValueToSort2);
+					
+					return cellDateToSort2.compareTo(cellDateToSort1);
+				}
+				
+				if(cellValueToSort1 == null) cellValueToSort1 = "Z";
+				if(cellValueToSort2 == null) cellValueToSort2 = "Z";
+				
+				return cellValueToSort1.compareTo(cellValueToSort2);
+			};
+			
+			if(finalComparator == null) {
+				finalComparator = priorityComparator;
+			}
+			else {
+				finalComparator = finalComparator.thenComparing(priorityComparator);
 			}
 			
-			return cellValueToSort1.compareTo(cellValueToSort2);
-		};
+		}	
+		
+		return sheetRowList.stream()
+				.sorted(finalComparator).collect(Collectors.toList());
+	
+	}
+	
+	public List<SheetRow> sortSheetRowList(List<SheetRow> sheetRowList, 
+			List<Integer> columnIndexToSortList, int columnIndexToFilter, String tokenToFilter) {
 
 		Comparator<SheetRow> filterComparator = (sr1, sr2) -> {
 			String cellValueToSort1 = sr1.getSheetCellList().get(columnIndexToFilter)
@@ -97,8 +120,7 @@ public class UtilExcelService {
 			return cellValueToSort1.compareTo(cellValueToSort2);
 		};
 
-		return sheetRowList.stream()
-				.sorted(filterComparator.thenComparing(priorityComparator)).collect(Collectors.toList());
+		return this.sortSheetRowList(sheetRowList, columnIndexToSortList, filterComparator);
 	}
 	
 	public boolean didSheetSort(List<SheetRow> sortedSheetRowList) {

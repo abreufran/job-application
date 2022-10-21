@@ -6,6 +6,11 @@ public enum Periodicity {
 	EVERY_WEEK("Every week", 7),
 	EVERY_2_WEEKS("Every 2 weeks", 14),
 	EVERY_3_WEEKS("Every 3 weeks", 21),
+	EVERY_4_WEEKS("Every 4 weeks", 28),
+	EVERY_5_WEEKS("Every 5 weeks", 35),
+	EVERY_6_WEEKS("Every 6 weeks", 42),
+	EVERY_7_WEEKS("Every 7 weeks", 49),
+	EVERY_8_WEEKS("Every 8 weeks", 56),
 	LAST_DAY_MONTH("Last day of the month", -1),
 	EVERY_YEAR("Every year", -1);
 	
@@ -26,6 +31,8 @@ public enum Periodicity {
 	}
 	
 	public static Periodicity getPeriodicity(String periodicity) {
-		return Arrays.asList(Periodicity.values()).stream().filter(p -> p.getName().equals(periodicity)).findFirst().orElse(null);
+		Periodicity periodicityEnum = Arrays.asList(Periodicity.values()).stream().filter(p -> p.getName().equals(periodicity)).findFirst().orElse(null);
+		if(periodicityEnum == null) System.out.println("Periodicity Enum does not exist: " + periodicity);
+		return periodicityEnum;
 	}
 }

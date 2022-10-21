@@ -25,7 +25,7 @@ import com.faap.scheduler.job_application.file.services.UtilDateService;
 public class JobExcelService extends AbstractApiExcelService {
 	private static String THINGS_TO_DO_SHEET_NAME = "Things to do";
 	private static String PERIODIC_TASKS_SHEET_NAME = "Periodic Tasks";
-	public static int COLUMN_INDEX_TO_SORT = 4;
+	public static List<Integer> COLUMN_INDEX_TO_SORT_LIST = Arrays.asList(4, 3);
 	public static int COLUMN_INDEX_TO_FILTER = 7;
 	public static String TOKEN_TO_FILTER = "PENDING";
 
@@ -42,7 +42,7 @@ public class JobExcelService extends AbstractApiExcelService {
 		XSSFWorkbook myWorkBook = null;
 		try {
 			workbookResponse = this.fillSortSheet(initialFilePath, finalFilePath, 
-					THINGS_TO_DO_SHEET_NAME, finalSheetCellTypeList, COLUMN_INDEX_TO_SORT, COLUMN_INDEX_TO_FILTER, TOKEN_TO_FILTER);
+					THINGS_TO_DO_SHEET_NAME, finalSheetCellTypeList, COLUMN_INDEX_TO_SORT_LIST, COLUMN_INDEX_TO_FILTER, TOKEN_TO_FILTER);
 			
 			if(workbookResponse.isSuccess()) {
 				myWorkBook = workbookResponse.getMyWorkBook();
@@ -88,7 +88,9 @@ public class JobExcelService extends AbstractApiExcelService {
 						}
 					}
 					
-					if(!this.existSheetCell(finalExcelSheet.getSheetRowList(), initialDate, thingsToDo, periodicity, weekday)) {
+					LocalDate estimatedDate = this.getEstimatedDate(finalExcelSheet.getSheetRowList(), thingsToDo, periodicity, weekday, initialDate);
+					
+					if(!this.existSheetCell(finalExcelSheet.getSheetRowList(), thingsToDo, estimatedDate)) {
 						int lastRowNumber = finalExcelSheet.getSheetRowList().get(finalExcelSheet.getSheetRowList().size() - 1).getRowNumber();
 						Row row = this.createBodyRow(myWorkBook, myWorkBook.getSheet(THINGS_TO_DO_SHEET_NAME), finalSheetCellTypeList, lastRowNumber + 1);
 						
@@ -97,10 +99,9 @@ public class JobExcelService extends AbstractApiExcelService {
 						SheetRow sheetRow = this.excelReadService.addSheetRow(finalExcelSheet, cellList, finalSheetCellTypeList, row);
 						
 						for(SheetCell sheetCell: sheetRow.getSheetCellList()) {
-							this.completeSheetCell(sheetCell, row.getRowNum(), null, priority, thingsToDo, category);
+							this.completeSheetCell(sheetCell, row.getRowNum(), this.utilDateService.getStrDate(estimatedDate), priority, thingsToDo, category);
 						}
 					}
-					
 					
 				}
 				
@@ -186,6 +187,7 @@ public class JobExcelService extends AbstractApiExcelService {
 			}
 			break;	
 		case STATUS:
+			sheetCell.setCellValue(sheetCell.getSheetCellType().getDefaultValue().toString());
 			break;
 		default:
 			break;
@@ -206,33 +208,8 @@ public class JobExcelService extends AbstractApiExcelService {
 		}
 	}
 	
-	private boolean existSheetCell(List<SheetRow> sheetRowList, String initialDate, String thingsToDo, 
-			String periodicity, String weekday) {
-		
-		LocalDate initialDateOfPeriodicTask = this.utilDateService.getLocalDate(initialDate);
-		Periodicity periodicityEnum = Periodicity.getPeriodicity(periodicity);
-		Weekday weekdayEnum = Weekday.getWeekday(weekday);
-		
-		List<SheetRow> sortedSheetRowList = this.utilExcelService.sortSheetRowList(sheetRowList, 
-				ThingToDoColumnType.ESTIMATED_DATE.getColumnIndex(), COLUMN_INDEX_TO_FILTER, TOKEN_TO_FILTER);
-		
-		SheetRow lastSheetRowWithEstimatedDate = this.findFirstSheetRow(sortedSheetRowList, thingsToDo, null);
-		
-		LocalDate lastEstimatedDate = null;
-		
-		if(lastSheetRowWithEstimatedDate != null) {
-			SheetCell estimatedDateSheetCell = lastSheetRowWithEstimatedDate.getSheetCellList()
-					.stream()
-					.filter(sc -> this.getThingToDoColumnType(sc) == ThingToDoColumnType.ESTIMATED_DATE)
-					.findFirst()
-					.orElse(null);
-			if(estimatedDateSheetCell.getCellValue() != null) {
-				lastEstimatedDate = this.utilDateService.getLocalDate(estimatedDateSheetCell.getCellValue());
-			}
-		}
-		
-		LocalDate estimatedDate = this.getEstimatedDate(periodicityEnum, weekdayEnum, 
-				initialDateOfPeriodicTask, LocalDate.now(), lastEstimatedDate);
+	private boolean existSheetCell(List<SheetRow> sheetRowList, String thingsToDo, 
+			LocalDate estimatedDate) {
 		
 		return this.findFirstSheetRow(sheetRowList, thingsToDo, this.utilDateService.getStrDate(estimatedDate)) != null;
 	}
@@ -268,6 +245,35 @@ public class JobExcelService extends AbstractApiExcelService {
 	
 	private ThingToDoColumnType getThingToDoColumnType(SheetCell sheetCell) {
 		return Arrays.asList(ThingToDoColumnType.values()).stream().filter(tct -> tct.getName().equals(sheetCell.getSheetCellType().getName())).findFirst().orElse(null);
+	}
+	
+	private LocalDate getEstimatedDate(List<SheetRow> sheetRowList, String thingsToDo, 
+			String periodicity, String weekday, 
+    		String initialDate) {
+		LocalDate initialDateOfPeriodicTask = this.utilDateService.getLocalDate(initialDate);
+		Periodicity periodicityEnum = Periodicity.getPeriodicity(periodicity);
+		Weekday weekdayEnum = Weekday.getWeekday(weekday);
+		
+		List<SheetRow> sortedSheetRowList = this.utilExcelService.sortSheetRowList(sheetRowList, 
+				Arrays.asList(ThingToDoColumnType.ESTIMATED_DATE.getColumnIndex()), COLUMN_INDEX_TO_FILTER, TOKEN_TO_FILTER);
+		
+		SheetRow lastSheetRowWithEstimatedDate = this.findFirstSheetRow(sortedSheetRowList, thingsToDo, null);
+		
+		LocalDate lastEstimatedDate = null;
+		
+		if(lastSheetRowWithEstimatedDate != null) {
+			SheetCell estimatedDateSheetCell = lastSheetRowWithEstimatedDate.getSheetCellList()
+					.stream()
+					.filter(sc -> this.getThingToDoColumnType(sc) == ThingToDoColumnType.ESTIMATED_DATE)
+					.findFirst()
+					.orElse(null);
+			if(estimatedDateSheetCell.getCellValue() != null) {
+				lastEstimatedDate = this.utilDateService.getLocalDate(estimatedDateSheetCell.getCellValue());
+			}
+		}
+		
+		return this.getEstimatedDate(periodicityEnum, weekdayEnum, 
+				initialDateOfPeriodicTask, LocalDate.now(), lastEstimatedDate);
 	}
 	
 	private LocalDate getEstimatedDate(Periodicity periodicity, Weekday weekday, 

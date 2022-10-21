@@ -2,6 +2,7 @@ package com.faap.scheduler.job_application.tasks;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.TimerTask;
 
@@ -25,7 +26,7 @@ public class JobTask extends TimerTask {
 	public static String SHEET_NAME = "Things to do";
 	public static int NUMBER_OF_CELLS = 8;
 	public static int REQUIRED_CELL_NUMBER = 5;
-	public static int COLUMN_INDEX_TO_SORT = 4;
+	public static List<Integer> COLUMN_INDEX_TO_SORT_LIST = Arrays.asList(4, 3);
 	public static int COLUMN_INDEX_TO_FILTER = 7;
 	public static String TOKEN_TO_FILTER = "PENDING";
 
@@ -63,7 +64,7 @@ public class JobTask extends TimerTask {
 		    	}
 				
 				this.jobExcelService.fillSortAndSaveSheet(JOB_FILE_NAME, JOB_FILE_NAME, SHEET_NAME, sheetCellTypeList,
-						COLUMN_INDEX_TO_SORT, COLUMN_INDEX_TO_FILTER, TOKEN_TO_FILTER);
+						COLUMN_INDEX_TO_SORT_LIST, COLUMN_INDEX_TO_FILTER, TOKEN_TO_FILTER);
 				
 				//this.jobExcelService.setFilter(JOB_FILE_NAME, SHEET_NAME, SHEET_CELL_TYPE_LIST,
 				//		COLUMN_INDEX_TO_FILTER, TOKEN_TO_FILTER);

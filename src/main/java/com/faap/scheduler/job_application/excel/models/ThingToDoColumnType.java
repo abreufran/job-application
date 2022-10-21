@@ -10,7 +10,7 @@ public enum ThingToDoColumnType {
 	PRIORITY("Priority", true, CellType.STRING, false, "A1", 10, 4, null),
 	THINGS_TO_DO("Things to do", true, CellType.STRING, false, "UNKNOWN", 40, 5, null),
 	CATEGORY("Category", true, CellType.STRING, false, "Task", 20, 6, null),
-	STATUS("Status", true, CellType.FORMULA, false, null, 20, 7, 
+	STATUS("Status", true, CellType.FORMULA, false, "PENDING", 20, 7, 
 			new SheetFormula("IF(ISBLANK(C_rowNumber_),\"PENDING\",\"COMPLETE\")", "_rowNumber_", SheetFormulaValue.ROW_NUMBER));
 	
 	private String name;

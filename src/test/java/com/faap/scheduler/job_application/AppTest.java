@@ -5,6 +5,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -66,9 +67,9 @@ public class AppTest
     	//this.createExcelTest2();
     	//this.fillSortAndSplitSheetTest();
     	//this.readPeriodicTasks();
-    	//this.loadPeriodicTasks();
+    	this.loadPeriodicTasks();
     	
-    	this.calculateEstimatedDate();
+    	//this.calculateEstimatedDate();
         assertTrue( true );
     }
     
@@ -100,7 +101,7 @@ public class AppTest
     	
     }
     
-    private void calculateEstimatedDate() {
+    public void calculateEstimatedDate() {
     	LocalDate initialDateOfPeriodicTask = LocalDate.of(2020, 10, 10);
     	LocalDate lastEstimatedDay = LocalDate.of(2020, 10, 3);
     	
@@ -212,7 +213,7 @@ public class AppTest
     	String sheetName = "Things to do";
     	String COMPLETE_SHEET_NAME = "Complete Things";
     	
-    	int COLUMN_INDEX_TO_SORT = 4;
+    	List<Integer> COLUMN_INDEX_TO_SORT_LIST = Arrays.asList(4, 3);
     	int COLUMN_INDEX_TO_FILTER = 7;
     	String TOKEN_TO_FILTER = "PENDING";
     	
@@ -223,7 +224,7 @@ public class AppTest
     	}
     	
     	this.jobExcelService.fillSortSplitAndSaveSheet(initialFilePath, finalFilePath, sheetName, COMPLETE_SHEET_NAME,
-    			sheetCellTypeList, COLUMN_INDEX_TO_SORT, COLUMN_INDEX_TO_FILTER, TOKEN_TO_FILTER);
+    			sheetCellTypeList, COLUMN_INDEX_TO_SORT_LIST, COLUMN_INDEX_TO_FILTER, TOKEN_TO_FILTER);
     	
     }
     

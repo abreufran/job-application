@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DateUtil;
@@ -177,6 +178,7 @@ public class ExcelReadService {
 		File myFile = new File(filePath);
 
 		FileInputStream fis = new FileInputStream(myFile);
+		ZipSecureFile.setMinInflateRatio(-1.0d);
 		XSSFWorkbook myWorkbook = new XSSFWorkbook(fis);
 
 		fis.close();

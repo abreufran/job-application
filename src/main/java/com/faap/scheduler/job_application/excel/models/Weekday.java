@@ -29,6 +29,8 @@ public enum Weekday {
 	}
 	
 	public static Weekday getWeekday(String weekday) {
-		return Arrays.asList(Weekday.values()).stream().filter(p -> p.getName().equals(weekday)).findFirst().orElse(null);
+		Weekday weekdayEnum = Arrays.asList(Weekday.values()).stream().filter(p -> p.getName().equals(weekday)).findFirst().orElse(null);
+		if(weekdayEnum == null) System.out.println("Weekday Enum does not exist: " + weekdayEnum);
+		return weekdayEnum;
 	}
 }
