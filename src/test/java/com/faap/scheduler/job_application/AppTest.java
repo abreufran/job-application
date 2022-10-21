@@ -1,6 +1,9 @@
 package com.faap.scheduler.job_application;
 
 import java.io.IOException;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,8 +11,10 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.faap.scheduler.job_application.excel.models.ExcelSheet;
 import com.faap.scheduler.job_application.excel.models.PeriodicTaskColumnType;
+import com.faap.scheduler.job_application.excel.models.Periodicity;
 import com.faap.scheduler.job_application.excel.models.SheetCellType;
 import com.faap.scheduler.job_application.excel.models.ThingToDoColumnType;
+import com.faap.scheduler.job_application.excel.models.Weekday;
 import com.faap.scheduler.job_application.excel.services.ExcelReadService;
 import com.faap.scheduler.job_application.excel.services.ExcelWriteService;
 import com.faap.scheduler.job_application.excel.services.JobExcelService;
@@ -61,7 +66,9 @@ public class AppTest
     	//this.createExcelTest2();
     	//this.fillSortAndSplitSheetTest();
     	//this.readPeriodicTasks();
-    	this.loadPeriodicTasks();
+    	//this.loadPeriodicTasks();
+    	
+    	
         assertTrue( true );
     }
     
@@ -92,6 +99,53 @@ public class AppTest
     	this.jobExcelService.loadThingsToDoSheet(jobExcelService, initialFilePath, finalFilePath, initialSheetCellTypeList, finalSheetCellTypeList);
     	
     }
+    
+    public void testGetEstimatedDate() {
+    	System.out.prinltn(this.getEstimatedDate(Periodicity.EVERY_WEEK, Weekday.FRIDAY, null, null, null))
+    }
+    
+    private LocalDate getEstimatedDate(Periodicity periodicity, Weekday weekday, 
+    		LocalDate initialDateOfPeriodicTask, LocalDate incidenceDate,
+    		LocalDate lastEstimatedDay) {
+    	
+    	DayOfWeek dayOfWeek = incidenceDate.getDayOfWeek();
+    	
+    	LocalDate initialDateOfWeek = incidenceDate.minusDays(dayOfWeek.getValue() - 1);
+    	LocalDate finalDateOfWeek = incidenceDate.plusDays(7 - dayOfWeek.getValue());
+    	
+    	LocalDate estimatedDate = (weekday.getValue() != -1 
+    			? incidenceDate.plusDays(weekday.getValue() - dayOfWeek.getValue()) 
+    			: incidenceDate);
+    	
+    	if(periodicity.getSize() == -1) {
+    		switch (periodicity) {
+    		case LAST_DAY_MONTH:
+    			return incidenceDate.withDayOfMonth(
+    										incidenceDate.getMonth().length(incidenceDate.isLeapYear()));
+    		default:
+    			return null;
+    		}
+    	}
+    	else {
+	    	if(lastEstimatedDay == null) {
+	    		return estimatedDate;
+	    	}
+	    	else {
+	    		Period period = Period.between(estimatedDate, lastEstimatedDay);
+	    	    int diff = Math.abs(period.getDays());
+	    	    
+	    	    
+	    	    if(periodicity.getSize() <= diff) {
+		    		return estimatedDate;
+		    	}
+		    	else {
+		    		return null;
+		    	}
+	    	    
+	    	}
+	    }
+    }
+    
     
     public void readPeriodicTasks() {
     	
