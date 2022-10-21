@@ -1,5 +1,7 @@
 package com.faap.scheduler.job_application.excel.models;
 
+import java.util.Arrays;
+
 public enum Periodicity {
 	EVERY_WEEK("Every week", 7),
 	EVERY_2_WEEKS("Every 2 weeks", 14),
@@ -21,5 +23,9 @@ public enum Periodicity {
 
 	public int getSize() {
 		return size;
+	}
+	
+	public static Periodicity getPeriodicity(String periodicity) {
+		return Arrays.asList(Periodicity.values()).stream().filter(p -> p.getName().equals(periodicity)).findFirst().orElse(null);
 	}
 }

@@ -1,5 +1,6 @@
 package com.faap.scheduler.job_application.excel.services;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -69,6 +70,15 @@ public class UtilExcelService {
 		Comparator<SheetRow> priorityComparator = (sr1, sr2) -> {
 			String cellValueToSort1 = sr1.getSheetCellList().get(columnIndexToSort).getCellValue();
 			String cellValueToSort2 = sr2.getSheetCellList().get(columnIndexToSort).getCellValue();
+			
+			if(sr1.getSheetCellList().get(columnIndexToSort).getSheetCellType().isDate()
+					&& cellValueToSort1 != null && cellValueToSort2 != null) {
+				LocalDate cellDateToSort1 = this.utilDateService.getLocalDate(cellValueToSort1);
+				LocalDate cellDateToSort2 = this.utilDateService.getLocalDate(cellValueToSort2);
+				
+				return cellDateToSort2.compareTo(cellDateToSort1);
+			}
+			
 			return cellValueToSort1.compareTo(cellValueToSort2);
 		};
 

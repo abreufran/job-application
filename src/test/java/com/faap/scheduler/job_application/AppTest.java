@@ -68,7 +68,7 @@ public class AppTest
     	//this.readPeriodicTasks();
     	//this.loadPeriodicTasks();
     	
-    	
+    	this.calculateEstimatedDate();
         assertTrue( true );
     }
     
@@ -100,8 +100,13 @@ public class AppTest
     	
     }
     
-    public void testGetEstimatedDate() {
-    	System.out.prinltn(this.getEstimatedDate(Periodicity.EVERY_WEEK, Weekday.FRIDAY, null, null, null))
+    private void calculateEstimatedDate() {
+    	LocalDate initialDateOfPeriodicTask = LocalDate.of(2020, 10, 10);
+    	LocalDate lastEstimatedDay = LocalDate.of(2020, 10, 3);
+    	
+    	LocalDate estimatedDate = this.getEstimatedDate(Periodicity.EVERY_2_WEEKS, Weekday.MONDAY, 
+    			initialDateOfPeriodicTask, LocalDate.now(), lastEstimatedDay);
+    	System.out.println(estimatedDate);
     }
     
     private LocalDate getEstimatedDate(Periodicity periodicity, Weekday weekday, 
@@ -109,9 +114,6 @@ public class AppTest
     		LocalDate lastEstimatedDay) {
     	
     	DayOfWeek dayOfWeek = incidenceDate.getDayOfWeek();
-    	
-    	LocalDate initialDateOfWeek = incidenceDate.minusDays(dayOfWeek.getValue() - 1);
-    	LocalDate finalDateOfWeek = incidenceDate.plusDays(7 - dayOfWeek.getValue());
     	
     	LocalDate estimatedDate = (weekday.getValue() != -1 
     			? incidenceDate.plusDays(weekday.getValue() - dayOfWeek.getValue()) 

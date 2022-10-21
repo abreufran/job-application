@@ -1,7 +1,9 @@
 package com.faap.scheduler.job_application.excel.services;
 
 import java.io.IOException;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.Period;
 import java.util.Arrays;
 import java.util.List;
 
@@ -12,10 +14,12 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import com.faap.scheduler.job_application.excel.dtos.WorkbookResponse;
 import com.faap.scheduler.job_application.excel.models.ExcelSheet;
 import com.faap.scheduler.job_application.excel.models.PeriodicTaskColumnType;
+import com.faap.scheduler.job_application.excel.models.Periodicity;
 import com.faap.scheduler.job_application.excel.models.SheetCell;
 import com.faap.scheduler.job_application.excel.models.SheetCellType;
 import com.faap.scheduler.job_application.excel.models.SheetRow;
 import com.faap.scheduler.job_application.excel.models.ThingToDoColumnType;
+import com.faap.scheduler.job_application.excel.models.Weekday;
 import com.faap.scheduler.job_application.file.services.UtilDateService;
 
 public class JobExcelService extends AbstractApiExcelService {
@@ -51,16 +55,19 @@ public class JobExcelService extends AbstractApiExcelService {
 				
 				
 				for(SheetRow initialSheetRow: initialExcelSheet.getSheetRowList()) {
-					//String estimatedDate = null;
+					String initialDate = null;
 					String priority = null;
 					String thingsToDo = null;
 					String category = null;
-					//String periodicity = null;
-					//String weekday = null;
+					String periodicity = null;
+					String weekday = null;
 					
 					for(SheetCell initialSheetCell: initialSheetRow.getSheetCellList()) {
 						PeriodicTaskColumnType initialColumnType = Arrays.asList(PeriodicTaskColumnType.values()).stream().filter(ptct -> ptct.getName().equals(initialSheetCell.getSheetCellType().getName())).findFirst().orElse(null);
 						switch (initialColumnType) {
+						case INITIAL_DATE:
+							initialDate = initialSheetCell.getCellValue();
+							break;
 						case TASK:
 							thingsToDo = initialSheetCell.getCellValue();
 							break;
@@ -71,17 +78,17 @@ public class JobExcelService extends AbstractApiExcelService {
 							category = initialSheetCell.getCellValue();
 							break;
 						case PERIODICITY: 
-							//periodicity = initialSheetCell.getCellValue();
+							periodicity = initialSheetCell.getCellValue();
 							break;
 						case WEEKDAY: 
-							//weekday = initialSheetCell.getCellValue();
+							weekday = initialSheetCell.getCellValue();
 							break;	
 						default:
 							break;
 						}
 					}
 					
-					if(!this.existSheetCell(finalExcelSheet.getSheetRowList(), thingsToDo, this.utilDateService.getStrDate(LocalDate.now()))) {
+					if(!this.existSheetCell(finalExcelSheet.getSheetRowList(), initialDate, thingsToDo, periodicity, weekday)) {
 						int lastRowNumber = finalExcelSheet.getSheetRowList().get(finalExcelSheet.getSheetRowList().size() - 1).getRowNumber();
 						Row row = this.createBodyRow(myWorkBook, myWorkBook.getSheet(THINGS_TO_DO_SHEET_NAME), finalSheetCellTypeList, lastRowNumber + 1);
 						
@@ -199,17 +206,54 @@ public class JobExcelService extends AbstractApiExcelService {
 		}
 	}
 	
-	private boolean existSheetCell(List<SheetRow> sheetRowList, String thingsToDo, String incidenceDate) {
-		return sheetRowList.stream().anyMatch(sr -> {
+	private boolean existSheetCell(List<SheetRow> sheetRowList, String initialDate, String thingsToDo, 
+			String periodicity, String weekday) {
+		
+		LocalDate initialDateOfPeriodicTask = this.utilDateService.getLocalDate(initialDate);
+		Periodicity periodicityEnum = Periodicity.getPeriodicity(periodicity);
+		Weekday weekdayEnum = Weekday.getWeekday(weekday);
+		
+		List<SheetRow> sortedSheetRowList = this.utilExcelService.sortSheetRowList(sheetRowList, 
+				ThingToDoColumnType.ESTIMATED_DATE.getColumnIndex(), COLUMN_INDEX_TO_FILTER, TOKEN_TO_FILTER);
+		
+		SheetRow lastSheetRowWithEstimatedDate = this.findFirstSheetRow(sortedSheetRowList, thingsToDo, null);
+		
+		LocalDate lastEstimatedDate = null;
+		
+		if(lastSheetRowWithEstimatedDate != null) {
+			SheetCell estimatedDateSheetCell = lastSheetRowWithEstimatedDate.getSheetCellList()
+					.stream()
+					.filter(sc -> this.getThingToDoColumnType(sc) == ThingToDoColumnType.ESTIMATED_DATE)
+					.findFirst()
+					.orElse(null);
+			if(estimatedDateSheetCell.getCellValue() != null) {
+				lastEstimatedDate = this.utilDateService.getLocalDate(estimatedDateSheetCell.getCellValue());
+			}
+		}
+		
+		LocalDate estimatedDate = this.getEstimatedDate(periodicityEnum, weekdayEnum, 
+				initialDateOfPeriodicTask, LocalDate.now(), lastEstimatedDate);
+		
+		return this.findFirstSheetRow(sheetRowList, thingsToDo, this.utilDateService.getStrDate(estimatedDate)) != null;
+	}
+	
+	private SheetRow findFirstSheetRow(List<SheetRow> sheetRowList, String thingsToDo, String estimatedDate) {
+		return sheetRowList.stream().filter(sr -> {
 			boolean thingsToDoMatched = false;
 			boolean incidenceDateMatched = false;
 			for(SheetCell sheetCell: sr.getSheetCellList()) {
 				ThingToDoColumnType thingToDoColumnType = this.getThingToDoColumnType(sheetCell);
-				if(thingToDoColumnType == ThingToDoColumnType.THINGS_TO_DO && thingsToDo.equals(sheetCell.getCellValue())) {
+				if(thingsToDo == null) {
+					thingsToDoMatched = true;
+				}
+				else if(thingToDoColumnType == ThingToDoColumnType.THINGS_TO_DO && thingsToDo.equals(sheetCell.getCellValue())) {
 					thingsToDoMatched = true;
 				}
 				
-				if(thingToDoColumnType == ThingToDoColumnType.INCIDENCE_DATE && incidenceDate.equals(sheetCell.getCellValue())) {
+				if(estimatedDate == null) {
+					incidenceDateMatched = true;
+				}
+				else if(thingToDoColumnType == ThingToDoColumnType.ESTIMATED_DATE && estimatedDate.equals(sheetCell.getCellValue())) {
 					incidenceDateMatched = true;
 				}
 			}
@@ -219,10 +263,49 @@ public class JobExcelService extends AbstractApiExcelService {
 			else {
 				return false;
 			}
-		});
+		}).findFirst().orElse(null);
 	}
 	
 	private ThingToDoColumnType getThingToDoColumnType(SheetCell sheetCell) {
 		return Arrays.asList(ThingToDoColumnType.values()).stream().filter(tct -> tct.getName().equals(sheetCell.getSheetCellType().getName())).findFirst().orElse(null);
 	}
+	
+	private LocalDate getEstimatedDate(Periodicity periodicity, Weekday weekday, 
+    		LocalDate initialDateOfPeriodicTask, LocalDate incidenceDate,
+    		LocalDate lastEstimatedDay) {
+    	
+    	DayOfWeek dayOfWeek = incidenceDate.getDayOfWeek();
+    	
+    	LocalDate estimatedDate = (weekday.getValue() != -1 
+    			? incidenceDate.plusDays(weekday.getValue() - dayOfWeek.getValue()) 
+    			: incidenceDate);
+    	
+    	if(periodicity.getSize() == -1) {
+    		switch (periodicity) {
+    		case LAST_DAY_MONTH:
+    			return incidenceDate.withDayOfMonth(
+    										incidenceDate.getMonth().length(incidenceDate.isLeapYear()));
+    		default:
+    			return null;
+    		}
+    	}
+    	else {
+	    	if(lastEstimatedDay == null) {
+	    		return estimatedDate;
+	    	}
+	    	else {
+	    		Period period = Period.between(estimatedDate, lastEstimatedDay);
+	    	    int diff = Math.abs(period.getDays());
+	    	    
+	    	    
+	    	    if(periodicity.getSize() <= diff) {
+		    		return estimatedDate;
+		    	}
+		    	else {
+		    		return null;
+		    	}
+	    	    
+	    	}
+	    }
+    }
 }
