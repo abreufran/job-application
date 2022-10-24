@@ -10,6 +10,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.faap.scheduler.job_application.enums.Flag;
 import com.faap.scheduler.job_application.excel.models.ExcelSheet;
+import com.faap.scheduler.job_application.excel.models.PeriodicTaskColumnType;
 import com.faap.scheduler.job_application.excel.models.SheetCell;
 import com.faap.scheduler.job_application.excel.models.SheetCellType;
 import com.faap.scheduler.job_application.excel.models.SheetRow;
@@ -54,8 +55,8 @@ public class JobTask extends TimerTask {
 			if(this.didOriginFileChange() && this.makeBackup()) {
 				List<SheetCellType> initialSheetCellTypeList = new ArrayList<>();
 		    	
-		    	for(ThingToDoColumnType thingToDoColumnType: ThingToDoColumnType.values()) {
-		    		initialSheetCellTypeList.add(new SheetCellType(thingToDoColumnType));
+		    	for(PeriodicTaskColumnType periodicTask: PeriodicTaskColumnType.values()) {
+		    		initialSheetCellTypeList.add(new SheetCellType(periodicTask));
 		    	}
 		    	
 		    	List<SheetCellType> finalSheetCellTypeList = new ArrayList<>();
