@@ -1,9 +1,6 @@
 package com.faap.scheduler.job_application;
 
 import java.io.IOException;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.Period;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -12,10 +9,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.faap.scheduler.job_application.excel.models.ExcelSheet;
 import com.faap.scheduler.job_application.excel.models.PeriodicTaskColumnType;
-import com.faap.scheduler.job_application.excel.models.Periodicity;
 import com.faap.scheduler.job_application.excel.models.SheetCellType;
 import com.faap.scheduler.job_application.excel.models.ThingToDoColumnType;
-import com.faap.scheduler.job_application.excel.models.Weekday;
 import com.faap.scheduler.job_application.excel.services.ExcelReadService;
 import com.faap.scheduler.job_application.excel.services.ExcelWriteService;
 import com.faap.scheduler.job_application.excel.services.JobExcelService;
@@ -97,20 +92,21 @@ public class AppTest
     		finalSheetCellTypeList.add(new SheetCellType(thingToDoColumnType));
     	}
     	
-    	this.jobExcelService.loadThingsToDoSheet(jobExcelService, initialFilePath, finalFilePath, initialSheetCellTypeList, finalSheetCellTypeList);
+    	this.jobExcelService.loadAndSortThingsToDoSheet(jobExcelService, initialFilePath, finalFilePath, initialSheetCellTypeList, finalSheetCellTypeList);
     	
     }
     
-    public void calculateEstimatedDate() {
+    
+    /*public void calculateEstimatedDate() {
     	LocalDate initialDateOfPeriodicTask = LocalDate.of(2020, 10, 10);
     	LocalDate lastEstimatedDay = LocalDate.of(2020, 10, 3);
     	
     	LocalDate estimatedDate = this.getEstimatedDate(Periodicity.EVERY_2_WEEKS, Weekday.MONDAY, 
     			initialDateOfPeriodicTask, LocalDate.now(), lastEstimatedDay);
     	System.out.println(estimatedDate);
-    }
+    }*/
     
-    private LocalDate getEstimatedDate(Periodicity periodicity, Weekday weekday, 
+    /*private LocalDate getEstimatedDate(Periodicity periodicity, Weekday weekday, 
     		LocalDate initialDateOfPeriodicTask, LocalDate incidenceDate,
     		LocalDate lastEstimatedDay) {
     	
@@ -125,6 +121,8 @@ public class AppTest
     		case LAST_DAY_MONTH:
     			return incidenceDate.withDayOfMonth(
     										incidenceDate.getMonth().length(incidenceDate.isLeapYear()));
+    		case FIRST_DAY_DECEMBER:
+    			return LocalDate.of(incidenceDate.getYear(), 12, 1);
     		default:
     			return null;
     		}
@@ -147,7 +145,7 @@ public class AppTest
 	    	    
 	    	}
 	    }
-    }
+    }*/
     
     
     public void readPeriodicTasks() {

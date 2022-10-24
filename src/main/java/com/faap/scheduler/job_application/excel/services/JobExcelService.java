@@ -2,8 +2,8 @@ package com.faap.scheduler.job_application.excel.services;
 
 import java.io.IOException;
 import java.time.DayOfWeek;
+import java.time.Duration;
 import java.time.LocalDate;
-import java.time.Period;
 import java.util.Arrays;
 import java.util.List;
 
@@ -35,7 +35,7 @@ public class JobExcelService extends AbstractApiExcelService {
 				excelReadService,excelWriteService);
 	}
 	
-	public void loadThingsToDoSheet(JobExcelService jobExcelService, String initialFilePath, String finalFilePath,
+	public void loadAndSortThingsToDoSheet(JobExcelService jobExcelService, String initialFilePath, String finalFilePath,
     		List<SheetCellType> initialSheetCellTypeList, List<SheetCellType> finalSheetCellTypeList) {
 		System.out.println("Load Periodic Task.");
 		WorkbookResponse workbookResponse = null;
@@ -91,6 +91,8 @@ public class JobExcelService extends AbstractApiExcelService {
 					LocalDate estimatedDate = this.getEstimatedDate(finalExcelSheet.getSheetRowList(), thingsToDo, periodicity, weekday, initialDate);
 					
 					if(!this.existSheetCell(finalExcelSheet.getSheetRowList(), thingsToDo, estimatedDate)) {
+						priority = this.utilExcelService.getPriority(estimatedDate).toString();
+						
 						int lastRowNumber = finalExcelSheet.getSheetRowList().get(finalExcelSheet.getSheetRowList().size() - 1).getRowNumber();
 						Row row = this.createBodyRow(myWorkBook, myWorkBook.getSheet(THINGS_TO_DO_SHEET_NAME), finalSheetCellTypeList, lastRowNumber + 1);
 						
@@ -107,6 +109,7 @@ public class JobExcelService extends AbstractApiExcelService {
 				
 				this.deleteSheet(myWorkBook, THINGS_TO_DO_SHEET_NAME);
 				this.addSheetToExcel(myWorkBook, THINGS_TO_DO_SHEET_NAME, 0, finalSheetCellTypeList, finalExcelSheet.getSheetRowList());
+				this.sortSheet(myWorkBook, THINGS_TO_DO_SHEET_NAME, finalSheetCellTypeList, COLUMN_INDEX_TO_SORT_LIST, COLUMN_INDEX_TO_FILTER, TOKEN_TO_FILTER);
 				
 				System.out.println("loadPeriodicTasks - Saving WorkBook.");
 				this.writeExcel(myWorkBook, finalFilePath);	
@@ -208,6 +211,23 @@ public class JobExcelService extends AbstractApiExcelService {
 		}
 	}
 	
+	@Override
+	public void updatePriority(String sheetName, List<SheetRow> sheetRowList) {
+		if(THINGS_TO_DO_SHEET_NAME.equals(sheetName)) {
+			for (SheetRow sheetRow : sheetRowList) {
+				SheetCell sheetCellPriority = sheetRow.getSheetCellList().stream()
+						.filter(sc -> sc.getSheetCellType().getName().equals(ThingToDoColumnType.PRIORITY.getName())).findFirst().orElse(null);
+				
+				SheetCell sheetCellEstimatedDate = sheetRow.getSheetCellList().stream()
+						.filter(sc -> sc.getSheetCellType().getName().equals(ThingToDoColumnType.ESTIMATED_DATE.getName())).findFirst().orElse(null);
+				
+				if (sheetCellEstimatedDate.getCellValue() != null) {
+					sheetCellPriority.setCellValue(this.utilExcelService.getPriority(this.utilDateService.getLocalDate(sheetCellEstimatedDate.getCellValue())).toString());
+				}
+			}
+		}
+	}
+	
 	private boolean existSheetCell(List<SheetRow> sheetRowList, String thingsToDo, 
 			LocalDate estimatedDate) {
 		
@@ -291,6 +311,8 @@ public class JobExcelService extends AbstractApiExcelService {
     		case LAST_DAY_MONTH:
     			return incidenceDate.withDayOfMonth(
     										incidenceDate.getMonth().length(incidenceDate.isLeapYear()));
+    		case FIRST_DAY_DECEMBER:
+    			return LocalDate.of(incidenceDate.getYear(), 12, 1);	
     		default:
     			return null;
     		}
@@ -300,11 +322,10 @@ public class JobExcelService extends AbstractApiExcelService {
 	    		return estimatedDate;
 	    	}
 	    	else {
-	    		Period period = Period.between(estimatedDate, lastEstimatedDay);
-	    	    int diff = Math.abs(period.getDays());
 	    	    
+	    	    long diffDays = Math.abs(Duration.between(estimatedDate.atStartOfDay(), lastEstimatedDay.atStartOfDay()).toDays());
 	    	    
-	    	    if(periodicity.getSize() <= diff) {
+	    	    if(periodicity.getSize() <= diffDays) {
 		    		return estimatedDate;
 		    	}
 		    	else {
@@ -314,4 +335,5 @@ public class JobExcelService extends AbstractApiExcelService {
 	    	}
 	    }
     }
+
 }

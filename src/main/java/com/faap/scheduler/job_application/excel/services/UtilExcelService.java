@@ -1,5 +1,6 @@
 package com.faap.scheduler.job_application.excel.services;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -16,6 +17,7 @@ import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import com.faap.scheduler.job_application.excel.models.Priority;
 import com.faap.scheduler.job_application.excel.models.SheetCell;
 import com.faap.scheduler.job_application.excel.models.SheetCellType;
 import com.faap.scheduler.job_application.excel.models.SheetRow;
@@ -191,6 +193,16 @@ public class UtilExcelService {
 		
 	}
 	
+    public Priority getPriority(LocalDate estimatedDate) {
+    	long diffDays = Duration.between(LocalDate.now().atStartOfDay(), estimatedDate.atStartOfDay()).toDays();
+    	for(Priority p: Priority.values()) {
+    		if(diffDays < p.getDayNumberToEstimatedDate()) {
+    			return p;
+    		}
+    	}
+    	return Priority.A1;
+    }
+	
 	private boolean existColumnIndex(List<Cell> cellList, int columNumber) {
 		return !cellList.stream().anyMatch(c -> c.getColumnIndex() == columNumber);
 	}
@@ -209,4 +221,5 @@ public class UtilExcelService {
 		}
 		cell.setCellStyle(style);
 	}
+	
 }

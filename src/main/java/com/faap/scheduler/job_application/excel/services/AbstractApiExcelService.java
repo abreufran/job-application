@@ -34,6 +34,8 @@ public abstract class AbstractApiExcelService {
 	
 	public abstract void updateCellIdValue(List<SheetRow> sheetRowList);
 	
+	public abstract void updatePriority(String sheetName, List<SheetRow> sheetRowList);
+	
 	public boolean fillSortSplitAndSaveSheet(String initialFilePath, String finalFilePath, String sheetNameOfTokenFilter, 
 			String sheetNameNoTokenFilter, List<SheetCellType> sheetCellTypeList, 
 			List<Integer> columnIndexToSortList, int columnIndexToFilter, String tokenToFilter) {
@@ -158,7 +160,7 @@ public abstract class AbstractApiExcelService {
 	}
 
 	
-	private WorkbookResponse sortSheet(XSSFWorkbook myWorkBook, String sheetName, List<SheetCellType> sheetCellTypeList, 
+	protected WorkbookResponse sortSheet(XSSFWorkbook myWorkBook, String sheetName, List<SheetCellType> sheetCellTypeList, 
 			List<Integer> columnIndexToSortList, int columnIndexToFilter, String tokenToFilter) {
 		System.out.println("Sort Sheet. ");
 		try {
@@ -283,6 +285,7 @@ public abstract class AbstractApiExcelService {
 	public ExcelSheet readSheet(XSSFWorkbook myWorkBook, String sheetName, List<SheetCellType> sheeCellTypeList) throws Exception {
 		ExcelSheet excelSheet = this.excelReadService.readSheet(myWorkBook, sheetName, sheeCellTypeList);
 		this.updateCellIdValue(excelSheet.getSheetRowList());
+		this.updatePriority(sheetName, excelSheet.getSheetRowList());
 		return excelSheet;
 		
 	}

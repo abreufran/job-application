@@ -12,7 +12,7 @@ public enum Periodicity {
 	EVERY_7_WEEKS("Every 7 weeks", 49),
 	EVERY_8_WEEKS("Every 8 weeks", 56),
 	LAST_DAY_MONTH("Last day of the month", -1),
-	EVERY_YEAR("Every year", -1);
+	FIRST_DAY_DECEMBER("First day of december", -1);
 	
 	private String name;
 	private int size;
