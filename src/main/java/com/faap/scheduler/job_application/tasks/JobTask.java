@@ -52,11 +52,6 @@ public class JobTask extends TimerTask {
 		System.out.println("Job Task: " + LocalDateTime.now());
 		try {
 			if(this.didOriginFileChange() && this.makeBackup()) {
-				//this.readAndSaveExcel();
-				
-				//this.jobExcelService.fillAndSaveEmptyFields(JOB_FILE_NAME, SHEET_NAME, SHEET_CELL_TYPE_LIST);
-				
-				//this.jobExcelService.rebuildSheet(JOB_FILE_NAME, SHEET_NAME, SHEET_CELL_TYPE_LIST);
 				List<SheetCellType> sheetCellTypeList = new ArrayList<>();
 		    	
 		    	for(ThingToDoColumnType thingToDoColumnType: ThingToDoColumnType.values()) {
@@ -65,9 +60,6 @@ public class JobTask extends TimerTask {
 				
 				this.jobExcelService.fillSortAndSaveSheet(JOB_FILE_NAME, JOB_FILE_NAME, SHEET_NAME, sheetCellTypeList,
 						COLUMN_INDEX_TO_SORT_LIST, COLUMN_INDEX_TO_FILTER, TOKEN_TO_FILTER);
-				
-				//this.jobExcelService.setFilter(JOB_FILE_NAME, SHEET_NAME, SHEET_CELL_TYPE_LIST,
-				//		COLUMN_INDEX_TO_FILTER, TOKEN_TO_FILTER);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

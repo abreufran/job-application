@@ -49,7 +49,7 @@ public class App
     		UtilFileService utilFileService, FileBackupRepository fileBackupRepository) {   	
         TimerTask jobTask = new JobTask(taskRepository, jobExcelService, utilExcelService, utilFileService, fileBackupRepository);
         
-        int seconds = 300;
+        int seconds = 30;
         
         Timer timer = new Timer();
         timer.schedule(jobTask, 0, seconds * 1000);
