@@ -52,14 +52,22 @@ public class JobTask extends TimerTask {
 		System.out.println("Job Task: " + LocalDateTime.now());
 		try {
 			if(this.didOriginFileChange() && this.makeBackup()) {
-				List<SheetCellType> sheetCellTypeList = new ArrayList<>();
+				List<SheetCellType> initialSheetCellTypeList = new ArrayList<>();
 		    	
 		    	for(ThingToDoColumnType thingToDoColumnType: ThingToDoColumnType.values()) {
-		    		sheetCellTypeList.add(new SheetCellType(thingToDoColumnType));
+		    		initialSheetCellTypeList.add(new SheetCellType(thingToDoColumnType));
+		    	}
+		    	
+		    	List<SheetCellType> finalSheetCellTypeList = new ArrayList<>();
+		    	
+		    	for(ThingToDoColumnType thingToDoColumnType: ThingToDoColumnType.values()) {
+		    		finalSheetCellTypeList.add(new SheetCellType(thingToDoColumnType));
 		    	}
 				
-				this.jobExcelService.fillSortAndSaveSheet(JOB_FILE_NAME, JOB_FILE_NAME, SHEET_NAME, sheetCellTypeList,
-						COLUMN_INDEX_TO_SORT_LIST, COLUMN_INDEX_TO_FILTER, TOKEN_TO_FILTER);
+				//this.jobExcelService.fillSortAndSaveSheet(JOB_FILE_NAME, JOB_FILE_NAME, SHEET_NAME, sheetCellTypeList,
+				//		COLUMN_INDEX_TO_SORT_LIST, COLUMN_INDEX_TO_FILTER, TOKEN_TO_FILTER);
+				
+				this.jobExcelService.loadAndSortThingsToDoSheet(jobExcelService, JOB_FILE_NAME, JOB_FILE_NAME, initialSheetCellTypeList, finalSheetCellTypeList);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
