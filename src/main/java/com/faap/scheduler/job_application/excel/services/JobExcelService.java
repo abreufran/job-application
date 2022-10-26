@@ -313,6 +313,10 @@ public class JobExcelService extends AbstractApiExcelService {
     										incidenceDate.getMonth().length(incidenceDate.isLeapYear()));
     		case FIRST_DAY_DECEMBER:
     			return LocalDate.of(incidenceDate.getYear(), 12, 1);	
+    		case EVERY_FIFTH_DAY:
+    			return LocalDate.of(incidenceDate.getYear(), incidenceDate.getMonth(), 5);
+    		case EVERY_SEVENTEENTH_DAY:
+    			return LocalDate.of(incidenceDate.getYear(), incidenceDate.getMonth(), 17);
     		default:
     			return null;
     		}

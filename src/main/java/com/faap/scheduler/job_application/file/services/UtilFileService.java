@@ -51,4 +51,18 @@ public class UtilFileService {
 			return null;
 		}
 	}
+	
+	public String makeBackup(String backupPath, String fileName) {
+		System.out.println("Making backup: " + fileName);
+		String destinationPath = backupPath + this.getFileNameBackup(fileName);
+		boolean copied = this.copy(fileName, destinationPath);
+//		if(copied) {
+//			LocalDateTime originFileDateModified = this.getDateModified(jobFileName);
+//			this.fileBackupRepository.saveFileBackup(destinationPath, originFileDateModified, Flag.JOB);
+//		}
+		if(copied) {
+			return destinationPath;
+		}
+		return null;
+	}
 }

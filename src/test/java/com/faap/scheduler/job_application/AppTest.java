@@ -16,6 +16,7 @@ import com.faap.scheduler.job_application.excel.services.ExcelWriteService;
 import com.faap.scheduler.job_application.excel.services.JobExcelService;
 import com.faap.scheduler.job_application.excel.services.UtilExcelService;
 import com.faap.scheduler.job_application.file.services.UtilDateService;
+import com.faap.scheduler.job_application.file.services.UtilFileService;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -27,6 +28,7 @@ import junit.framework.TestSuite;
 public class AppTest 
     extends TestCase
 {
+	private UtilFileService utilFileService;
 	private UtilDateService utilDateService;
 	private UtilExcelService utilExcelService;
 	private ExcelWriteService excelWriteService;
@@ -69,30 +71,39 @@ public class AppTest
     }
     
     public void loadPeriodicTasks() {
+    	this.utilFileService = new UtilFileService();
     	this.utilDateService = new UtilDateService();
     	this.utilExcelService = new UtilExcelService(utilDateService);
     	this.excelReadService = new ExcelReadService(utilDateService, utilExcelService);
     	this.excelWriteService = new ExcelWriteService(utilDateService, utilExcelService);
     	this.jobExcelService = new JobExcelService(utilDateService, utilExcelService, excelReadService, excelWriteService);
     	
-    	String initialFilePath = "/Users/acidlabs/Desktop/job_backup/Things_to_do.xlsx";
-    	String finalFilePath = "/Users/acidlabs/Desktop/job_backup/Things_to_do_prueba.xlsx";
-    	//String initialSheetName = "Periodic Tasks";
-    	//String finalSheetName = "Things to do";
+    	//String initialFilePath = "/Users/acidlabs/Desktop/job_backup/Things_to_do.xlsx";
+    	//String finalFilePath = "/Users/acidlabs/Desktop/job_backup/Things_to_do_prueba.xlsx";
     	
-    	List<SheetCellType> initialSheetCellTypeList = new ArrayList<>();
+    	String initialFilePath = "/Users/acidlabs/Library/CloudStorage/GoogleDrive-easycryptolearning21@gmail.com/Mi unidad/Things_to_do.xlsx";
+    	String finalFilePath = "/Users/acidlabs/Library/CloudStorage/GoogleDrive-easycryptolearning21@gmail.com/Mi unidad/Things_to_do.xlsx";
     	
-    	for(PeriodicTaskColumnType periodicTask: PeriodicTaskColumnType.values()) {
-    		initialSheetCellTypeList.add(new SheetCellType(periodicTask));
+    	String backupPath = "/Users/acidlabs/Desktop/job_backup/backup";
+    	
+    	String destinationFile = this.utilFileService.makeBackup(backupPath, initialFilePath);
+
+    	if(destinationFile != null) {
+    	
+	    	List<SheetCellType> initialSheetCellTypeList = new ArrayList<>();
+	    	
+	    	for(PeriodicTaskColumnType periodicTask: PeriodicTaskColumnType.values()) {
+	    		initialSheetCellTypeList.add(new SheetCellType(periodicTask));
+	    	}
+	    	
+	    	List<SheetCellType> finalSheetCellTypeList = new ArrayList<>();
+	    	
+	    	for(ThingToDoColumnType thingToDoColumnType: ThingToDoColumnType.values()) {
+	    		finalSheetCellTypeList.add(new SheetCellType(thingToDoColumnType));
+	    	}
+	    	
+	    	this.jobExcelService.loadAndSortThingsToDoSheet(jobExcelService, initialFilePath, finalFilePath, initialSheetCellTypeList, finalSheetCellTypeList);
     	}
-    	
-    	List<SheetCellType> finalSheetCellTypeList = new ArrayList<>();
-    	
-    	for(ThingToDoColumnType thingToDoColumnType: ThingToDoColumnType.values()) {
-    		finalSheetCellTypeList.add(new SheetCellType(thingToDoColumnType));
-    	}
-    	
-    	this.jobExcelService.loadAndSortThingsToDoSheet(jobExcelService, initialFilePath, finalFilePath, initialSheetCellTypeList, finalSheetCellTypeList);
     	
     }
     

@@ -159,14 +159,13 @@ public class JobTask extends TimerTask {
 	}
 	
 	public boolean makeBackup() {
-		System.out.println("Making backup: " + JOB_FILE_NAME);
-		String destinationPath = BACKUP_PATH + this.utilFileService.getFileNameBackup(JOB_FILE_NAME);
-		boolean copied = this.utilFileService.copy(JOB_FILE_NAME, destinationPath);
-		if(copied) {
+		String destinationPath = this.utilFileService.makeBackup(BACKUP_PATH, JOB_FILE_NAME);
+		if(destinationPath != null) {
 			LocalDateTime originFileDateModified = this.utilFileService.getDateModified(JOB_FILE_NAME);
 			this.fileBackupRepository.saveFileBackup(destinationPath, originFileDateModified, Flag.JOB);
+			return true;
 		}
-		return copied;
+		return false;
 	}
 
 	public UtilExcelService getUtilExcelService() {
