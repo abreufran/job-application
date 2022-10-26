@@ -11,10 +11,46 @@ public enum Periodicity {
 	EVERY_6_WEEKS("Every 6 weeks", 42),
 	EVERY_7_WEEKS("Every 7 weeks", 49),
 	EVERY_8_WEEKS("Every 8 weeks", 56),
+	EVERY_9_WEEKS("Every 9 weeks", 63),
+	EVERY_10_WEEKS("Every 10 weeks", 70),
+	
+	EVERY_10_MONTHS("Every 10 months", 300),
+	
 	LAST_DAY_MONTH("Last day of the month", -1),
 	FIRST_DAY_DECEMBER("First day of december", -1),
 	EVERY_SEVENTEENTH_DAY("Every seventeenth day", -1),
-	EVERY_FIFTH_DAY("Every fifth day", -1);
+	EVERY_FIFTH_DAY("Every fifth day", -1),
+	
+	EVERY_1_DAY("Every 1 day", 1),
+	EVERY_2_DAYS("Every 2 days", 2),
+	EVERY_3_DAYS("Every 3 days", 3),
+	EVERY_4_DAYS("Every 4 days", 4),
+	EVERY_5_DAYS("Every 5 days", 5),
+	EVERY_6_DAYS("Every 6 days", 6),
+	EVERY_7_DAYS("Every 7 days", 7),
+	EVERY_8_DAYS("Every 8 days", 8),
+	EVERY_9_DAYS("Every 9 days", 9),
+	EVERY_10_DAYS("Every 10 days", 10),
+	EVERY_11_DAYS("Every 11 days", 11),
+	EVERY_12_DAYS("Every 12 days", 12),
+	EVERY_13_DAYS("Every 13 days", 13),
+	EVERY_14_DAYS("Every 14 days", 14),
+	EVERY_15_DAYS("Every 15 days", 15),
+	EVERY_16_DAYS("Every 16 days", 16),
+	EVERY_17_DAYS("Every 17 days", 17),
+	EVERY_18_DAYS("Every 18 days", 18),
+	EVERY_19_DAYS("Every 19 days", 19),
+	EVERY_20_DAYS("Every 20 days", 20),
+	EVERY_21_DAYS("Every 21 days", 21),
+	EVERY_22_DAYS("Every 22 days", 22),
+	EVERY_23_DAYS("Every 23 days", 23),
+	EVERY_24_DAYS("Every 24 days", 24),
+	EVERY_25_DAYS("Every 25 days", 25),
+	EVERY_26_DAYS("Every 26 days", 26),
+	EVERY_27_DAYS("Every 27 days", 27),
+	EVERY_28_DAYS("Every 28 days", 28),
+	EVERY_29_DAYS("Every 29 days", 29),
+	EVERY_30_DAYS("Every 30 days", 30);
 	
 	private String name;
 	private int size;
