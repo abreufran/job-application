@@ -18,9 +18,9 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.faap.scheduler.job_application.excel.models.Priority;
-import com.faap.scheduler.job_application.excel.models.SheetCell;
-import com.faap.scheduler.job_application.excel.models.SheetCellType;
-import com.faap.scheduler.job_application.excel.models.SheetRow;
+import com.faap.scheduler.job_application.excel.models.CellWrapper;
+import com.faap.scheduler.job_application.excel.models.CellTypeWrapper;
+import com.faap.scheduler.job_application.excel.models.RowWrapper;
 import com.faap.scheduler.job_application.file.services.UtilDateService;
 
 public class UtilExcelService {
@@ -30,22 +30,22 @@ public class UtilExcelService {
 		this.setUtilDateService(utilDateService);
 	}
 
-	public List<SheetRow> calculateIncompleteSheetRowList(List<SheetRow> sheetRowList) {
-		return sheetRowList.stream().filter(sr -> this.incompleteSheetRow(sr)).collect(Collectors.toList());
+	public List<RowWrapper> calculateIncompleteSheetRowList(List<RowWrapper> wrapperRowList) {
+		return wrapperRowList.stream().filter(sr -> this.incompleteSheetRow(sr)).collect(Collectors.toList());
 	}
 	
-	private boolean incompleteSheetRow(SheetRow sheetRow) {
-		//System.out.println("RowNumber: " + sheetRow.getRowNumber());
-		return sheetRow.getSheetCellList().stream().anyMatch(sc -> this.incompleteSheetCell(sc));
+	private boolean incompleteSheetRow(RowWrapper rowWrapper) {
+		//System.out.println("RowNumber: " + rowWrapper.getRowNumber());
+		return rowWrapper.getSheetCellList().stream().anyMatch(sc -> this.incompleteSheetCell(sc));
 	}
 	
-	private boolean incompleteSheetCell(SheetCell sheetCell) {
-		String strCell = sheetCell.getCellValue();
-		//System.out.println("columnName: " + sheetCell.getSheetCellType().getName() + " / cellValue: " + sheetCell.getCellValue() + " / Required: " + sheetCell.getSheetCellType().isRequired());
-		return sheetCell.getSheetCellType().isRequired() && (strCell == null || strCell.trim().equals(""));
+	private boolean incompleteSheetCell(CellWrapper cellWrapper) {
+		String strCell = cellWrapper.getCellValue();
+		//System.out.println("columnName: " + cellWrapper.getSheetCellType().getName() + " / cellValue: " + cellWrapper.getCellValue() + " / Required: " + cellWrapper.getSheetCellType().isRequired());
+		return cellWrapper.getSheetCellType().isRequired() && (strCell == null || strCell.trim().equals(""));
 	}
 	
-	public List<SheetCell> calculateIncompleteSheetCell(List<SheetCell> incompleteSheetCellList) {
+	public List<CellWrapper> calculateIncompleteSheetCell(List<CellWrapper> incompleteSheetCellList) {
 		return incompleteSheetCellList.stream()
 				.filter(sc -> this.incompleteSheetCell(sc)).collect(Collectors.toList());
 	}
@@ -68,11 +68,11 @@ public class UtilExcelService {
 		}
 	}
 	
-	public List<SheetRow> sortSheetRowList(List<SheetRow> sheetRowList, 
-			List<Integer> columnIndexToSortList, Comparator<SheetRow> finalComparator) {
+	public List<RowWrapper> sortSheetRowList(List<RowWrapper> wrapperRowList, 
+			List<Integer> columnIndexToSortList, Comparator<RowWrapper> finalComparator) {
 		
 		for(int columnIndexToSort: columnIndexToSortList) {
-			Comparator<SheetRow> priorityComparator = (sr1, sr2) -> {
+			Comparator<RowWrapper> priorityComparator = (sr1, sr2) -> {
 				String cellValueToSort1 = sr1.getSheetCellList().get(columnIndexToSort).getCellValue();
 				String cellValueToSort2 = sr2.getSheetCellList().get(columnIndexToSort).getCellValue();
 				
@@ -99,15 +99,15 @@ public class UtilExcelService {
 			
 		}	
 		
-		return sheetRowList.stream()
+		return wrapperRowList.stream()
 				.sorted(finalComparator).collect(Collectors.toList());
 	
 	}
 	
-	public List<SheetRow> sortSheetRowList(List<SheetRow> sheetRowList, 
+	public List<RowWrapper> sortSheetRowList(List<RowWrapper> wrapperRowList, 
 			List<Integer> columnIndexToSortList, int columnIndexToFilter, String tokenToFilter) {
 
-		Comparator<SheetRow> filterComparator = (sr1, sr2) -> {
+		Comparator<RowWrapper> filterComparator = (sr1, sr2) -> {
 			String cellValueToSort1 = sr1.getSheetCellList().get(columnIndexToFilter)
 					.getCellValue();
 			String cellValueToSort2 = sr2.getSheetCellList().get(columnIndexToFilter)
@@ -122,14 +122,14 @@ public class UtilExcelService {
 			return cellValueToSort1.compareTo(cellValueToSort2);
 		};
 
-		return this.sortSheetRowList(sheetRowList, columnIndexToSortList, filterComparator);
+		return this.sortSheetRowList(wrapperRowList, columnIndexToSortList, filterComparator);
 	}
 	
-	public boolean didSheetSort(List<SheetRow> sortedSheetRowList) {
+	public boolean didSheetSort(List<RowWrapper> sortedSheetRowList) {
 		int rowNumber = 0; //Header
-		for (SheetRow sheetRow: sortedSheetRowList) {
+		for (RowWrapper rowWrapper: sortedSheetRowList) {
 			rowNumber++;
-			if (sheetRow.getRowNumber() != rowNumber) {
+			if (rowWrapper.getRowNumber() != rowNumber) {
 				return true;
 			}
 		}
@@ -148,7 +148,7 @@ public class UtilExcelService {
 		this.utilDateService = utilDateService;
 	}
 	
-	public void completeRow(Row row, XSSFWorkbook myWorkBook, List<SheetCellType> sheeCellTypeList) {
+	public void completeRow(Row row, XSSFWorkbook myWorkBook, List<CellTypeWrapper> sheeCellTypeList) {
 		List<Cell> cellList = new ArrayList<>();
 		Iterator<Cell> cellIterator = row.cellIterator();
 		// For each row, iterate through each columns
@@ -159,24 +159,24 @@ public class UtilExcelService {
 			}
 		}
 
-		for (SheetCellType sheetCellType: sheeCellTypeList) {
-			if (this.existColumnIndex(cellList, sheetCellType.getColumnIndex())) {
-				CellType cellType = sheetCellType.getCellType();
-				Cell cell = row.createCell(sheetCellType.getColumnIndex(), cellType);
+		for (CellTypeWrapper cellTypeWrapper: sheeCellTypeList) {
+			if (this.existColumnIndex(cellList, cellTypeWrapper.getColumnIndex())) {
+				CellType cellType = cellTypeWrapper.getCellType();
+				Cell cell = row.createCell(cellTypeWrapper.getColumnIndex(), cellType);
 				
 				HorizontalAlignment horizontalAlignment = HorizontalAlignment.CENTER;
-				if(sheetCellType.isRequired()) {
+				if(cellTypeWrapper.isRequired()) {
 					horizontalAlignment = HorizontalAlignment.LEFT;
 				}
 				
 				boolean isText = cell.getCellType() == CellType.STRING;
 				
-				this.setBlankCellAndCellStyle(myWorkBook, cell, sheetCellType.isDate(), isText, horizontalAlignment);
+				this.setBlankCellAndCellStyle(myWorkBook, cell, cellTypeWrapper.isDate(), isText, horizontalAlignment);
 			}
 		}
 	}
 	
-	public List<Cell> getCellList(Row row, List<SheetCellType> sheetCellTypeList) {
+	public List<Cell> getCellList(Row row, List<CellTypeWrapper> wrapperCellTypeList) {
 		Iterator<Cell> cellIterator = row.cellIterator();
 
 		List<Cell> cellList = new ArrayList<>();
@@ -184,7 +184,7 @@ public class UtilExcelService {
 		// For each row, iterate through each columns
 		while (cellIterator.hasNext()) {
 			Cell cell = cellIterator.next();
-			if(cell.getColumnIndex() < sheetCellTypeList.size()) {
+			if(cell.getColumnIndex() < wrapperCellTypeList.size()) {
 				cellList.add(cell);
 			}
 		}

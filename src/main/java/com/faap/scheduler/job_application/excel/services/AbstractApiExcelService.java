@@ -9,10 +9,10 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.faap.scheduler.job_application.excel.dtos.WorkbookResponse;
-import com.faap.scheduler.job_application.excel.models.ExcelSheet;
-import com.faap.scheduler.job_application.excel.models.SheetCell;
-import com.faap.scheduler.job_application.excel.models.SheetCellType;
-import com.faap.scheduler.job_application.excel.models.SheetRow;
+import com.faap.scheduler.job_application.excel.models.SheetWrapper;
+import com.faap.scheduler.job_application.excel.models.CellWrapper;
+import com.faap.scheduler.job_application.excel.models.CellTypeWrapper;
+import com.faap.scheduler.job_application.excel.models.RowWrapper;
 import com.faap.scheduler.job_application.file.services.UtilDateService;
 
 public abstract class AbstractApiExcelService {
@@ -30,28 +30,28 @@ public abstract class AbstractApiExcelService {
 		this.setExcelWriteService(excelWriteService);
 	}
 	
-	public abstract void completeSheetCellList(List<SheetCell> sheetCellList, XSSFWorkbook myWorkBook, int rowNumber);
+	public abstract void completeSheetCellList(List<CellWrapper> wrapperCellList, XSSFWorkbook myWorkBook, int rowNumber);
 	
-	public abstract void updateCellIdValue(List<SheetRow> sheetRowList);
+	public abstract void updateCellIdValue(List<RowWrapper> wrapperRowList);
 	
-	public abstract void updatePriority(String sheetName, List<SheetRow> sheetRowList);
+	public abstract void updatePriority(String sheetName, List<RowWrapper> wrapperRowList);
 	
 	public boolean fillSortSplitAndSaveSheet(String initialFilePath, String finalFilePath, String sheetNameOfTokenFilter, 
-			String sheetNameNoTokenFilter, List<SheetCellType> sheetCellTypeList, 
+			String sheetNameNoTokenFilter, List<CellTypeWrapper> wrapperCellTypeList, 
 			List<Integer> columnIndexToSortList, int columnIndexToFilter, String tokenToFilter) {
 		WorkbookResponse workbookResponse = this.fillSortSplitSheet(initialFilePath, finalFilePath, 
-				sheetNameOfTokenFilter, sheetNameNoTokenFilter, sheetCellTypeList, columnIndexToSortList, columnIndexToFilter, tokenToFilter);
+				sheetNameOfTokenFilter, sheetNameNoTokenFilter, wrapperCellTypeList, columnIndexToSortList, columnIndexToFilter, tokenToFilter);
 		
 		return this.saveWorkbookResponse(workbookResponse, finalFilePath, "SplitSheet");
 	}
 	
 	public WorkbookResponse fillSortSplitSheet(String initialFilePath, String finalFilePath, String sheetNameOfTokenFilter, 
-			String sheetNameNoTokenFilter, List<SheetCellType> sheetCellTypeList, 
+			String sheetNameNoTokenFilter, List<CellTypeWrapper> wrapperCellTypeList, 
 			List<Integer> columnIndexToSortList, int columnIndexToFilter, String tokenToFilter) {
 
 		WorkbookResponse workbookResponse = null;
 		try {
-			workbookResponse = this.fillEmptyFields(initialFilePath, finalFilePath, sheetNameOfTokenFilter, sheetCellTypeList);
+			workbookResponse = this.fillEmptyFields(initialFilePath, finalFilePath, sheetNameOfTokenFilter, wrapperCellTypeList);
 			
 			if(!workbookResponse.isSuccess()) {
 				
@@ -60,7 +60,7 @@ public abstract class AbstractApiExcelService {
 			
 			boolean fillChanged = workbookResponse.isChanged();
 			
-			workbookResponse = this.sortSheet(workbookResponse.getMyWorkBook(), sheetNameOfTokenFilter, sheetCellTypeList, columnIndexToSortList, columnIndexToFilter, tokenToFilter);
+			workbookResponse = this.sortSheet(workbookResponse.getMyWorkBook(), sheetNameOfTokenFilter, wrapperCellTypeList, columnIndexToSortList, columnIndexToFilter, tokenToFilter);
 			
 			if(!workbookResponse.isSuccess()) {
 				return new WorkbookResponse(workbookResponse.getMyWorkBook(), false, false);
@@ -70,50 +70,50 @@ public abstract class AbstractApiExcelService {
 			
 			//Add sheet if doesn't it exist
 			if(!this.utilExcelService.existSheet(workbookResponse.getMyWorkBook(), sheetNameOfTokenFilter)) {
-				this.addEmptySheetToExcel(workbookResponse.getMyWorkBook(), sheetNameOfTokenFilter, 0, sheetCellTypeList);
+				this.addEmptySheetToExcel(workbookResponse.getMyWorkBook(), sheetNameOfTokenFilter, 0, wrapperCellTypeList);
 			}
 			
 			//Add sheet if doesn't it exist
 			if(!this.utilExcelService.existSheet(workbookResponse.getMyWorkBook(), sheetNameNoTokenFilter)) {	
 				this.addEmptySheetToExcel(workbookResponse.getMyWorkBook(), sheetNameNoTokenFilter, 
-						workbookResponse.getMyWorkBook().getNumberOfSheets(),sheetCellTypeList);
+						workbookResponse.getMyWorkBook().getNumberOfSheets(),wrapperCellTypeList);
 			}
 
 			//Read sheet
-			ExcelSheet excelSheetOfTokenFilet = this.readSheet(workbookResponse.getMyWorkBook(), sheetNameOfTokenFilter,
-					sheetCellTypeList);
+			SheetWrapper wrapperSheetOfTokenFilet = this.readSheet(workbookResponse.getMyWorkBook(), sheetNameOfTokenFilter,
+					wrapperCellTypeList);
 			
-			ExcelSheet excelSheetNoTokenFilet = this.readSheet(workbookResponse.getMyWorkBook(), sheetNameNoTokenFilter,
-					sheetCellTypeList);
+			SheetWrapper wrapperSheetNoTokenFilet = this.readSheet(workbookResponse.getMyWorkBook(), sheetNameNoTokenFilter,
+					wrapperCellTypeList);
 			
 			//Split sheet by token filter
-			List<SheetRow> sheetRowOfTokenFilterList = excelSheetOfTokenFilet.getSheetRowList().stream().filter(sr -> {
+			List<RowWrapper> wrapperRowOfTokenFilterList = wrapperSheetOfTokenFilet.getSheetRowList().stream().filter(sr -> {
 				return sr.getSheetCellList().get(columnIndexToFilter).getCellValue().equals(tokenToFilter);
 			}).collect(Collectors.toList());
 			
 			//Split sheet by NO token filter
-			List<SheetRow> sheetRowNoTokenFilterList = excelSheetOfTokenFilet.getSheetRowList().stream().filter(sr -> {
+			List<RowWrapper> wrapperRowNoTokenFilterList = wrapperSheetOfTokenFilet.getSheetRowList().stream().filter(sr -> {
 				return !sr.getSheetCellList().get(columnIndexToFilter).getCellValue().equals(tokenToFilter);
 			}).collect(Collectors.toList());
 			
 			//Add old records of NO token filer
-			sheetRowNoTokenFilterList.addAll(excelSheetNoTokenFilet.getSheetRowList());
+			wrapperRowNoTokenFilterList.addAll(wrapperSheetNoTokenFilet.getSheetRowList());
 			
 			//Sort records of NO token filter
-			sheetRowNoTokenFilterList = this.utilExcelService.sortSheetRowList(sheetRowNoTokenFilterList, columnIndexToSortList, null);
+			wrapperRowNoTokenFilterList = this.utilExcelService.sortSheetRowList(wrapperRowNoTokenFilterList, columnIndexToSortList, null);
 
-			if (excelSheetOfTokenFilet.getSheetRowList().size() != sheetRowOfTokenFilterList.size()
-					|| excelSheetNoTokenFilet.getSheetRowList().size() != sheetRowNoTokenFilterList.size()
+			if (wrapperSheetOfTokenFilet.getSheetRowList().size() != wrapperRowOfTokenFilterList.size()
+					|| wrapperSheetNoTokenFilet.getSheetRowList().size() != wrapperRowNoTokenFilterList.size()
 					|| fillChanged || sortChanged) {
-				this.updateRowNumber(sheetRowOfTokenFilterList);
-				this.updateRowNumber(sheetRowNoTokenFilterList);
+				this.updateRowNumber(wrapperRowOfTokenFilterList);
+				this.updateRowNumber(wrapperRowNoTokenFilterList);
 				
 				this.deleteSheet(workbookResponse.getMyWorkBook(), sheetNameOfTokenFilter);
-				this.addSheetToExcel(workbookResponse.getMyWorkBook(), sheetNameOfTokenFilter, 0, sheetCellTypeList, sheetRowOfTokenFilterList);
+				this.addSheetToExcel(workbookResponse.getMyWorkBook(), sheetNameOfTokenFilter, 0, wrapperCellTypeList, wrapperRowOfTokenFilterList);
 				
 				this.deleteSheet(workbookResponse.getMyWorkBook(), sheetNameNoTokenFilter);
 				this.addSheetToExcel(workbookResponse.getMyWorkBook(), sheetNameNoTokenFilter, 
-						workbookResponse.getMyWorkBook().getNumberOfSheets(), sheetCellTypeList, sheetRowNoTokenFilterList);
+						workbookResponse.getMyWorkBook().getNumberOfSheets(), wrapperCellTypeList, wrapperRowNoTokenFilterList);
 
 
 				return new WorkbookResponse(workbookResponse.getMyWorkBook(), true, true);
@@ -131,19 +131,19 @@ public abstract class AbstractApiExcelService {
 		}
 	}
 	
-	public boolean fillSortAndSaveSheet(String initialFilePath, String finalFilePath, String sheetName, List<SheetCellType> sheetCellTypeList, 
+	public boolean fillSortAndSaveSheet(String initialFilePath, String finalFilePath, String sheetName, List<CellTypeWrapper> wrapperCellTypeList, 
 			List<Integer> columnIndexToSortList, int columnIndexToFilter, String tokenToFilter) {
 
 		WorkbookResponse workbookResponse = this.fillSortSheet(initialFilePath, finalFilePath, 
-				sheetName, sheetCellTypeList, columnIndexToSortList, columnIndexToFilter, tokenToFilter);
+				sheetName, wrapperCellTypeList, columnIndexToSortList, columnIndexToFilter, tokenToFilter);
 		
 		return this.saveWorkbookResponse(workbookResponse, finalFilePath, "SortSheet");
 	}
 	
-	public WorkbookResponse fillSortSheet(String initialFilePath, String finalFilePath, String sheetName, List<SheetCellType> sheetCellTypeList, 
+	public WorkbookResponse fillSortSheet(String initialFilePath, String finalFilePath, String sheetName, List<CellTypeWrapper> wrapperCellTypeList, 
 			List<Integer> columnIndexToSortList, int columnIndexToFilter, String tokenToFilter) {
 
-		WorkbookResponse workbookResponse = this.fillEmptyFields(initialFilePath, finalFilePath, sheetName, sheetCellTypeList);
+		WorkbookResponse workbookResponse = this.fillEmptyFields(initialFilePath, finalFilePath, sheetName, wrapperCellTypeList);
 			
 		if(!workbookResponse.isSuccess()) {
 			
@@ -152,7 +152,7 @@ public abstract class AbstractApiExcelService {
 		
 		boolean fillChanged = workbookResponse.isChanged();
 		
-		workbookResponse = this.sortSheet(workbookResponse.getMyWorkBook(), sheetName, sheetCellTypeList, columnIndexToSortList, columnIndexToFilter, tokenToFilter);
+		workbookResponse = this.sortSheet(workbookResponse.getMyWorkBook(), sheetName, wrapperCellTypeList, columnIndexToSortList, columnIndexToFilter, tokenToFilter);
 
 		workbookResponse.setChanged(fillChanged || workbookResponse.isChanged());
 		
@@ -160,23 +160,23 @@ public abstract class AbstractApiExcelService {
 	}
 
 	
-	protected WorkbookResponse sortSheet(XSSFWorkbook myWorkBook, String sheetName, List<SheetCellType> sheetCellTypeList, 
+	protected WorkbookResponse sortSheet(XSSFWorkbook myWorkBook, String sheetName, List<CellTypeWrapper> wrapperCellTypeList, 
 			List<Integer> columnIndexToSortList, int columnIndexToFilter, String tokenToFilter) {
 		System.out.println("Sort Sheet. ");
 		try {
 
-			ExcelSheet excelSheet = this.readSheet(myWorkBook, sheetName,
-					sheetCellTypeList);
+			SheetWrapper sheetWrapper = this.readSheet(myWorkBook, sheetName,
+					wrapperCellTypeList);
 			
-			List<SheetRow> sortedSheetRowList = this.utilExcelService.sortSheetRowList(
-					excelSheet.getSheetRowList(), columnIndexToSortList, columnIndexToFilter, tokenToFilter);
+			List<RowWrapper> sortedSheetRowList = this.utilExcelService.sortSheetRowList(
+					sheetWrapper.getSheetRowList(), columnIndexToSortList, columnIndexToFilter, tokenToFilter);
 
 
 			if (this.utilExcelService.didSheetSort(sortedSheetRowList)) {
 				this.updateRowNumber(sortedSheetRowList);
 				
 				this.deleteSheet(myWorkBook, sheetName);
-				this.addSheetToExcel(myWorkBook, sheetName, 0, sheetCellTypeList, sortedSheetRowList);
+				this.addSheetToExcel(myWorkBook, sheetName, 0, wrapperCellTypeList, sortedSheetRowList);
 				return new WorkbookResponse(myWorkBook, true, true);
 			}
 			else {
@@ -190,34 +190,34 @@ public abstract class AbstractApiExcelService {
 		} 
 	}
 	
-	public boolean fillAndSaveEmptyFields(String filePath, String sheetName, List<SheetCellType> sheetCellTypeList) {
-		return this.fillAndSaveEmptyFields(filePath, filePath, sheetName, sheetCellTypeList);
+	public boolean fillAndSaveEmptyFields(String filePath, String sheetName, List<CellTypeWrapper> wrapperCellTypeList) {
+		return this.fillAndSaveEmptyFields(filePath, filePath, sheetName, wrapperCellTypeList);
 	}
 	
-	public boolean fillAndSaveEmptyFields(String initialFilePath, String finalFilePath, String sheetName, List<SheetCellType> sheetCellTypeList) {
-		WorkbookResponse workbookResponse = this.fillEmptyFields(initialFilePath, finalFilePath, sheetName, sheetCellTypeList);
+	public boolean fillAndSaveEmptyFields(String initialFilePath, String finalFilePath, String sheetName, List<CellTypeWrapper> wrapperCellTypeList) {
+		WorkbookResponse workbookResponse = this.fillEmptyFields(initialFilePath, finalFilePath, sheetName, wrapperCellTypeList);
 		
 		return this.saveWorkbookResponse(workbookResponse, finalFilePath, "FillSheet");
 	}
 	
-	private WorkbookResponse fillEmptyFields(String initialFilePath, String finalFilePath, String sheetName, List<SheetCellType> sheetCellTypeList) {
+	private WorkbookResponse fillEmptyFields(String initialFilePath, String finalFilePath, String sheetName, List<CellTypeWrapper> wrapperCellTypeList) {
 		System.out.println("Fill empty fields. ");
 		XSSFWorkbook myWorkBook = null;
 		try {
 			myWorkBook = this.excelReadService.readExcel(initialFilePath);
 
-			ExcelSheet excelSheet = this.readSheet(myWorkBook, sheetName,
-					sheetCellTypeList);
+			SheetWrapper sheetWrapper = this.readSheet(myWorkBook, sheetName,
+					wrapperCellTypeList);
 
-			List<SheetRow> incompleteSheetRowList = this.utilExcelService.calculateIncompleteSheetRowList(excelSheet.getSheetRowList());
+			List<RowWrapper> incompleteSheetRowList = this.utilExcelService.calculateIncompleteSheetRowList(sheetWrapper.getSheetRowList());
 
-			for(SheetRow sheetRow: incompleteSheetRowList) {
-				this.completeSheetCellList(sheetRow.getSheetCellList(), myWorkBook, sheetRow.getRowNumber());
+			for(RowWrapper rowWrapper: incompleteSheetRowList) {
+				this.completeSheetCellList(rowWrapper.getSheetCellList(), myWorkBook, rowWrapper.getRowNumber());
 			}
 
 			if (incompleteSheetRowList.size() > 0) {
 				this.deleteSheet(myWorkBook, sheetName);
-				this.addSheetToExcel(myWorkBook, sheetName, 0, sheetCellTypeList, excelSheet.getSheetRowList());
+				this.addSheetToExcel(myWorkBook, sheetName, 0, wrapperCellTypeList, sheetWrapper.getSheetRowList());
 				return new WorkbookResponse(myWorkBook, true, true);
 			}
 			else {
@@ -265,12 +265,12 @@ public abstract class AbstractApiExcelService {
 		}
 	}
 	
-	public void addEmptySheetToExcel(XSSFWorkbook myWorkBook, String sheetName, int columnIndex, List<SheetCellType> sheetCellTypeList) {
-		this.excelWriteService.addEmptySheetToExcel(myWorkBook, sheetName, columnIndex, sheetCellTypeList);
+	public void addEmptySheetToExcel(XSSFWorkbook myWorkBook, String sheetName, int columnIndex, List<CellTypeWrapper> wrapperCellTypeList) {
+		this.excelWriteService.addEmptySheetToExcel(myWorkBook, sheetName, columnIndex, wrapperCellTypeList);
 	}
 	
-	public void addSheetToExcel(XSSFWorkbook myWorkBook, String sheetName, int columnIndex, List<SheetCellType> sheetCellTypeList, List<SheetRow> sheetRowList) {
-		this.excelWriteService.addSheetToExcel(myWorkBook, sheetName, columnIndex, sheetCellTypeList, sheetRowList);
+	public void addSheetToExcel(XSSFWorkbook myWorkBook, String sheetName, int columnIndex, List<CellTypeWrapper> wrapperCellTypeList, List<RowWrapper> wrapperRowList) {
+		this.excelWriteService.addSheetToExcel(myWorkBook, sheetName, columnIndex, wrapperCellTypeList, wrapperRowList);
 	}
 
 	
@@ -282,15 +282,15 @@ public abstract class AbstractApiExcelService {
 		this.excelWriteService.writeExcel(myWorkBook, filePath);
 	}
 	
-	public ExcelSheet readSheet(XSSFWorkbook myWorkBook, String sheetName, List<SheetCellType> sheeCellTypeList) throws Exception {
-		ExcelSheet excelSheet = this.excelReadService.readSheet(myWorkBook, sheetName, sheeCellTypeList);
-		this.updateCellIdValue(excelSheet.getSheetRowList());
-		this.updatePriority(sheetName, excelSheet.getSheetRowList());
-		return excelSheet;
+	public SheetWrapper readSheet(XSSFWorkbook myWorkBook, String sheetName, List<CellTypeWrapper> sheeCellTypeList) throws Exception {
+		SheetWrapper sheetWrapper = this.excelReadService.readSheet(myWorkBook, sheetName, sheeCellTypeList);
+		this.updateCellIdValue(sheetWrapper.getSheetRowList());
+		this.updatePriority(sheetName, sheetWrapper.getSheetRowList());
+		return sheetWrapper;
 		
 	}
 	
-	public Row createBodyRow(XSSFWorkbook myWorkBook, XSSFSheet sheet, List<SheetCellType> sheeCellTypeList, int rowNumber) {
+	public Row createBodyRow(XSSFWorkbook myWorkBook, XSSFSheet sheet, List<CellTypeWrapper> sheeCellTypeList, int rowNumber) {
 		return this.excelWriteService.createBodyRow(myWorkBook, sheet, sheeCellTypeList, rowNumber);
 	}
 	
@@ -299,11 +299,11 @@ public abstract class AbstractApiExcelService {
 	}
 	
 	
-	private void updateRowNumber(List<SheetRow> sortedSheetRowList) {
+	private void updateRowNumber(List<RowWrapper> sortedSheetRowList) {
 		int rowNumber = 0; //Header
-		for (SheetRow sheetRow: sortedSheetRowList) {
+		for (RowWrapper rowWrapper: sortedSheetRowList) {
 			rowNumber++;
-			sheetRow.setRowNumber(rowNumber);
+			rowWrapper.setRowNumber(rowNumber);
 		}
 		this.updateCellIdValue(sortedSheetRowList);
 	}

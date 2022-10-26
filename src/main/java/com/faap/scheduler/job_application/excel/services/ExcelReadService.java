@@ -17,10 +17,10 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import com.faap.scheduler.job_application.excel.models.ExcelSheet;
-import com.faap.scheduler.job_application.excel.models.SheetCell;
-import com.faap.scheduler.job_application.excel.models.SheetCellType;
-import com.faap.scheduler.job_application.excel.models.SheetRow;
+import com.faap.scheduler.job_application.excel.models.SheetWrapper;
+import com.faap.scheduler.job_application.excel.models.CellWrapper;
+import com.faap.scheduler.job_application.excel.models.CellTypeWrapper;
+import com.faap.scheduler.job_application.excel.models.RowWrapper;
 import com.faap.scheduler.job_application.file.services.UtilDateService;
 import com.faap.scheduler.job_application.models.job.ValidCellListResponse;
 
@@ -33,10 +33,10 @@ public class ExcelReadService {
 		this.setUtilExcelService(utilExcelService);
 	}
 
-	protected ExcelSheet readSheet(XSSFWorkbook myWorkBook, String sheetName, List<SheetCellType> sheetCellTypeList)
+	protected SheetWrapper readSheet(XSSFWorkbook myWorkBook, String sheetName, List<CellTypeWrapper> wrapperCellTypeList)
 			throws Exception {
 
-		ExcelSheet excelSheet = new ExcelSheet(sheetName);
+		SheetWrapper sheetWrapper = new SheetWrapper(sheetName);
 		// Return first sheet from the XLSX workbook
 		XSSFSheet mySheet = myWorkBook.getSheet(sheetName);
 
@@ -47,15 +47,15 @@ public class ExcelReadService {
 		// Traversing over each row of XLSX file
 		while (rowIterator.hasNext()) {
 			Row row = rowIterator.next();
-			this.utilExcelService.completeRow(row, myWorkBook, sheetCellTypeList);
+			this.utilExcelService.completeRow(row, myWorkBook, wrapperCellTypeList);
 
-			List<Cell> cellList = this.utilExcelService.getCellList(row, sheetCellTypeList);
+			List<Cell> cellList = this.utilExcelService.getCellList(row, wrapperCellTypeList);
 
-			ValidCellListResponse validCellListResponse = this.validCellList(cellList, row.getRowNum(), sheetCellTypeList);
+			ValidCellListResponse validCellListResponse = this.validCellList(cellList, row.getRowNum(), wrapperCellTypeList);
 
 			if (validCellListResponse == ValidCellListResponse.OK) {
 				if (row.getRowNum() > 0) {
-					this.addSheetRow(excelSheet, cellList, sheetCellTypeList, row);
+					this.addSheetRow(sheetWrapper, cellList, wrapperCellTypeList, row);
 				}
 
 			} else {
@@ -70,23 +70,23 @@ public class ExcelReadService {
 
 		}
 
-		this.checkDateCell(myWorkBook, excelSheet.getSheetRowList());
+		this.checkDateCell(myWorkBook, sheetWrapper.getSheetRowList());
 
-		return excelSheet;
+		return sheetWrapper;
 	}
 	
-	private void checkDateCell(XSSFWorkbook myWorkBook, List<SheetRow> sheetRowList) {
-		for (SheetRow sheetRow : sheetRowList) {
-			List<SheetCell> sheetDateCells = sheetRow.getSheetCellList().stream()
+	private void checkDateCell(XSSFWorkbook myWorkBook, List<RowWrapper> wrapperRowList) {
+		for (RowWrapper rowWrapper : wrapperRowList) {
+			List<CellWrapper> sheetDateCells = rowWrapper.getSheetCellList().stream()
 					.filter(sc -> sc.getSheetCellType().isDate()).collect(Collectors.toList());
 			
-			for (SheetCell sheetCell : sheetDateCells) {
-				if (sheetCell.getSheetCellType().getCellType() != CellType.NUMERIC || !DateUtil.isCellDateFormatted(sheetCell.getCell())) {
+			for (CellWrapper cellWrapper : sheetDateCells) {
+				if (cellWrapper.getSheetCellType().getCellType() != CellType.NUMERIC || !DateUtil.isCellDateFormatted(cellWrapper.getCell())) {
 
-					if (sheetCell.getSheetCellType().isRequired()) {
-						System.out.println("WARNING: RowNumber: " + (sheetRow.getRowNumber() + 1) 
-								+ " / Required Date columnIdex: " + sheetCell.getSheetCellType().getColumnIndex() + " / Fixed.");
-						sheetCell.setCellValue(this.utilDateService.getStrDate(LocalDate.now()));
+					if (cellWrapper.getSheetCellType().isRequired()) {
+						System.out.println("WARNING: RowNumber: " + (rowWrapper.getRowNumber() + 1) 
+								+ " / Required Date columnIdex: " + cellWrapper.getSheetCellType().getColumnIndex() + " / Fixed.");
+						cellWrapper.setCellValue(this.utilDateService.getStrDate(LocalDate.now()));
 					}
 
 				}
@@ -94,22 +94,22 @@ public class ExcelReadService {
 		}
 	}
 	
-	public List<SheetCell> getSheetCellList(List<Cell> cellList, List<SheetCellType> sheetCellTypeList,
+	public List<CellWrapper> getSheetCellList(List<Cell> cellList, List<CellTypeWrapper> wrapperCellTypeList,
 			int rowNumber) {
-		List<SheetCell> sheetCellList = new ArrayList<>();
+		List<CellWrapper> wrapperCellList = new ArrayList<>();
 		for (Cell cell: cellList) {
 			
-			SheetCellType sheetCellType = sheetCellTypeList.stream().filter(ct -> ct.getColumnIndex() == cell.getColumnIndex()).findFirst().orElse(null);
+			CellTypeWrapper cellTypeWrapper = wrapperCellTypeList.stream().filter(ct -> ct.getColumnIndex() == cell.getColumnIndex()).findFirst().orElse(null);
 					
-			sheetCellList.add(new SheetCell(
-					sheetCellType, 
+			wrapperCellList.add(new CellWrapper(
+					cellTypeWrapper, 
 					this.utilExcelService.readCell(cell), 
 					cell));
 		}
-		return sheetCellList;
+		return wrapperCellList;
 	}
 	
-	private ValidCellListResponse validCellList(List<Cell> cellList, int rowNumber, List<SheetCellType> sheeCellTypeList) {
+	private ValidCellListResponse validCellList(List<Cell> cellList, int rowNumber, List<CellTypeWrapper> sheeCellTypeList) {
 		List<Cell> requiredCellList = cellList.stream().filter(c -> {
 			return sheeCellTypeList.stream().anyMatch(ct -> ct.getColumnIndex() == c.getColumnIndex() && ct.isRequired());
 		}).collect(Collectors.toList());
@@ -141,10 +141,10 @@ public class ExcelReadService {
 				|| cell.getCellType() == CellType.FORMULA;
 	}
 	
-	private boolean validHeaderCellList(List<Cell> cellList, List<SheetCellType> sheetCellTypeList) {
+	private boolean validHeaderCellList(List<Cell> cellList, List<CellTypeWrapper> wrapperCellTypeList) {
 		List<String> strCellList = this.getStrCellList(cellList);
 
-		return sheetCellTypeList.stream().allMatch(sct -> {
+		return wrapperCellTypeList.stream().allMatch(sct -> {
 			boolean match = strCellList.stream().filter(sc -> sct.getName().equals(sc)).findFirst().isPresent();
 			if(!match) {
 				System.out.println("Header Column (" + sct.getName() + "): " + match + " Do Not Match");
@@ -154,14 +154,14 @@ public class ExcelReadService {
 
 	}
 	
-	public SheetRow addSheetRow(ExcelSheet excelSheet, List<Cell> cellList, List<SheetCellType> sheetCellTypeList, Row row) {
+	public RowWrapper addSheetRow(SheetWrapper sheetWrapper, List<Cell> cellList, List<CellTypeWrapper> wrapperCellTypeList, Row row) {
 		System.out.println("INFO: Row Number: " + (row.getRowNum() + 1) + " / Reading");
-		List<SheetCell> sheetCellList = this.getSheetCellList(cellList,
-				sheetCellTypeList, row.getRowNum());
-		SheetRow sheetRow = new SheetRow(sheetCellList, row.getRowNum());
-		excelSheet.getSheetRowList().add(sheetRow);
+		List<CellWrapper> wrapperCellList = this.getSheetCellList(cellList,
+				wrapperCellTypeList, row.getRowNum());
+		RowWrapper rowWrapper = new RowWrapper(wrapperCellList, row.getRowNum());
+		sheetWrapper.getSheetRowList().add(rowWrapper);
 		
-		return sheetRow;
+		return rowWrapper;
 	}
 	
 	private List<String> getStrCellList(List<Cell> cellList) {

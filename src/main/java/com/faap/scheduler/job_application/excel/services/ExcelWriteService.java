@@ -16,9 +16,9 @@ import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import com.faap.scheduler.job_application.excel.models.SheetCell;
-import com.faap.scheduler.job_application.excel.models.SheetCellType;
-import com.faap.scheduler.job_application.excel.models.SheetRow;
+import com.faap.scheduler.job_application.excel.models.CellWrapper;
+import com.faap.scheduler.job_application.excel.models.CellTypeWrapper;
+import com.faap.scheduler.job_application.excel.models.RowWrapper;
 import com.faap.scheduler.job_application.file.services.UtilDateService;
 
 public class ExcelWriteService {
@@ -30,12 +30,12 @@ public class ExcelWriteService {
 		this.utilExcelService = utilExcelService;
 	}
 
-	protected boolean createExcel(String sheetName, int columnIndex, List<SheetCellType> sheetCellTypeList, List<SheetRow> sheetRowList, String filePaht)  {
+	protected boolean createExcel(String sheetName, int columnIndex, List<CellTypeWrapper> wrapperCellTypeList, List<RowWrapper> wrapperRowList, String filePaht)  {
     	XSSFWorkbook myWorkBook = null;
     	try {
     	
 	    	myWorkBook = new XSSFWorkbook();
-	    	this.addSheetToExcel(myWorkBook, sheetName, columnIndex, sheetCellTypeList, sheetRowList);
+	    	this.addSheetToExcel(myWorkBook, sheetName, columnIndex, wrapperCellTypeList, wrapperRowList);
 			
 	    	this.writeExcel(myWorkBook, filePaht);
 	    	
@@ -54,7 +54,7 @@ public class ExcelWriteService {
 		}
     }
 	
-	protected void addEmptySheetToExcel(XSSFWorkbook myWorkBook, String sheetName, int columnIndex, List<SheetCellType> sheetCellTypeList) {
+	protected void addEmptySheetToExcel(XSSFWorkbook myWorkBook, String sheetName, int columnIndex, List<CellTypeWrapper> wrapperCellTypeList) {
 		XSSFSheet sheet = myWorkBook.createSheet(sheetName);
     	System.out.println("addEmptySheetToExcel: " + sheetName);
 		sheet.setColumnWidth(0, 6000);
@@ -66,14 +66,14 @@ public class ExcelWriteService {
 		myWorkBook.setSelectedTab(columnIndex);
 		myWorkBook.setActiveSheet(columnIndex);
 
-		this.createHeaderRow(myWorkBook, sheet, sheetCellTypeList);
+		this.createHeaderRow(myWorkBook, sheet, wrapperCellTypeList);
 		
-		for (SheetCellType sheetCellType: sheetCellTypeList) {	
-			sheet.setColumnWidth(sheetCellType.getColumnIndex(), sheetCellType.getColumnWidth() * 256);
+		for (CellTypeWrapper cellTypeWrapper: wrapperCellTypeList) {	
+			sheet.setColumnWidth(cellTypeWrapper.getColumnIndex(), cellTypeWrapper.getColumnWidth() * 256);
 		}
 	}
 	
-	protected void addSheetToExcel(XSSFWorkbook myWorkBook, String sheetName, int columnIndex, List<SheetCellType> sheetCellTypeList, List<SheetRow> sheetRowList) {
+	protected void addSheetToExcel(XSSFWorkbook myWorkBook, String sheetName, int columnIndex, List<CellTypeWrapper> wrapperCellTypeList, List<RowWrapper> wrapperRowList) {
 
     	XSSFSheet sheet = myWorkBook.createSheet(sheetName);
     	System.out.println("addSheetToExcel: " + sheetName);
@@ -86,14 +86,14 @@ public class ExcelWriteService {
 		myWorkBook.setSelectedTab(0);
 		myWorkBook.setActiveSheet(0);
 
-		this.createHeaderRow(myWorkBook, sheet, sheetCellTypeList);
+		this.createHeaderRow(myWorkBook, sheet, wrapperCellTypeList);
 
-		for (SheetRow sheetRow: sheetRowList) {
-			this.createBodyRow(myWorkBook, sheet, sheetRow);
+		for (RowWrapper rowWrapper: wrapperRowList) {
+			this.createBodyRow(myWorkBook, sheet, rowWrapper);
 		}
 		
-		for (SheetCellType sheetCellType: sheetCellTypeList) {	
-			sheet.setColumnWidth(sheetCellType.getColumnIndex(), sheetCellType.getColumnWidth() * 256);
+		for (CellTypeWrapper cellTypeWrapper: wrapperCellTypeList) {	
+			sheet.setColumnWidth(cellTypeWrapper.getColumnIndex(), cellTypeWrapper.getColumnWidth() * 256);
 		}
 
     }
@@ -107,7 +107,7 @@ public class ExcelWriteService {
 		}
 	}
 	
-	protected void createHeaderRow(XSSFWorkbook myWorkBook, XSSFSheet sheet, List<SheetCellType> sheeCellTypeList) {
+	protected void createHeaderRow(XSSFWorkbook myWorkBook, XSSFSheet sheet, List<CellTypeWrapper> sheeCellTypeList) {
     	Row header = sheet.createRow(0);
     	System.out.println("createRow - Header: " + header.getRowNum());
 
@@ -118,10 +118,10 @@ public class ExcelWriteService {
 		font.setBold(true);
 		headerStyle.setFont(font);
 
-		for (SheetCellType sheetCellType: sheeCellTypeList) {
-			String headerCellValue = sheetCellType.getName();
+		for (CellTypeWrapper cellTypeWrapper: sheeCellTypeList) {
+			String headerCellValue = cellTypeWrapper.getName();
 
-			Cell headerCell = header.createCell(sheetCellType.getColumnIndex());
+			Cell headerCell = header.createCell(cellTypeWrapper.getColumnIndex());
 			System.out.println("createCell - Header: " + headerCell.getColumnIndex());
 			
 			headerCell.setCellValue(headerCellValue);
@@ -129,49 +129,49 @@ public class ExcelWriteService {
 		}
     }
 	
-	protected Row createBodyRow(XSSFWorkbook myWorkBook, XSSFSheet sheet, List<SheetCellType> sheeCellTypeList, int rowNumber) {
+	protected Row createBodyRow(XSSFWorkbook myWorkBook, XSSFSheet sheet, List<CellTypeWrapper> sheeCellTypeList, int rowNumber) {
 		Row row = sheet.createRow(rowNumber);
 		System.out.println("createRow - Body: " + (row.getRowNum() + 1));
 		this.utilExcelService.completeRow(row, myWorkBook, sheeCellTypeList);
 		return row;
 	}
     
-	protected void createBodyRow(XSSFWorkbook myWorkBook, XSSFSheet sheet, SheetRow sheetRow) {
-    	Row row = sheet.createRow(sheetRow.getRowNumber());
+	protected void createBodyRow(XSSFWorkbook myWorkBook, XSSFSheet sheet, RowWrapper rowWrapper) {
+    	Row row = sheet.createRow(rowWrapper.getRowNumber());
 		System.out.println("createRow - Body: " + (row.getRowNum() + 1));
 
-		for(SheetCell sheetCell: sheetRow.getSheetCellList()) {
-			Cell cell = row.createCell(sheetCell.getSheetCellType().getColumnIndex(), sheetCell.getSheetCellType().getCellType());
+		for(CellWrapper cellWrapper: rowWrapper.getSheetCellList()) {
+			Cell cell = row.createCell(cellWrapper.getSheetCellType().getColumnIndex(), cellWrapper.getSheetCellType().getCellType());
 			System.out.println("createCell - Body: " + cell.getColumnIndex());
 			
 			HorizontalAlignment horizontalAlignment = HorizontalAlignment.CENTER;
-			if(sheetCell.getSheetCellType().isRequired()) {
+			if(cellWrapper.getSheetCellType().isRequired()) {
 				horizontalAlignment = HorizontalAlignment.LEFT;
 			}
 			
-			this.setBlankCellAndCellStyle(myWorkBook, cell, sheetCell.getSheetCellType().isDate(), 
-					sheetCell.getSheetCellType().getCellType() == CellType.STRING, horizontalAlignment);
+			this.setBlankCellAndCellStyle(myWorkBook, cell, cellWrapper.getSheetCellType().isDate(), 
+					cellWrapper.getSheetCellType().getCellType() == CellType.STRING, horizontalAlignment);
 			
-			if (sheetCell.getSheetCellType().isDate() && sheetCell.getCellValue() != null) {
-				cell.setCellValue(this.utilDateService.getLocalDate(sheetCell.getCellValue()));
+			if (cellWrapper.getSheetCellType().isDate() && cellWrapper.getCellValue() != null) {
+				cell.setCellValue(this.utilDateService.getLocalDate(cellWrapper.getCellValue()));
 				
-			} else if (sheetCell.getSheetCellType().getCellType() == CellType.FORMULA) {
-				cell.setCellFormula(this.calculateFormula(sheetCell, sheetRow.getRowNumber()));
+			} else if (cellWrapper.getSheetCellType().getCellType() == CellType.FORMULA) {
+				cell.setCellFormula(this.calculateFormula(cellWrapper, rowWrapper.getRowNumber()));
 				XSSFFormulaEvaluator formulaEvaluator = myWorkBook.getCreationHelper().createFormulaEvaluator();
 				formulaEvaluator.evaluateFormulaCell(cell);
 
 			} else {
-				cell.setCellValue(sheetCell.getCellValue());
+				cell.setCellValue(cellWrapper.getCellValue());
 			}
 		}
     }
     
-	protected String calculateFormula(SheetCell sheetCell, int rowNumber) {
-    	String formula = sheetCell.getSheetCellType().getSheetFormula().getFormula();
-    	if(sheetCell.getSheetCellType().getSheetFormula().getSheetFormulaValue() != null) {
-	    	switch (sheetCell.getSheetCellType().getSheetFormula().getSheetFormulaValue()) {
+	protected String calculateFormula(CellWrapper cellWrapper, int rowNumber) {
+    	String formula = cellWrapper.getSheetCellType().getSheetFormula().getFormula();
+    	if(cellWrapper.getSheetCellType().getSheetFormula().getSheetFormulaValue() != null) {
+	    	switch (cellWrapper.getSheetCellType().getSheetFormula().getSheetFormulaValue()) {
 			case ROW_NUMBER:
-				formula = formula.replaceAll(sheetCell.getSheetCellType().getSheetFormula().getKey(), String.valueOf(rowNumber + 1));
+				formula = formula.replaceAll(cellWrapper.getSheetCellType().getSheetFormula().getKey(), String.valueOf(rowNumber + 1));
 				break;
 			default:
 				break;

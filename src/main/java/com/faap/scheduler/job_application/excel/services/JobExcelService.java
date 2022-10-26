@@ -12,12 +12,12 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.faap.scheduler.job_application.excel.dtos.WorkbookResponse;
-import com.faap.scheduler.job_application.excel.models.ExcelSheet;
+import com.faap.scheduler.job_application.excel.models.SheetWrapper;
 import com.faap.scheduler.job_application.excel.models.PeriodicTaskColumnType;
 import com.faap.scheduler.job_application.excel.models.Periodicity;
-import com.faap.scheduler.job_application.excel.models.SheetCell;
-import com.faap.scheduler.job_application.excel.models.SheetCellType;
-import com.faap.scheduler.job_application.excel.models.SheetRow;
+import com.faap.scheduler.job_application.excel.models.CellWrapper;
+import com.faap.scheduler.job_application.excel.models.CellTypeWrapper;
+import com.faap.scheduler.job_application.excel.models.RowWrapper;
 import com.faap.scheduler.job_application.excel.models.ThingToDoColumnType;
 import com.faap.scheduler.job_application.excel.models.Weekday;
 import com.faap.scheduler.job_application.file.services.UtilDateService;
@@ -36,7 +36,7 @@ public class JobExcelService extends AbstractApiExcelService {
 	}
 	
 	public void loadAndSortThingsToDoSheet(JobExcelService jobExcelService, String initialFilePath, String finalFilePath,
-    		List<SheetCellType> initialSheetCellTypeList, List<SheetCellType> finalSheetCellTypeList) {
+    		List<CellTypeWrapper> initialSheetCellTypeList, List<CellTypeWrapper> finalSheetCellTypeList) {
 		System.out.println("Load Periodic Task.");
 		WorkbookResponse workbookResponse = null;
 		XSSFWorkbook myWorkBook = null;
@@ -47,14 +47,14 @@ public class JobExcelService extends AbstractApiExcelService {
 			if(workbookResponse.isSuccess()) {
 				myWorkBook = workbookResponse.getMyWorkBook();
 				
-				ExcelSheet initialExcelSheet = this.readSheet(myWorkBook, PERIODIC_TASKS_SHEET_NAME,
+				SheetWrapper initialExcelSheet = this.readSheet(myWorkBook, PERIODIC_TASKS_SHEET_NAME,
 						initialSheetCellTypeList);
 				
-				ExcelSheet finalExcelSheet = this.readSheet(myWorkBook, THINGS_TO_DO_SHEET_NAME,
+				SheetWrapper finalExcelSheet = this.readSheet(myWorkBook, THINGS_TO_DO_SHEET_NAME,
 						finalSheetCellTypeList);
 				
 				
-				for(SheetRow initialSheetRow: initialExcelSheet.getSheetRowList()) {
+				for(RowWrapper initialSheetRow: initialExcelSheet.getSheetRowList()) {
 					String initialDate = null;
 					String priority = null;
 					String thingsToDo = null;
@@ -62,7 +62,7 @@ public class JobExcelService extends AbstractApiExcelService {
 					String periodicity = null;
 					String weekday = null;
 					
-					for(SheetCell initialSheetCell: initialSheetRow.getSheetCellList()) {
+					for(CellWrapper initialSheetCell: initialSheetRow.getSheetCellList()) {
 						PeriodicTaskColumnType initialColumnType = Arrays.asList(PeriodicTaskColumnType.values()).stream().filter(ptct -> ptct.getName().equals(initialSheetCell.getSheetCellType().getName())).findFirst().orElse(null);
 						switch (initialColumnType) {
 						case INITIAL_DATE:
@@ -98,10 +98,10 @@ public class JobExcelService extends AbstractApiExcelService {
 						
 						List<Cell> cellList = this.utilExcelService.getCellList(row, finalSheetCellTypeList);
 						
-						SheetRow sheetRow = this.excelReadService.addSheetRow(finalExcelSheet, cellList, finalSheetCellTypeList, row);
+						RowWrapper rowWrapper = this.excelReadService.addSheetRow(finalExcelSheet, cellList, finalSheetCellTypeList, row);
 						
-						for(SheetCell sheetCell: sheetRow.getSheetCellList()) {
-							this.completeSheetCell(sheetCell, row.getRowNum(), this.utilDateService.getStrDate(estimatedDate), priority, thingsToDo, category);
+						for(CellWrapper cellWrapper: rowWrapper.getSheetCellList()) {
+							this.completeSheetCell(cellWrapper, row.getRowNum(), this.utilDateService.getStrDate(estimatedDate), priority, thingsToDo, category);
 						}
 					}
 					
@@ -130,127 +130,127 @@ public class JobExcelService extends AbstractApiExcelService {
 	}
 
 	@Override
-	public void completeSheetCellList(List<SheetCell> sheetCellList, XSSFWorkbook myWorkBook, int rowNumber) {
-		List<SheetCell> incompleteSheetCellList = this.utilExcelService.calculateIncompleteSheetCell(sheetCellList);
+	public void completeSheetCellList(List<CellWrapper> wrapperCellList, XSSFWorkbook myWorkBook, int rowNumber) {
+		List<CellWrapper> incompleteSheetCellList = this.utilExcelService.calculateIncompleteSheetCell(wrapperCellList);
 		
-		for(SheetCell sheetCell: incompleteSheetCellList) {
-			this.completeSheetCell(sheetCell, rowNumber, null, null, null, null);
+		for(CellWrapper cellWrapper: incompleteSheetCellList) {
+			this.completeSheetCell(cellWrapper, rowNumber, null, null, null, null);
 		}
 		
 	}
 	
 	private void completeSheetCell(
-			SheetCell sheetCell, 
+			CellWrapper cellWrapper, 
 			int rowNumber, 
 			String estimatedDate, 
 			String priority, 
 			String thingsToDo, 
 			String category) {
 		
-		ThingToDoColumnType thingToDoColumnType = this.getThingToDoColumnType(sheetCell);
+		ThingToDoColumnType thingToDoColumnType = this.getThingToDoColumnType(cellWrapper);
 		switch (thingToDoColumnType) {
 		case ID:
-			sheetCell.setCellValue(String.valueOf(rowNumber + 1));
+			cellWrapper.setCellValue(String.valueOf(rowNumber + 1));
 			System.out.println("Completing Row: " + (rowNumber + 1) 
-					+ " / columnName: " + sheetCell.getSheetCellType().getName() + " / Value: " + sheetCell.getCellValue());
+					+ " / columnName: " + cellWrapper.getSheetCellType().getName() + " / Value: " + cellWrapper.getCellValue());
 			break;
 		case INCIDENCE_DATE:
-			sheetCell.setCellValue(this.utilDateService.getStrDate(LocalDate.now()));
+			cellWrapper.setCellValue(this.utilDateService.getStrDate(LocalDate.now()));
 			break;
 		case ESTIMATED_DATE:
 			if(estimatedDate == null) {
-				sheetCell.setCellValue(this.utilDateService.getStrDate(LocalDate.now()));
+				cellWrapper.setCellValue(this.utilDateService.getStrDate(LocalDate.now()));
 			}
 			else {
-				sheetCell.setCellValue(estimatedDate);
+				cellWrapper.setCellValue(estimatedDate);
 			}
 			break;	
 		case PRIORITY:
 			if(priority == null) {
-				sheetCell.setCellValue(sheetCell.getSheetCellType().getDefaultValue().toString());
+				cellWrapper.setCellValue(cellWrapper.getSheetCellType().getDefaultValue().toString());
 			}
 			else {
-				sheetCell.setCellValue(priority);
+				cellWrapper.setCellValue(priority);
 			}
 			break;
 		case THINGS_TO_DO:
 			if(thingsToDo == null) {
-				sheetCell.setCellValue(sheetCell.getSheetCellType().getDefaultValue().toString());
+				cellWrapper.setCellValue(cellWrapper.getSheetCellType().getDefaultValue().toString());
 			}
 			else {
-				sheetCell.setCellValue(thingsToDo);
+				cellWrapper.setCellValue(thingsToDo);
 			}
 			break;	
 		case CATEGORY:
 			if(category == null) {
-				sheetCell.setCellValue(sheetCell.getSheetCellType().getDefaultValue().toString());
+				cellWrapper.setCellValue(cellWrapper.getSheetCellType().getDefaultValue().toString());
 			}
 			else {
-				sheetCell.setCellValue(category);
+				cellWrapper.setCellValue(category);
 			}
 			break;	
 		case STATUS:
-			sheetCell.setCellValue(sheetCell.getSheetCellType().getDefaultValue().toString());
+			cellWrapper.setCellValue(cellWrapper.getSheetCellType().getDefaultValue().toString());
 			break;
 		default:
 			break;
 		}
 		System.out.println("Completing Row: " + (rowNumber + 1) 
-				+ " / columnName: " + sheetCell.getSheetCellType().getName() + " / Fixed Value: " + sheetCell.getCellValue());
+				+ " / columnName: " + cellWrapper.getSheetCellType().getName() + " / Fixed Value: " + cellWrapper.getCellValue());
 	}
 	
 	@Override
-	public void updateCellIdValue(List<SheetRow> sheetRowList) {
-		for (SheetRow sheetRow : sheetRowList) {
-			SheetCell sheetCellId = sheetRow.getSheetCellList().stream()
+	public void updateCellIdValue(List<RowWrapper> wrapperRowList) {
+		for (RowWrapper rowWrapper : wrapperRowList) {
+			CellWrapper wrapperCellId = rowWrapper.getSheetCellList().stream()
 					.filter(sc -> sc.getSheetCellType().getName().equals(ThingToDoColumnType.ID.getName())).findFirst().orElse(null);
 			
-			if (!String.valueOf(sheetRow.getRowNumber() + 1).equals(sheetCellId.getCellValue())) {
-				sheetCellId.setCellValue(String.valueOf(sheetRow.getRowNumber() + 1));
+			if (!String.valueOf(rowWrapper.getRowNumber() + 1).equals(wrapperCellId.getCellValue())) {
+				wrapperCellId.setCellValue(String.valueOf(rowWrapper.getRowNumber() + 1));
 			}
 		}
 	}
 	
 	@Override
-	public void updatePriority(String sheetName, List<SheetRow> sheetRowList) {
+	public void updatePriority(String sheetName, List<RowWrapper> wrapperRowList) {
 		if(THINGS_TO_DO_SHEET_NAME.equals(sheetName)) {
-			for (SheetRow sheetRow : sheetRowList) {
-				SheetCell sheetCellPriority = sheetRow.getSheetCellList().stream()
+			for (RowWrapper rowWrapper : wrapperRowList) {
+				CellWrapper wrapperCellPriority = rowWrapper.getSheetCellList().stream()
 						.filter(sc -> sc.getSheetCellType().getName().equals(ThingToDoColumnType.PRIORITY.getName())).findFirst().orElse(null);
 				
-				SheetCell sheetCellEstimatedDate = sheetRow.getSheetCellList().stream()
+				CellWrapper wrapperCellEstimatedDate = rowWrapper.getSheetCellList().stream()
 						.filter(sc -> sc.getSheetCellType().getName().equals(ThingToDoColumnType.ESTIMATED_DATE.getName())).findFirst().orElse(null);
 				
-				if (sheetCellEstimatedDate.getCellValue() != null) {
-					sheetCellPriority.setCellValue(this.utilExcelService.getPriority(this.utilDateService.getLocalDate(sheetCellEstimatedDate.getCellValue())).toString());
+				if (wrapperCellEstimatedDate.getCellValue() != null) {
+					wrapperCellPriority.setCellValue(this.utilExcelService.getPriority(this.utilDateService.getLocalDate(wrapperCellEstimatedDate.getCellValue())).toString());
 				}
 			}
 		}
 	}
 	
-	private boolean existSheetCell(List<SheetRow> sheetRowList, String thingsToDo, 
+	private boolean existSheetCell(List<RowWrapper> wrapperRowList, String thingsToDo, 
 			LocalDate estimatedDate) {
 		
-		return this.findFirstSheetRow(sheetRowList, thingsToDo, this.utilDateService.getStrDate(estimatedDate)) != null;
+		return this.findFirstSheetRow(wrapperRowList, thingsToDo, this.utilDateService.getStrDate(estimatedDate)) != null;
 	}
 	
-	private SheetRow findFirstSheetRow(List<SheetRow> sheetRowList, String thingsToDo, String estimatedDate) {
-		return sheetRowList.stream().filter(sr -> {
+	private RowWrapper findFirstSheetRow(List<RowWrapper> wrapperRowList, String thingsToDo, String estimatedDate) {
+		return wrapperRowList.stream().filter(sr -> {
 			boolean thingsToDoMatched = false;
 			boolean incidenceDateMatched = false;
-			for(SheetCell sheetCell: sr.getSheetCellList()) {
-				ThingToDoColumnType thingToDoColumnType = this.getThingToDoColumnType(sheetCell);
+			for(CellWrapper cellWrapper: sr.getSheetCellList()) {
+				ThingToDoColumnType thingToDoColumnType = this.getThingToDoColumnType(cellWrapper);
 				if(thingsToDo == null) {
 					thingsToDoMatched = true;
 				}
-				else if(thingToDoColumnType == ThingToDoColumnType.THINGS_TO_DO && thingsToDo.equals(sheetCell.getCellValue())) {
+				else if(thingToDoColumnType == ThingToDoColumnType.THINGS_TO_DO && thingsToDo.equals(cellWrapper.getCellValue())) {
 					thingsToDoMatched = true;
 				}
 				
 				if(estimatedDate == null) {
 					incidenceDateMatched = true;
 				}
-				else if(thingToDoColumnType == ThingToDoColumnType.ESTIMATED_DATE && estimatedDate.equals(sheetCell.getCellValue())) {
+				else if(thingToDoColumnType == ThingToDoColumnType.ESTIMATED_DATE && estimatedDate.equals(cellWrapper.getCellValue())) {
 					incidenceDateMatched = true;
 				}
 			}
@@ -263,26 +263,26 @@ public class JobExcelService extends AbstractApiExcelService {
 		}).findFirst().orElse(null);
 	}
 	
-	private ThingToDoColumnType getThingToDoColumnType(SheetCell sheetCell) {
-		return Arrays.asList(ThingToDoColumnType.values()).stream().filter(tct -> tct.getName().equals(sheetCell.getSheetCellType().getName())).findFirst().orElse(null);
+	private ThingToDoColumnType getThingToDoColumnType(CellWrapper cellWrapper) {
+		return Arrays.asList(ThingToDoColumnType.values()).stream().filter(tct -> tct.getName().equals(cellWrapper.getSheetCellType().getName())).findFirst().orElse(null);
 	}
 	
-	private LocalDate getEstimatedDate(List<SheetRow> sheetRowList, String thingsToDo, 
+	private LocalDate getEstimatedDate(List<RowWrapper> wrapperRowList, String thingsToDo, 
 			String periodicity, String weekday, 
     		String initialDate) {
 		LocalDate initialDateOfPeriodicTask = this.utilDateService.getLocalDate(initialDate);
 		Periodicity periodicityEnum = Periodicity.getPeriodicity(periodicity);
 		Weekday weekdayEnum = Weekday.getWeekday(weekday);
 		
-		List<SheetRow> sortedSheetRowList = this.utilExcelService.sortSheetRowList(sheetRowList, 
+		List<RowWrapper> sortedSheetRowList = this.utilExcelService.sortSheetRowList(wrapperRowList, 
 				Arrays.asList(ThingToDoColumnType.ESTIMATED_DATE.getColumnIndex()), COLUMN_INDEX_TO_FILTER, TOKEN_TO_FILTER);
 		
-		SheetRow lastSheetRowWithEstimatedDate = this.findFirstSheetRow(sortedSheetRowList, thingsToDo, null);
+		RowWrapper lastSheetRowWithEstimatedDate = this.findFirstSheetRow(sortedSheetRowList, thingsToDo, null);
 		
 		LocalDate lastEstimatedDate = null;
 		
 		if(lastSheetRowWithEstimatedDate != null) {
-			SheetCell estimatedDateSheetCell = lastSheetRowWithEstimatedDate.getSheetCellList()
+			CellWrapper estimatedDateSheetCell = lastSheetRowWithEstimatedDate.getSheetCellList()
 					.stream()
 					.filter(sc -> this.getThingToDoColumnType(sc) == ThingToDoColumnType.ESTIMATED_DATE)
 					.findFirst()

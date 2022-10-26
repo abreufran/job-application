@@ -12,7 +12,7 @@ public enum PeriodicTaskColumnType {
 	PERIODICITY("Periodicity", true, CellType.STRING, false, "Every week", 20, 6, null),
 	WEEKDAY("Weekday", true, CellType.STRING, false, "Monday", 20, 7, null),
 	STATUS("Status", true, CellType.FORMULA, false, null, 15, 8, 
-			new SheetFormula("IF(ISBLANK(C_rowNumber_),\"ACTIVE\",\"INACTIVE\")", "_rowNumber_", SheetFormulaValue.ROW_NUMBER));
+			new FormulaWrapper("IF(ISBLANK(C_rowNumber_),\"ACTIVE\",\"INACTIVE\")", "_rowNumber_", FormulaValueWrapper.ROW_NUMBER));
 	
 	private String name;
 	private boolean required;
@@ -21,11 +21,11 @@ public enum PeriodicTaskColumnType {
 	private Object defaultValue;
 	private int columnWidth;
 	private int columnIndex;
-	private SheetFormula sheetFormula;
+	private FormulaWrapper formulaWrapper;
 	
 	private PeriodicTaskColumnType(String name, boolean required, CellType cellType, 
 			boolean date, Object defaultValue, int columnWidth, int columnIndex,
-			SheetFormula sheetFormula) {
+			FormulaWrapper formulaWrapper) {
 		this.setName(name);
 		this.setRequired(required);
 		this.setCellType(cellType);
@@ -33,7 +33,7 @@ public enum PeriodicTaskColumnType {
 		this.setDefaultValue(defaultValue);
 		this.setColumnWidth(columnWidth);
 		this.setColumnIndex(columnIndex);
-		this.setSheetFormula(sheetFormula);
+		this.setSheetFormula(formulaWrapper);
 		
 	}
 
@@ -93,11 +93,11 @@ public enum PeriodicTaskColumnType {
 		this.columnIndex = columnIndex;
 	}
 
-	public SheetFormula getSheetFormula() {
-		return sheetFormula;
+	public FormulaWrapper getSheetFormula() {
+		return formulaWrapper;
 	}
 
-	public void setSheetFormula(SheetFormula sheetFormula) {
-		this.sheetFormula = sheetFormula;
+	public void setSheetFormula(FormulaWrapper formulaWrapper) {
+		this.formulaWrapper = formulaWrapper;
 	}
 }

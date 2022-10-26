@@ -2,18 +2,18 @@ package com.faap.scheduler.job_application.excel.models;
 
 import org.apache.poi.ss.usermodel.Cell;
 
-public class SheetCell {
-	private SheetCellType sheetCellType;
+public class CellWrapper {
+	private CellTypeWrapper cellTypeWrapper;
 	private String cellValue;
 	private Cell cell;
 	
-	public SheetCell(
-			SheetCellType sheetCellType, 
+	public CellWrapper(
+			CellTypeWrapper cellTypeWrapper, 
 			String cellValue,
 			Cell cell) {
 		
 		super();
-		this.setSheetCellType(sheetCellType);
+		this.setSheetCellType(cellTypeWrapper);
 		this.setCell(cell);
 		this.setCellValue(cellValue);
 		
@@ -27,12 +27,12 @@ public class SheetCell {
 		this.cellValue = cellValue;
 	}
 
-	public SheetCellType getSheetCellType() {
-		return sheetCellType;
+	public CellTypeWrapper getSheetCellType() {
+		return cellTypeWrapper;
 	}
 
-	public void setSheetCellType(SheetCellType sheetCellType) {
-		this.sheetCellType = sheetCellType;
+	public void setSheetCellType(CellTypeWrapper cellTypeWrapper) {
+		this.cellTypeWrapper = cellTypeWrapper;
 	}
 
 	public Cell getCell() {

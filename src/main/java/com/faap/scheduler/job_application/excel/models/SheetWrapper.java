@@ -3,24 +3,24 @@ package com.faap.scheduler.job_application.excel.models;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ExcelSheet {
+public class SheetWrapper {
 	private String sheetName;
-	private List<SheetRow> sheetRowList;
+	private List<RowWrapper> wrapperRowList;
 	
 	
-	public ExcelSheet(String sheetName) {
+	public SheetWrapper(String sheetName) {
 		this.setSheetName(sheetName);
-		this.sheetRowList = new ArrayList<>();
+		this.wrapperRowList = new ArrayList<>();
 	}
 
 
-	public List<SheetRow> getSheetRowList() {
-		return sheetRowList;
+	public List<RowWrapper> getSheetRowList() {
+		return wrapperRowList;
 	}
 
 
-	public void setSheetRowList(List<SheetRow> sheetRowList) {
-		this.sheetRowList = sheetRowList;
+	public void setSheetRowList(List<RowWrapper> wrapperRowList) {
+		this.wrapperRowList = wrapperRowList;
 	}
 
 

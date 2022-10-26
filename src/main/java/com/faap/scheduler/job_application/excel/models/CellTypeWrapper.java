@@ -2,7 +2,7 @@ package com.faap.scheduler.job_application.excel.models;
 
 import org.apache.poi.ss.usermodel.CellType;
 
-public class SheetCellType {
+public class CellTypeWrapper {
 	private String name;
 	private boolean required;
 	private CellType cellType;
@@ -10,10 +10,10 @@ public class SheetCellType {
 	private Object defaultValue;
 	private int columnWidth;
 	private int columnIndex;
-	private SheetFormula sheetFormula;
+	private FormulaWrapper formulaWrapper;
 	
 	
-	public SheetCellType(ThingToDoColumnType thingToDoColumnType) {
+	public CellTypeWrapper(ThingToDoColumnType thingToDoColumnType) {
 		this.name = thingToDoColumnType.getName();
 		this.required = thingToDoColumnType.isRequired();
 		this.cellType = thingToDoColumnType.getCellType();
@@ -21,10 +21,10 @@ public class SheetCellType {
 		this.defaultValue = thingToDoColumnType.getDefaultValue();
 		this.columnWidth = thingToDoColumnType.getColumnWidth();
 		this.columnIndex = thingToDoColumnType.getColumnIndex();
-		this.sheetFormula = thingToDoColumnType.getSheetFormula();
+		this.formulaWrapper = thingToDoColumnType.getSheetFormula();
 	}
 	
-	public SheetCellType(PeriodicTaskColumnType periodicTask) {
+	public CellTypeWrapper(PeriodicTaskColumnType periodicTask) {
 		this.name = periodicTask.getName();
 		this.required = periodicTask.isRequired();
 		this.cellType = periodicTask.getCellType();
@@ -32,7 +32,7 @@ public class SheetCellType {
 		this.defaultValue = periodicTask.getDefaultValue();
 		this.columnWidth = periodicTask.getColumnWidth();
 		this.columnIndex = periodicTask.getColumnIndex();
-		this.sheetFormula = periodicTask.getSheetFormula();
+		this.formulaWrapper = periodicTask.getSheetFormula();
 	}
 	
 	public String getName() {
@@ -77,11 +77,11 @@ public class SheetCellType {
 	public void setColumnIndex(int columnIndex) {
 		this.columnIndex = columnIndex;
 	}
-	public SheetFormula getSheetFormula() {
-		return sheetFormula;
+	public FormulaWrapper getSheetFormula() {
+		return formulaWrapper;
 	}
-	public void setSheetFormula(SheetFormula sheetFormula) {
-		this.sheetFormula = sheetFormula;
+	public void setSheetFormula(FormulaWrapper formulaWrapper) {
+		this.formulaWrapper = formulaWrapper;
 	}
 	
 	

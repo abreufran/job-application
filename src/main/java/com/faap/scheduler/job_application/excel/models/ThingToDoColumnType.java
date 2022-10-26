@@ -11,7 +11,7 @@ public enum ThingToDoColumnType {
 	THINGS_TO_DO("Things to do", true, CellType.STRING, false, "UNKNOWN", 40, 5, null),
 	CATEGORY("Category", true, CellType.STRING, false, "Task", 20, 6, null),
 	STATUS("Status", true, CellType.FORMULA, false, "PENDING", 20, 7, 
-			new SheetFormula("IF(ISBLANK(C_rowNumber_),\"PENDING\",\"COMPLETE\")", "_rowNumber_", SheetFormulaValue.ROW_NUMBER));
+			new FormulaWrapper("IF(ISBLANK(C_rowNumber_),\"PENDING\",\"COMPLETE\")", "_rowNumber_", FormulaValueWrapper.ROW_NUMBER));
 	
 	private String name;
 	private boolean required;
@@ -20,11 +20,11 @@ public enum ThingToDoColumnType {
 	private Object defaultValue;
 	private int columnWidth;
 	private int columnIndex;
-	private SheetFormula sheetFormula;
+	private FormulaWrapper formulaWrapper;
 	
 	private ThingToDoColumnType(String name, boolean required, CellType cellType, 
 			boolean date, Object defaultValue, int columnWidth, int columnIndex,
-			SheetFormula sheetFormula) {
+			FormulaWrapper formulaWrapper) {
 		this.setName(name);
 		this.setRequired(required);
 		this.setCellType(cellType);
@@ -32,7 +32,7 @@ public enum ThingToDoColumnType {
 		this.setDefaultValue(defaultValue);
 		this.setColumnWidth(columnWidth);
 		this.setColumnIndex(columnIndex);
-		this.setSheetFormula(sheetFormula);
+		this.setSheetFormula(formulaWrapper);
 		
 	}
 
@@ -92,11 +92,11 @@ public enum ThingToDoColumnType {
 		this.columnIndex = columnIndex;
 	}
 
-	public SheetFormula getSheetFormula() {
-		return sheetFormula;
+	public FormulaWrapper getSheetFormula() {
+		return formulaWrapper;
 	}
 
-	public void setSheetFormula(SheetFormula sheetFormula) {
-		this.sheetFormula = sheetFormula;
+	public void setSheetFormula(FormulaWrapper formulaWrapper) {
+		this.formulaWrapper = formulaWrapper;
 	}
 }

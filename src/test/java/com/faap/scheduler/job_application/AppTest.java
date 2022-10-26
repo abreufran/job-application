@@ -7,9 +7,9 @@ import java.util.List;
 
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import com.faap.scheduler.job_application.excel.models.ExcelSheet;
+import com.faap.scheduler.job_application.excel.models.SheetWrapper;
 import com.faap.scheduler.job_application.excel.models.PeriodicTaskColumnType;
-import com.faap.scheduler.job_application.excel.models.SheetCellType;
+import com.faap.scheduler.job_application.excel.models.CellTypeWrapper;
 import com.faap.scheduler.job_application.excel.models.ThingToDoColumnType;
 import com.faap.scheduler.job_application.excel.services.ExcelReadService;
 import com.faap.scheduler.job_application.excel.services.ExcelWriteService;
@@ -90,16 +90,16 @@ public class AppTest
 
     	if(destinationFile != null) {
     	
-	    	List<SheetCellType> initialSheetCellTypeList = new ArrayList<>();
+	    	List<CellTypeWrapper> initialSheetCellTypeList = new ArrayList<>();
 	    	
 	    	for(PeriodicTaskColumnType periodicTask: PeriodicTaskColumnType.values()) {
-	    		initialSheetCellTypeList.add(new SheetCellType(periodicTask));
+	    		initialSheetCellTypeList.add(new CellTypeWrapper(periodicTask));
 	    	}
 	    	
-	    	List<SheetCellType> finalSheetCellTypeList = new ArrayList<>();
+	    	List<CellTypeWrapper> finalSheetCellTypeList = new ArrayList<>();
 	    	
 	    	for(ThingToDoColumnType thingToDoColumnType: ThingToDoColumnType.values()) {
-	    		finalSheetCellTypeList.add(new SheetCellType(thingToDoColumnType));
+	    		finalSheetCellTypeList.add(new CellTypeWrapper(thingToDoColumnType));
 	    	}
 	    	
 	    	this.jobExcelService.loadAndSortThingsToDoSheet(jobExcelService, initialFilePath, finalFilePath, initialSheetCellTypeList, finalSheetCellTypeList);
@@ -172,28 +172,28 @@ public class AppTest
     	String sheetName = "Periodic Tasks";
 
     	
-    	List<SheetCellType> sheetCellTypeList = new ArrayList<>();
+    	List<CellTypeWrapper> wrapperCellTypeList = new ArrayList<>();
     	
     	for(PeriodicTaskColumnType periodicTask: PeriodicTaskColumnType.values()) {
-    		sheetCellTypeList.add(new SheetCellType(periodicTask));
+    		wrapperCellTypeList.add(new CellTypeWrapper(periodicTask));
     	}
     	
-    	this.readAndSaveSheet(jobExcelService, initialFilePath, finalFilePath, sheetName, sheetCellTypeList);
+    	this.readAndSaveSheet(jobExcelService, initialFilePath, finalFilePath, sheetName, wrapperCellTypeList);
     	
     }
     
     private void readAndSaveSheet(JobExcelService jobExcelService, String initialFilePath, String finalFilePath,
-    		String sheetName, List<SheetCellType> sheetCellTypeList) {
+    		String sheetName, List<CellTypeWrapper> wrapperCellTypeList) {
     	System.out.println("Read and Save Sheet. ");
 		XSSFWorkbook myWorkBook = null;
 		try {
 			myWorkBook = this.jobExcelService.readExcel(initialFilePath);
 
-			ExcelSheet excelSheet = this.jobExcelService.readSheet(myWorkBook, sheetName,
-					sheetCellTypeList);
+			SheetWrapper sheetWrapper = this.jobExcelService.readSheet(myWorkBook, sheetName,
+					wrapperCellTypeList);
 			
 			this.jobExcelService.deleteSheet(myWorkBook, sheetName);
-			this.jobExcelService.addSheetToExcel(myWorkBook, sheetName, myWorkBook.getNumberOfSheets(), sheetCellTypeList, excelSheet.getSheetRowList());
+			this.jobExcelService.addSheetToExcel(myWorkBook, sheetName, myWorkBook.getNumberOfSheets(), wrapperCellTypeList, sheetWrapper.getSheetRowList());
 			System.out.println("readAndSaveSheet - Saving WorkBook.");
 			this.jobExcelService.writeExcel(myWorkBook, finalFilePath);
 			
@@ -226,14 +226,14 @@ public class AppTest
     	int COLUMN_INDEX_TO_FILTER = 7;
     	String TOKEN_TO_FILTER = "PENDING";
     	
-    	List<SheetCellType> sheetCellTypeList = new ArrayList<>();
+    	List<CellTypeWrapper> wrapperCellTypeList = new ArrayList<>();
     	
     	for(ThingToDoColumnType thingToDoColumnType: ThingToDoColumnType.values()) {
-    		sheetCellTypeList.add(new SheetCellType(thingToDoColumnType));
+    		wrapperCellTypeList.add(new CellTypeWrapper(thingToDoColumnType));
     	}
     	
     	this.jobExcelService.fillSortSplitAndSaveSheet(initialFilePath, finalFilePath, sheetName, COMPLETE_SHEET_NAME,
-    			sheetCellTypeList, COLUMN_INDEX_TO_SORT_LIST, COLUMN_INDEX_TO_FILTER, TOKEN_TO_FILTER);
+    			wrapperCellTypeList, COLUMN_INDEX_TO_SORT_LIST, COLUMN_INDEX_TO_FILTER, TOKEN_TO_FILTER);
     	
     }
     

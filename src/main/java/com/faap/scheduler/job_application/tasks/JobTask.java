@@ -9,11 +9,11 @@ import java.util.TimerTask;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.faap.scheduler.job_application.enums.Flag;
-import com.faap.scheduler.job_application.excel.models.ExcelSheet;
+import com.faap.scheduler.job_application.excel.models.SheetWrapper;
 import com.faap.scheduler.job_application.excel.models.PeriodicTaskColumnType;
-import com.faap.scheduler.job_application.excel.models.SheetCell;
-import com.faap.scheduler.job_application.excel.models.SheetCellType;
-import com.faap.scheduler.job_application.excel.models.SheetRow;
+import com.faap.scheduler.job_application.excel.models.CellWrapper;
+import com.faap.scheduler.job_application.excel.models.CellTypeWrapper;
+import com.faap.scheduler.job_application.excel.models.RowWrapper;
 import com.faap.scheduler.job_application.excel.models.ThingToDoColumnType;
 import com.faap.scheduler.job_application.excel.services.JobExcelService;
 import com.faap.scheduler.job_application.excel.services.UtilExcelService;
@@ -53,19 +53,19 @@ public class JobTask extends TimerTask {
 		System.out.println("Job Task: " + LocalDateTime.now());
 		try {
 			if(this.didOriginFileChange() && this.makeBackup()) {
-				List<SheetCellType> initialSheetCellTypeList = new ArrayList<>();
+				List<CellTypeWrapper> initialSheetCellTypeList = new ArrayList<>();
 		    	
 		    	for(PeriodicTaskColumnType periodicTask: PeriodicTaskColumnType.values()) {
-		    		initialSheetCellTypeList.add(new SheetCellType(periodicTask));
+		    		initialSheetCellTypeList.add(new CellTypeWrapper(periodicTask));
 		    	}
 		    	
-		    	List<SheetCellType> finalSheetCellTypeList = new ArrayList<>();
+		    	List<CellTypeWrapper> finalSheetCellTypeList = new ArrayList<>();
 		    	
 		    	for(ThingToDoColumnType thingToDoColumnType: ThingToDoColumnType.values()) {
-		    		finalSheetCellTypeList.add(new SheetCellType(thingToDoColumnType));
+		    		finalSheetCellTypeList.add(new CellTypeWrapper(thingToDoColumnType));
 		    	}
 				
-				//this.jobExcelService.fillSortAndSaveSheet(JOB_FILE_NAME, JOB_FILE_NAME, SHEET_NAME, sheetCellTypeList,
+				//this.jobExcelService.fillSortAndSaveSheet(JOB_FILE_NAME, JOB_FILE_NAME, SHEET_NAME, wrapperCellTypeList,
 				//		COLUMN_INDEX_TO_SORT_LIST, COLUMN_INDEX_TO_FILTER, TOKEN_TO_FILTER);
 				
 				this.jobExcelService.loadAndSortThingsToDoSheet(jobExcelService, JOB_FILE_NAME, JOB_FILE_NAME, initialSheetCellTypeList, finalSheetCellTypeList);
@@ -80,16 +80,16 @@ public class JobTask extends TimerTask {
 		try {
 			myWorkBook = this.jobExcelService.readExcel(JOB_FILE_NAME);
 			
-			List<SheetCellType> sheetCellTypeList = new ArrayList<>();
+			List<CellTypeWrapper> wrapperCellTypeList = new ArrayList<>();
 	    	
 	    	for(ThingToDoColumnType thingToDoColumnType: ThingToDoColumnType.values()) {
-	    		sheetCellTypeList.add(new SheetCellType(thingToDoColumnType));
+	    		wrapperCellTypeList.add(new CellTypeWrapper(thingToDoColumnType));
 	    	}
 			
-			ExcelSheet jobSheet = this.jobExcelService.readSheet(myWorkBook,SHEET_NAME, sheetCellTypeList);
+			SheetWrapper jobSheet = this.jobExcelService.readSheet(myWorkBook,SHEET_NAME, wrapperCellTypeList);
 			
-			for(SheetRow sheetRow: jobSheet.getSheetRowList()) {
-				List<String> cellList = this.getStrCellListFromSheetCellList(sheetRow.getSheetCellList());
+			for(RowWrapper rowWrapper: jobSheet.getSheetRowList()) {
+				List<String> cellList = this.getStrCellListFromSheetCellList(rowWrapper.getSheetCellList());
 				
 				StringBuffer cellStr = new StringBuffer();
 				for (String c : cellList) {
@@ -117,11 +117,11 @@ public class JobTask extends TimerTask {
 		
 	}
 	
-	private List<String> getStrCellListFromSheetCellList(List<SheetCell> sheetCellList) {
+	private List<String> getStrCellListFromSheetCellList(List<CellWrapper> wrapperCellList) {
 		List<String> strCellList = new ArrayList<>();
 		
-		for(SheetCell sheetCell: sheetCellList) {
-			strCellList.add(this.utilExcelService.readCell(sheetCell.getCell()));
+		for(CellWrapper cellWrapper: wrapperCellList) {
+			strCellList.add(this.utilExcelService.readCell(cellWrapper.getCell()));
 		}
 		return strCellList;
 	}
