@@ -22,20 +22,20 @@ import com.faap.scheduler.job_application.excel.models.ThingToDoColumnType;
 import com.faap.scheduler.job_application.excel.models.Weekday;
 import com.faap.scheduler.job_application.file.services.UtilDateService;
 
-public class JobExcelService extends AbstractApiExcelService {
+public class ThingToDoExcelService extends AbstractApiExcelService {
 	private static String THINGS_TO_DO_SHEET_NAME = "Things to do";
 	private static String PERIODIC_TASKS_SHEET_NAME = "Periodic Tasks";
 	public static List<Integer> COLUMN_INDEX_TO_SORT_LIST = Arrays.asList(4, 3);
 	public static int COLUMN_INDEX_TO_FILTER = 7;
 	public static String TOKEN_TO_FILTER = "PENDING";
 
-	public JobExcelService(UtilDateService utilDateService, UtilExcelService utilExcelService, 
+	public ThingToDoExcelService(UtilDateService utilDateService, UtilExcelService utilExcelService, 
 			ExcelReadService excelReadService, ExcelWriteService excelWriteService) {
 		super(utilDateService, utilExcelService, 
 				excelReadService,excelWriteService);
 	}
 	
-	public void loadAndSortThingsToDoSheet(JobExcelService jobExcelService, String initialFilePath, String finalFilePath,
+	public void loadAndSortThingsToDoSheet(ThingToDoExcelService thingToDoExcelService, String initialFilePath, String finalFilePath,
     		List<CellTypeWrapper> initialSheetCellTypeList, List<CellTypeWrapper> finalSheetCellTypeList) {
 		System.out.println("Load Periodic Task.");
 		WorkbookResponse workbookResponse = null;

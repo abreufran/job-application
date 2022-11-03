@@ -5,13 +5,13 @@ import java.util.TimerTask;
 
 import com.faap.scheduler.job_application.excel.services.ExcelReadService;
 import com.faap.scheduler.job_application.excel.services.ExcelWriteService;
-import com.faap.scheduler.job_application.excel.services.JobExcelService;
+import com.faap.scheduler.job_application.excel.services.ThingToDoExcelService;
 import com.faap.scheduler.job_application.excel.services.UtilExcelService;
 import com.faap.scheduler.job_application.file.services.UtilDateService;
 import com.faap.scheduler.job_application.file.services.UtilFileService;
 import com.faap.scheduler.job_application.repositories.DataFileRepository;
 import com.faap.scheduler.job_application.repositories.FileBackupRepository;
-import com.faap.scheduler.job_application.tasks.JobTask;
+import com.faap.scheduler.job_application.tasks.ThingToDoTask;
 import com.faap.scheduler.job_application.tasks.TradeTask;
 
 /**
@@ -20,6 +20,10 @@ import com.faap.scheduler.job_application.tasks.TradeTask;
  */
 public class App 
 {
+	
+	public static String BACKUP_PATH = "C://Users/Administrator/Desktop/thing_to_do_backup";
+	public static String THING_TO_DO_FILE_NAME = "G://My Drive/Things_to_do.xlsx";
+	
     public static void main( String[] args )
     {
     	FileBackupRepository fileBackupRepository = new FileBackupRepository();
@@ -28,11 +32,11 @@ public class App
     	UtilExcelService utilExcelService = new UtilExcelService(utilDateService);
     	ExcelReadService excelReadService = new ExcelReadService(utilDateService, utilExcelService);
     	ExcelWriteService excelWriteService = new ExcelWriteService(utilDateService, utilExcelService);
-    	JobExcelService jobExcelService = new JobExcelService(utilDateService, utilExcelService, excelReadService, excelWriteService);
+    	ThingToDoExcelService thingToDoExcelService = new ThingToDoExcelService(utilDateService, utilExcelService, excelReadService, excelWriteService);
     	UtilFileService utilFileService = new UtilFileService();
     	
         App.runReadTraderFile(dataFileRepository);
-        App.runReadJobFile(dataFileRepository, jobExcelService, utilExcelService, utilFileService, fileBackupRepository);
+        App.runReadThingToDoFile(dataFileRepository, thingToDoExcelService, utilExcelService, utilFileService, fileBackupRepository);
     }
     
     public static void runReadTraderFile(DataFileRepository task) {   	
@@ -44,14 +48,14 @@ public class App
         timer.schedule(tradeTask, 0, seconds * 1000);
     }
     
-    public static void runReadJobFile(DataFileRepository taskRepository, JobExcelService jobExcelService, 
+    public static void runReadThingToDoFile(DataFileRepository dataFileRepository, ThingToDoExcelService thingToDoExcelService, 
     		UtilExcelService utilExcelService,
     		UtilFileService utilFileService, FileBackupRepository fileBackupRepository) {   	
-        TimerTask jobTask = new JobTask(taskRepository, jobExcelService, utilExcelService, utilFileService, fileBackupRepository);
+        TimerTask thingToDoTask = new ThingToDoTask(dataFileRepository, thingToDoExcelService, utilExcelService, utilFileService, fileBackupRepository, BACKUP_PATH, THING_TO_DO_FILE_NAME, THING_TO_DO_FILE_NAME);
         
         int seconds = 30;
         
         Timer timer = new Timer();
-        timer.schedule(jobTask, 0, seconds * 1000);
+        timer.schedule(thingToDoTask, 0, seconds * 1000);
     }
 }

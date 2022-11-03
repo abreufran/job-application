@@ -15,15 +15,13 @@ import com.faap.scheduler.job_application.excel.models.CellWrapper;
 import com.faap.scheduler.job_application.excel.models.CellTypeWrapper;
 import com.faap.scheduler.job_application.excel.models.RowWrapper;
 import com.faap.scheduler.job_application.excel.models.ThingToDoColumnType;
-import com.faap.scheduler.job_application.excel.services.JobExcelService;
+import com.faap.scheduler.job_application.excel.services.ThingToDoExcelService;
 import com.faap.scheduler.job_application.excel.services.UtilExcelService;
 import com.faap.scheduler.job_application.file.services.UtilFileService;
 import com.faap.scheduler.job_application.repositories.DataFileRepository;
 import com.faap.scheduler.job_application.repositories.FileBackupRepository;
 
-public class JobTask extends TimerTask {
-	public static String BACKUP_PATH = "C://Users/Administrator/Desktop/job_backup";
-	public static String JOB_FILE_NAME = "G://My Drive/Things_to_do.xlsx";
+public class ThingToDoTask extends TimerTask {
 	public static String SHEET_NAME = "Things to do";
 	public static int NUMBER_OF_CELLS = 8;
 	public static int REQUIRED_CELL_NUMBER = 5;
@@ -31,26 +29,37 @@ public class JobTask extends TimerTask {
 	public static int COLUMN_INDEX_TO_FILTER = 7;
 	public static String TOKEN_TO_FILTER = "PENDING";
 
-	
+	private String backupFileName;
+	private String initialThingToDoFileName;
+	private String finalThingToDoFileName;
 	private FileBackupRepository fileBackupRepository;
 	private DataFileRepository dataFileRepository;
-	private JobExcelService jobExcelService;
+	private ThingToDoExcelService thingToDoExcelService;
 	private UtilExcelService utilExcelService;
 	private UtilFileService utilFileService;
 
-	public JobTask(DataFileRepository dataFileRepository, JobExcelService jobExcelService, 
+	public ThingToDoTask(DataFileRepository dataFileRepository, 
+			ThingToDoExcelService thingToDoExcelService, 
 			UtilExcelService utilExcelService,
-			UtilFileService utilFileService, FileBackupRepository fileBackupRepository) {
+			UtilFileService utilFileService, 
+			FileBackupRepository fileBackupRepository,
+			String backupPath,
+			String initialThingToDoFileName,
+			String finalThingToDoFileName) {
+		
 		this.dataFileRepository = dataFileRepository;
-		this.setJobExcelService(jobExcelService);
+		this.setThingToDoExcelService(thingToDoExcelService);
 		this.setUtilExcelService(utilExcelService);
 		this.setUtilFileService(utilFileService);
 		this.setFileBackupRepository(fileBackupRepository);
+		this.setBackupFileName(backupPath);
+		this.setInitialThingToDoFileName(initialThingToDoFileName);
+		this.setFinalThingToDoFileName(finalThingToDoFileName);
 	}
 
 	@Override
 	public void run() {
-		System.out.println("Job Task: " + LocalDateTime.now());
+		System.out.println("Thing To Do Task: " + LocalDateTime.now());
 		try {
 			if(this.didOriginFileChange() && this.makeBackup()) {
 				List<CellTypeWrapper> initialSheetCellTypeList = new ArrayList<>();
@@ -65,10 +74,10 @@ public class JobTask extends TimerTask {
 		    		finalSheetCellTypeList.add(new CellTypeWrapper(thingToDoColumnType));
 		    	}
 				
-				//this.jobExcelService.fillSortAndSaveSheet(JOB_FILE_NAME, JOB_FILE_NAME, SHEET_NAME, wrapperCellTypeList,
+				//this.thingToDoExcelService.fillSortAndSaveSheet(THING_TO_DO_FILE_NAME, THING_TO_DO_FILE_NAME, SHEET_NAME, wrapperCellTypeList,
 				//		COLUMN_INDEX_TO_SORT_LIST, COLUMN_INDEX_TO_FILTER, TOKEN_TO_FILTER);
 				
-				this.jobExcelService.loadAndSortThingsToDoSheet(jobExcelService, JOB_FILE_NAME, JOB_FILE_NAME, initialSheetCellTypeList, finalSheetCellTypeList);
+				this.thingToDoExcelService.loadAndSortThingsToDoSheet(thingToDoExcelService, this.initialThingToDoFileName, this.finalThingToDoFileName, initialSheetCellTypeList, finalSheetCellTypeList);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -78,7 +87,7 @@ public class JobTask extends TimerTask {
 	public void readAndSaveExcel() throws Exception {
 		XSSFWorkbook myWorkBook = null;
 		try {
-			myWorkBook = this.jobExcelService.readExcel(JOB_FILE_NAME);
+			myWorkBook = this.thingToDoExcelService.readExcel(this.initialThingToDoFileName);
 			
 			List<CellTypeWrapper> wrapperCellTypeList = new ArrayList<>();
 	    	
@@ -86,9 +95,9 @@ public class JobTask extends TimerTask {
 	    		wrapperCellTypeList.add(new CellTypeWrapper(thingToDoColumnType));
 	    	}
 			
-			SheetWrapper jobSheet = this.jobExcelService.readSheet(myWorkBook,SHEET_NAME, wrapperCellTypeList);
+			SheetWrapper thingToDoSheet = this.thingToDoExcelService.readSheet(myWorkBook,SHEET_NAME, wrapperCellTypeList);
 			
-			for(RowWrapper rowWrapper: jobSheet.getSheetRowList()) {
+			for(RowWrapper rowWrapper: thingToDoSheet.getSheetRowList()) {
 				List<String> cellList = this.getStrCellListFromSheetCellList(rowWrapper.getSheetCellList());
 				
 				StringBuffer cellStr = new StringBuffer();
@@ -103,7 +112,7 @@ public class JobTask extends TimerTask {
 					}
 	
 				}
-				this.saveJob(cellStr.toString());
+				this.saveThingToDo(cellStr.toString());
 			}
 		}
 		catch(Exception e) {
@@ -126,16 +135,16 @@ public class JobTask extends TimerTask {
 		return strCellList;
 	}
 	
-	public void saveJob(String job) {
-		dataFileRepository.saveDataFile(job, Flag.JOB);
+	public void saveThingToDo(String thingToDo) {
+		dataFileRepository.saveDataFile(thingToDo, Flag.THING_TO_DO);
 	}
 
-	public JobExcelService getJobExcelService() {
-		return jobExcelService;
+	public ThingToDoExcelService getThingToDoExcelService() {
+		return thingToDoExcelService;
 	}
 
-	public void setJobExcelService(JobExcelService jobExcelService) {
-		this.jobExcelService = jobExcelService;
+	public void setThingToDoExcelService(ThingToDoExcelService thingToDoExcelService) {
+		this.thingToDoExcelService = thingToDoExcelService;
 	}
 
 	public UtilFileService getUtilFileService() {
@@ -155,14 +164,14 @@ public class JobTask extends TimerTask {
 	}
 	
 	public boolean didOriginFileChange() {
-		return !this.fileBackupRepository.existFileBackup(this.utilFileService.getDateModified(JOB_FILE_NAME));
+		return !this.fileBackupRepository.existFileBackup(this.utilFileService.getDateModified(this.initialThingToDoFileName));
 	}
 	
 	public boolean makeBackup() {
-		String destinationPath = this.utilFileService.makeBackup(BACKUP_PATH, JOB_FILE_NAME);
+		String destinationPath = this.utilFileService.makeBackup(this.backupFileName, this.initialThingToDoFileName);
 		if(destinationPath != null) {
-			LocalDateTime originFileDateModified = this.utilFileService.getDateModified(JOB_FILE_NAME);
-			this.fileBackupRepository.saveFileBackup(destinationPath, originFileDateModified, Flag.JOB);
+			LocalDateTime originFileDateModified = this.utilFileService.getDateModified(this.initialThingToDoFileName);
+			this.fileBackupRepository.saveFileBackup(destinationPath, originFileDateModified, Flag.THING_TO_DO);
 			return true;
 		}
 		return false;
@@ -175,5 +184,30 @@ public class JobTask extends TimerTask {
 	public void setUtilExcelService(UtilExcelService utilExcelService) {
 		this.utilExcelService = utilExcelService;
 	}
+
+	public String getBackupFileName() {
+		return backupFileName;
+	}
+
+	public void setBackupFileName(String backupFileName) {
+		this.backupFileName = backupFileName;
+	}
+
+	public String getInitialThingToDoFileName() {
+		return initialThingToDoFileName;
+	}
+
+	public void setInitialThingToDoFileName(String intialThingToDoFileName) {
+		this.initialThingToDoFileName = intialThingToDoFileName;
+	}
+
+	public String getFinalThingToDoFileName() {
+		return finalThingToDoFileName;
+	}
+
+	public void setFinalThingToDoFileName(String finalThingToDoFileName) {
+		this.finalThingToDoFileName = finalThingToDoFileName;
+	}
+
 
 }

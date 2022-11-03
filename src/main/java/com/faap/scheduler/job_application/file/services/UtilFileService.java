@@ -57,7 +57,7 @@ public class UtilFileService {
 		String destinationPath = backupPath + this.getFileNameBackup(fileName);
 		boolean copied = this.copy(fileName, destinationPath);
 //		if(copied) {
-//			LocalDateTime originFileDateModified = this.getDateModified(jobFileName);
+//			LocalDateTime originFileDateModified = this.getDateModified(thingToDoFileName);
 //			this.fileBackupRepository.saveFileBackup(destinationPath, originFileDateModified, Flag.JOB);
 //		}
 		if(copied) {

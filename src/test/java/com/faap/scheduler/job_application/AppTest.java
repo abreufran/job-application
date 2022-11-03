@@ -7,16 +7,19 @@ import java.util.List;
 
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import com.faap.scheduler.job_application.excel.models.SheetWrapper;
-import com.faap.scheduler.job_application.excel.models.PeriodicTaskColumnType;
 import com.faap.scheduler.job_application.excel.models.CellTypeWrapper;
+import com.faap.scheduler.job_application.excel.models.PeriodicTaskColumnType;
+import com.faap.scheduler.job_application.excel.models.SheetWrapper;
 import com.faap.scheduler.job_application.excel.models.ThingToDoColumnType;
 import com.faap.scheduler.job_application.excel.services.ExcelReadService;
 import com.faap.scheduler.job_application.excel.services.ExcelWriteService;
-import com.faap.scheduler.job_application.excel.services.JobExcelService;
+import com.faap.scheduler.job_application.excel.services.ThingToDoExcelService;
 import com.faap.scheduler.job_application.excel.services.UtilExcelService;
 import com.faap.scheduler.job_application.file.services.UtilDateService;
 import com.faap.scheduler.job_application.file.services.UtilFileService;
+import com.faap.scheduler.job_application.repositories.DataFileRepository;
+import com.faap.scheduler.job_application.repositories.FileBackupRepository;
+import com.faap.scheduler.job_application.tasks.ThingToDoTask;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -28,13 +31,16 @@ import junit.framework.TestSuite;
 public class AppTest 
     extends TestCase
 {
+
+	private FileBackupRepository fileBackupRepository;
+	private DataFileRepository dataFileRepository;
 	private UtilFileService utilFileService;
 	private UtilDateService utilDateService;
 	private UtilExcelService utilExcelService;
 	private ExcelWriteService excelWriteService;
 	private ExcelReadService excelReadService; 
 	
-	private JobExcelService jobExcelService;
+	private ThingToDoExcelService thingToDoExcelService;
     /**
      * Create the test case
      *
@@ -60,14 +66,37 @@ public class AppTest
      */
     public void testApp()
     {
-    	//this.createExcelTest1();
-    	//this.createExcelTest2();
-    	//this.fillSortAndSplitSheetTest();
-    	//this.readPeriodicTasks();
     	this.loadPeriodicTasks();
-    	
-    	//this.calculateEstimatedDate();
+    	//this.readAndSaveExcelTest();
+
         assertTrue( true );
+    }
+    
+    public void readAndSaveExcelTest() {
+    	this.fileBackupRepository = new FileBackupRepository();
+    	this.utilFileService = new UtilFileService();
+    	this.utilDateService = new UtilDateService();
+    	this.utilExcelService = new UtilExcelService(utilDateService);
+    	this.excelReadService = new ExcelReadService(utilDateService, utilExcelService);
+    	this.excelWriteService = new ExcelWriteService(utilDateService, utilExcelService);
+    	this.thingToDoExcelService = new ThingToDoExcelService(utilDateService, utilExcelService, excelReadService, excelWriteService);
+    	this.dataFileRepository = new DataFileRepository();
+    	
+    	String initialFilePath = "/Users/acidlabs/Desktop/thing_to_do_backup/Things_to_do.xlsx";
+    	String finalFilePath = "/Users/acidlabs/Desktop/thing_to_do_backup/Things_to_do_prueba.xlsx";
+    	
+    	//String initialFilePath = "/Users/acidlabs/Library/CloudStorage/GoogleDrive-easycryptolearning21@gmail.com/Mi unidad/Things_to_do.xlsx";
+    	//String finalFilePath = "/Users/acidlabs/Library/CloudStorage/GoogleDrive-easycryptolearning21@gmail.com/Mi unidad/Things_to_do.xlsx";
+    	String backupPath = "/Users/acidlabs/Desktop/thing_to_do_backup/test_backup";
+    	
+    	ThingToDoTask thingToDoTask = new ThingToDoTask(dataFileRepository, thingToDoExcelService, utilExcelService, utilFileService, fileBackupRepository, backupPath, initialFilePath, finalFilePath);
+    	
+    	try {
+			thingToDoTask.readAndSaveExcel();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
     
     public void loadPeriodicTasks() {
@@ -76,15 +105,15 @@ public class AppTest
     	this.utilExcelService = new UtilExcelService(utilDateService);
     	this.excelReadService = new ExcelReadService(utilDateService, utilExcelService);
     	this.excelWriteService = new ExcelWriteService(utilDateService, utilExcelService);
-    	this.jobExcelService = new JobExcelService(utilDateService, utilExcelService, excelReadService, excelWriteService);
+    	this.thingToDoExcelService = new ThingToDoExcelService(utilDateService, utilExcelService, excelReadService, excelWriteService);
     	
-    	//String initialFilePath = "/Users/acidlabs/Desktop/job_backup/Things_to_do.xlsx";
-    	//String finalFilePath = "/Users/acidlabs/Desktop/job_backup/Things_to_do_prueba.xlsx";
+    	String initialFilePath = "/Users/acidlabs/Desktop/thing_to_do_backup/Things_to_do.xlsx";
+    	String finalFilePath = "/Users/acidlabs/Desktop/thing_to_do_backup/Things_to_do_prueba.xlsx";
     	
-    	String initialFilePath = "/Users/acidlabs/Library/CloudStorage/GoogleDrive-easycryptolearning21@gmail.com/Mi unidad/Things_to_do.xlsx";
-    	String finalFilePath = "/Users/acidlabs/Library/CloudStorage/GoogleDrive-easycryptolearning21@gmail.com/Mi unidad/Things_to_do.xlsx";
+    	//String initialFilePath = "/Users/acidlabs/Library/CloudStorage/GoogleDrive-easycryptolearning21@gmail.com/Mi unidad/Things_to_do.xlsx";
+    	//String finalFilePath = "/Users/acidlabs/Library/CloudStorage/GoogleDrive-easycryptolearning21@gmail.com/Mi unidad/Things_to_do.xlsx";
     	
-    	String backupPath = "/Users/acidlabs/Desktop/job_backup/backup";
+    	String backupPath = "/Users/acidlabs/Desktop/thing_to_do_backup/backup";
     	
     	String destinationFile = this.utilFileService.makeBackup(backupPath, initialFilePath);
 
@@ -102,7 +131,7 @@ public class AppTest
 	    		finalSheetCellTypeList.add(new CellTypeWrapper(thingToDoColumnType));
 	    	}
 	    	
-	    	this.jobExcelService.loadAndSortThingsToDoSheet(jobExcelService, initialFilePath, finalFilePath, initialSheetCellTypeList, finalSheetCellTypeList);
+	    	this.thingToDoExcelService.loadAndSortThingsToDoSheet(thingToDoExcelService, initialFilePath, finalFilePath, initialSheetCellTypeList, finalSheetCellTypeList);
     	}
     	
     }
@@ -165,10 +194,10 @@ public class AppTest
     	this.utilExcelService = new UtilExcelService(utilDateService);
     	this.excelReadService = new ExcelReadService(utilDateService, utilExcelService);
     	this.excelWriteService = new ExcelWriteService(utilDateService, utilExcelService);
-    	this.jobExcelService = new JobExcelService(utilDateService, utilExcelService, excelReadService, excelWriteService);
+    	this.thingToDoExcelService = new ThingToDoExcelService(utilDateService, utilExcelService, excelReadService, excelWriteService);
     	
-    	String initialFilePath = "/Users/acidlabs/Desktop/job_backup/Things_to_do.xlsx";
-    	String finalFilePath = "/Users/acidlabs/Desktop/job_backup/Things_to_do_prueba.xlsx";
+    	String initialFilePath = "/Users/acidlabs/Desktop/thing_to_do_backup/Things_to_do.xlsx";
+    	String finalFilePath = "/Users/acidlabs/Desktop/thing_to_do_backup/Things_to_do_prueba.xlsx";
     	String sheetName = "Periodic Tasks";
 
     	
@@ -178,24 +207,24 @@ public class AppTest
     		wrapperCellTypeList.add(new CellTypeWrapper(periodicTask));
     	}
     	
-    	this.readAndSaveSheet(jobExcelService, initialFilePath, finalFilePath, sheetName, wrapperCellTypeList);
+    	this.readAndSaveSheet(thingToDoExcelService, initialFilePath, finalFilePath, sheetName, wrapperCellTypeList);
     	
     }
     
-    private void readAndSaveSheet(JobExcelService jobExcelService, String initialFilePath, String finalFilePath,
+    private void readAndSaveSheet(ThingToDoExcelService thingToDoExcelService, String initialFilePath, String finalFilePath,
     		String sheetName, List<CellTypeWrapper> wrapperCellTypeList) {
     	System.out.println("Read and Save Sheet. ");
 		XSSFWorkbook myWorkBook = null;
 		try {
-			myWorkBook = this.jobExcelService.readExcel(initialFilePath);
+			myWorkBook = this.thingToDoExcelService.readExcel(initialFilePath);
 
-			SheetWrapper sheetWrapper = this.jobExcelService.readSheet(myWorkBook, sheetName,
+			SheetWrapper sheetWrapper = this.thingToDoExcelService.readSheet(myWorkBook, sheetName,
 					wrapperCellTypeList);
 			
-			this.jobExcelService.deleteSheet(myWorkBook, sheetName);
-			this.jobExcelService.addSheetToExcel(myWorkBook, sheetName, myWorkBook.getNumberOfSheets(), wrapperCellTypeList, sheetWrapper.getSheetRowList());
+			this.thingToDoExcelService.deleteSheet(myWorkBook, sheetName);
+			this.thingToDoExcelService.addSheetToExcel(myWorkBook, sheetName, myWorkBook.getNumberOfSheets(), wrapperCellTypeList, sheetWrapper.getSheetRowList());
 			System.out.println("readAndSaveSheet - Saving WorkBook.");
-			this.jobExcelService.writeExcel(myWorkBook, finalFilePath);
+			this.thingToDoExcelService.writeExcel(myWorkBook, finalFilePath);
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -215,10 +244,10 @@ public class AppTest
     	this.utilExcelService = new UtilExcelService(utilDateService);
     	this.excelReadService = new ExcelReadService(utilDateService, utilExcelService);
     	this.excelWriteService = new ExcelWriteService(utilDateService, utilExcelService);
-    	this.jobExcelService = new JobExcelService(utilDateService, utilExcelService, excelReadService, excelWriteService);
+    	this.thingToDoExcelService = new ThingToDoExcelService(utilDateService, utilExcelService, excelReadService, excelWriteService);
     	
-    	String initialFilePath = "/Users/acidlabs/Desktop/job_backup/Things_to_do.xlsx";
-    	String finalFilePath = "/Users/acidlabs/Desktop/job_backup/Things_to_do_prueba.xlsx";
+    	String initialFilePath = "/Users/acidlabs/Desktop/thing_to_do_backup/Things_to_do.xlsx";
+    	String finalFilePath = "/Users/acidlabs/Desktop/thing_to_do_backup/Things_to_do_prueba.xlsx";
     	String sheetName = "Things to do";
     	String COMPLETE_SHEET_NAME = "Complete Things";
     	
@@ -232,7 +261,7 @@ public class AppTest
     		wrapperCellTypeList.add(new CellTypeWrapper(thingToDoColumnType));
     	}
     	
-    	this.jobExcelService.fillSortSplitAndSaveSheet(initialFilePath, finalFilePath, sheetName, COMPLETE_SHEET_NAME,
+    	this.thingToDoExcelService.fillSortSplitAndSaveSheet(initialFilePath, finalFilePath, sheetName, COMPLETE_SHEET_NAME,
     			wrapperCellTypeList, COLUMN_INDEX_TO_SORT_LIST, COLUMN_INDEX_TO_FILTER, TOKEN_TO_FILTER);
     	
     }

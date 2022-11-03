@@ -22,7 +22,7 @@ import com.faap.scheduler.job_application.excel.models.CellWrapper;
 import com.faap.scheduler.job_application.excel.models.CellTypeWrapper;
 import com.faap.scheduler.job_application.excel.models.RowWrapper;
 import com.faap.scheduler.job_application.file.services.UtilDateService;
-import com.faap.scheduler.job_application.models.job.ValidCellListResponse;
+import com.faap.scheduler.job_application.models.thing_to_do.ValidCellListResponse;
 
 public class ExcelReadService {
 	private UtilDateService utilDateService;

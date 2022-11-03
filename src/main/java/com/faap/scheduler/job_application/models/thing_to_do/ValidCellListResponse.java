@@ -1,4 +1,4 @@
-package com.faap.scheduler.job_application.models.job;
+package com.faap.scheduler.job_application.models.thing_to_do;
 
 public enum ValidCellListResponse {
 	OK, 

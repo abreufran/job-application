@@ -8,7 +8,7 @@ import java.sql.SQLException;
 
 public abstract class AbstractRepository {
 	private static String DRIVER="org.postgresql.Driver";
-	private static String URL="jdbc:postgresql://localhost:5432/log_api";
+	private static String URL="jdbc:postgresql://localhost:5433/log_api";
 	private static String USERNAME = "postgres";
 	private static String PASSWORD="123456";
 	
