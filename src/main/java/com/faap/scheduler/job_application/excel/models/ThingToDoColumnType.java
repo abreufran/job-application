@@ -11,7 +11,7 @@ public enum ThingToDoColumnType {
 	THINGS_TO_DO("Things to do", true, CellType.STRING, false, "UNKNOWN", 40, 5, null),
 	CATEGORY("Category", true, CellType.STRING, false, "Task", 20, 6, null),
 	STATUS("Status", true, CellType.FORMULA, false, "PENDING", 20, 7, 
-			new FormulaWrapper("IF(ISBLANK(C_rowNumber_),\"PENDING\",\"COMPLETE\")", "_rowNumber_", FormulaValueWrapper.ROW_NUMBER));
+			new FormulaWrapper("IF(ISBLANK(C_rowNumber_),\"PENDING\",\"COMPLETED\")", "_rowNumber_", FormulaValueWrapper.ROW_NUMBER));
 	
 	private String name;
 	private boolean required;

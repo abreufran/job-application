@@ -66,8 +66,8 @@ public class AppTest
      */
     public void testApp()
     {
-    	this.loadPeriodicTasks();
-    	//this.readAndSaveExcelTest();
+    	//this.loadPeriodicTasks();
+    	this.readAndSaveExcelTest();
 
         assertTrue( true );
     }
@@ -107,13 +107,15 @@ public class AppTest
     	this.excelWriteService = new ExcelWriteService(utilDateService, utilExcelService);
     	this.thingToDoExcelService = new ThingToDoExcelService(utilDateService, utilExcelService, excelReadService, excelWriteService);
     	
-    	String initialFilePath = "/Users/acidlabs/Desktop/thing_to_do_backup/Things_to_do.xlsx";
-    	String finalFilePath = "/Users/acidlabs/Desktop/thing_to_do_backup/Things_to_do_prueba.xlsx";
+    	//String initialFilePath = "/Users/acidlabs/Desktop/thing_to_do_backup/Things_to_do.xlsx";
+    	//String finalFilePath = "/Users/acidlabs/Desktop/thing_to_do_backup/Things_to_do_prueba.xlsx";
+    	//String backupPath = "/Users/acidlabs/Desktop/thing_to_do_backup/test_backup";
     	
-    	//String initialFilePath = "/Users/acidlabs/Library/CloudStorage/GoogleDrive-easycryptolearning21@gmail.com/Mi unidad/Things_to_do.xlsx";
-    	//String finalFilePath = "/Users/acidlabs/Library/CloudStorage/GoogleDrive-easycryptolearning21@gmail.com/Mi unidad/Things_to_do.xlsx";
-    	
+    	String initialFilePath = "/Users/acidlabs/Library/CloudStorage/GoogleDrive-easycryptolearning21@gmail.com/Mi unidad/Things_to_do.xlsx";
+    	String finalFilePath = "/Users/acidlabs/Library/CloudStorage/GoogleDrive-easycryptolearning21@gmail.com/Mi unidad/Things_to_do.xlsx";
     	String backupPath = "/Users/acidlabs/Desktop/thing_to_do_backup/backup";
+    	
+    	
     	
     	String destinationFile = this.utilFileService.makeBackup(backupPath, initialFilePath);
 
@@ -249,7 +251,7 @@ public class AppTest
     	String initialFilePath = "/Users/acidlabs/Desktop/thing_to_do_backup/Things_to_do.xlsx";
     	String finalFilePath = "/Users/acidlabs/Desktop/thing_to_do_backup/Things_to_do_prueba.xlsx";
     	String sheetName = "Things to do";
-    	String COMPLETE_SHEET_NAME = "Complete Things";
+    	String COMPLETED_SHEET_NAME = "Completed Things";
     	
     	List<Integer> COLUMN_INDEX_TO_SORT_LIST = Arrays.asList(4, 3);
     	int COLUMN_INDEX_TO_FILTER = 7;
@@ -261,7 +263,7 @@ public class AppTest
     		wrapperCellTypeList.add(new CellTypeWrapper(thingToDoColumnType));
     	}
     	
-    	this.thingToDoExcelService.fillSortSplitAndSaveSheet(initialFilePath, finalFilePath, sheetName, COMPLETE_SHEET_NAME,
+    	this.thingToDoExcelService.fillSortSplitAndSaveSheet(initialFilePath, finalFilePath, sheetName, COMPLETED_SHEET_NAME,
     			wrapperCellTypeList, COLUMN_INDEX_TO_SORT_LIST, COLUMN_INDEX_TO_FILTER, TOKEN_TO_FILTER);
     	
     }
