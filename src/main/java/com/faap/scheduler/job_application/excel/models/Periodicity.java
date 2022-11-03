@@ -25,10 +25,20 @@ public enum Periodicity {
 	EVERY_9_MONTHS("Every 9 months", 270),
 	EVERY_10_MONTHS("Every 10 months", 300),
 	
-	LAST_DAY_MONTH("Last day of the month", -1),
 	FIRST_DAY_DECEMBER("First day of december", -1),
-	EVERY_SEVENTEENTH_DAY("Every seventeenth day", -1),
+	
+	SECOND_SATURDAY_NOVEMBER("Second saturday of november", -1),
+	
+	LAST_DAY_MONTH("Last day of the month", -1),
+	
+	EVERY_NINTH_DAY("Every ninth day", -1),
+	
+	EVERY_FOURTEENTH_DAY("Every fourteenth day", -1),
 	EVERY_FIFTH_DAY("Every fifth day", -1),
+	
+	EVERY_SEVENTEENTH_DAY("Every seventeenth day", -1),
+	
+	EVERY_TWENTY_NINTH_DAY("Every twenty ninth day", -1),
 	
 	EVERY_1_DAY("Every 1 day", 1),
 	EVERY_2_DAYS("Every 2 days", 2),

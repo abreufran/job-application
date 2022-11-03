@@ -311,12 +311,24 @@ public class JobExcelService extends AbstractApiExcelService {
     		case LAST_DAY_MONTH:
     			return incidenceDate.withDayOfMonth(
     										incidenceDate.getMonth().length(incidenceDate.isLeapYear()));
+    		case SECOND_SATURDAY_NOVEMBER:
+    			LocalDate novemberFirst = LocalDate.of(incidenceDate.getYear(), 11, 1);
+    			DayOfWeek dayOfWeekNovemberFirst = novemberFirst.getDayOfWeek();
+    			LocalDate firstSaturday = novemberFirst.plusDays(6 - dayOfWeekNovemberFirst.getValue());
+    			
+    			return firstSaturday.plusDays(7);	
     		case FIRST_DAY_DECEMBER:
-    			return LocalDate.of(incidenceDate.getYear(), 12, 1);	
+    			return LocalDate.of(incidenceDate.getYear(), 12, 1);
     		case EVERY_FIFTH_DAY:
     			return LocalDate.of(incidenceDate.getYear(), incidenceDate.getMonth(), 5);
+    		case EVERY_NINTH_DAY:
+    			return LocalDate.of(incidenceDate.getYear(), incidenceDate.getMonth(), 9);
+    		case EVERY_FOURTEENTH_DAY:
+    			return LocalDate.of(incidenceDate.getYear(), incidenceDate.getMonth(), 14);	
     		case EVERY_SEVENTEENTH_DAY:
     			return LocalDate.of(incidenceDate.getYear(), incidenceDate.getMonth(), 17);
+    		case EVERY_TWENTY_NINTH_DAY:
+    			return LocalDate.of(incidenceDate.getYear(), incidenceDate.getMonth(), 29);
     		default:
     			return null;
     		}
