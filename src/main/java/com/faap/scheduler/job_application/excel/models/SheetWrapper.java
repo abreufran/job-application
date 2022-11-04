@@ -14,7 +14,7 @@ public class SheetWrapper {
 	}
 
 
-	public List<RowWrapper> getSheetRowList() {
+	public List<RowWrapper> getRowWrapperList() {
 		return wrapperRowList;
 	}
 

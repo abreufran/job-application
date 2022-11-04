@@ -36,16 +36,16 @@ public class UtilExcelService {
 	
 	private boolean incompleteSheetRow(RowWrapper rowWrapper) {
 		//System.out.println("RowNumber: " + rowWrapper.getRowNumber());
-		return rowWrapper.getSheetCellList().stream().anyMatch(sc -> this.incompleteSheetCell(sc));
+		return rowWrapper.getCellWrapperList().stream().anyMatch(sc -> this.incompleteSheetCell(sc));
 	}
 	
 	private boolean incompleteSheetCell(CellWrapper cellWrapper) {
 		String strCell = cellWrapper.getCellValue();
 		//System.out.println("columnName: " + cellWrapper.getSheetCellType().getName() + " / cellValue: " + cellWrapper.getCellValue() + " / Required: " + cellWrapper.getSheetCellType().isRequired());
-		return cellWrapper.getSheetCellType().isRequired() && (strCell == null || strCell.trim().equals(""));
+		return cellWrapper.getCellTypeWrapper().isRequired() && (strCell == null || strCell.trim().equals(""));
 	}
 	
-	public List<CellWrapper> calculateIncompleteSheetCell(List<CellWrapper> incompleteSheetCellList) {
+	public List<CellWrapper> calculateIncompleteCellWrapper(List<CellWrapper> incompleteSheetCellList) {
 		return incompleteSheetCellList.stream()
 				.filter(sc -> this.incompleteSheetCell(sc)).collect(Collectors.toList());
 	}
@@ -73,10 +73,10 @@ public class UtilExcelService {
 		
 		for(int columnIndexToSort: columnIndexToSortList) {
 			Comparator<RowWrapper> priorityComparator = (sr1, sr2) -> {
-				String cellValueToSort1 = sr1.getSheetCellList().get(columnIndexToSort).getCellValue();
-				String cellValueToSort2 = sr2.getSheetCellList().get(columnIndexToSort).getCellValue();
+				String cellValueToSort1 = sr1.getCellWrapperList().get(columnIndexToSort).getCellValue();
+				String cellValueToSort2 = sr2.getCellWrapperList().get(columnIndexToSort).getCellValue();
 				
-				if(sr1.getSheetCellList().get(columnIndexToSort).getSheetCellType().isDate()
+				if(sr1.getCellWrapperList().get(columnIndexToSort).getCellTypeWrapper().isDate()
 						&& cellValueToSort1 != null && cellValueToSort2 != null) {
 					LocalDate cellDateToSort1 = this.utilDateService.getLocalDate(cellValueToSort1);
 					LocalDate cellDateToSort2 = this.utilDateService.getLocalDate(cellValueToSort2);
@@ -104,13 +104,13 @@ public class UtilExcelService {
 	
 	}
 	
-	public List<RowWrapper> sortSheetRowList(List<RowWrapper> wrapperRowList, 
+	public List<RowWrapper> sortRowWrapperList(List<RowWrapper> wrapperRowList, 
 			List<Integer> columnIndexToSortList, int columnIndexToFilter, String tokenToFilter) {
 
 		Comparator<RowWrapper> filterComparator = (sr1, sr2) -> {
-			String cellValueToSort1 = sr1.getSheetCellList().get(columnIndexToFilter)
+			String cellValueToSort1 = sr1.getCellWrapperList().get(columnIndexToFilter)
 					.getCellValue();
-			String cellValueToSort2 = sr2.getSheetCellList().get(columnIndexToFilter)
+			String cellValueToSort2 = sr2.getCellWrapperList().get(columnIndexToFilter)
 					.getCellValue();
 
 			if (tokenToFilter.equals(cellValueToSort1)) {

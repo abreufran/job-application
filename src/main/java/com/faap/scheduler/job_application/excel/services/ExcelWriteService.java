@@ -140,22 +140,22 @@ public class ExcelWriteService {
     	Row row = sheet.createRow(rowWrapper.getRowNumber());
 		System.out.println("createRow - Body: " + (row.getRowNum() + 1));
 
-		for(CellWrapper cellWrapper: rowWrapper.getSheetCellList()) {
-			Cell cell = row.createCell(cellWrapper.getSheetCellType().getColumnIndex(), cellWrapper.getSheetCellType().getCellType());
+		for(CellWrapper cellWrapper: rowWrapper.getCellWrapperList()) {
+			Cell cell = row.createCell(cellWrapper.getCellTypeWrapper().getColumnIndex(), cellWrapper.getCellTypeWrapper().getCellType());
 			System.out.println("createCell - Body: " + cell.getColumnIndex());
 			
 			HorizontalAlignment horizontalAlignment = HorizontalAlignment.CENTER;
-			if(cellWrapper.getSheetCellType().isRequired()) {
+			if(cellWrapper.getCellTypeWrapper().isRequired()) {
 				horizontalAlignment = HorizontalAlignment.LEFT;
 			}
 			
-			this.setBlankCellAndCellStyle(myWorkBook, cell, cellWrapper.getSheetCellType().isDate(), 
-					cellWrapper.getSheetCellType().getCellType() == CellType.STRING, horizontalAlignment);
+			this.setBlankCellAndCellStyle(myWorkBook, cell, cellWrapper.getCellTypeWrapper().isDate(), 
+					cellWrapper.getCellTypeWrapper().getCellType() == CellType.STRING, horizontalAlignment);
 			
-			if (cellWrapper.getSheetCellType().isDate() && cellWrapper.getCellValue() != null) {
+			if (cellWrapper.getCellTypeWrapper().isDate() && cellWrapper.getCellValue() != null) {
 				cell.setCellValue(this.utilDateService.getLocalDate(cellWrapper.getCellValue()));
 				
-			} else if (cellWrapper.getSheetCellType().getCellType() == CellType.FORMULA) {
+			} else if (cellWrapper.getCellTypeWrapper().getCellType() == CellType.FORMULA) {
 				cell.setCellFormula(this.calculateFormula(cellWrapper, rowWrapper.getRowNumber()));
 				XSSFFormulaEvaluator formulaEvaluator = myWorkBook.getCreationHelper().createFormulaEvaluator();
 				formulaEvaluator.evaluateFormulaCell(cell);
@@ -167,11 +167,11 @@ public class ExcelWriteService {
     }
     
 	protected String calculateFormula(CellWrapper cellWrapper, int rowNumber) {
-    	String formula = cellWrapper.getSheetCellType().getSheetFormula().getFormula();
-    	if(cellWrapper.getSheetCellType().getSheetFormula().getSheetFormulaValue() != null) {
-	    	switch (cellWrapper.getSheetCellType().getSheetFormula().getSheetFormulaValue()) {
+    	String formula = cellWrapper.getCellTypeWrapper().getSheetFormula().getFormula();
+    	if(cellWrapper.getCellTypeWrapper().getSheetFormula().getSheetFormulaValue() != null) {
+	    	switch (cellWrapper.getCellTypeWrapper().getSheetFormula().getSheetFormulaValue()) {
 			case ROW_NUMBER:
-				formula = formula.replaceAll(cellWrapper.getSheetCellType().getSheetFormula().getKey(), String.valueOf(rowNumber + 1));
+				formula = formula.replaceAll(cellWrapper.getCellTypeWrapper().getSheetFormula().getKey(), String.valueOf(rowNumber + 1));
 				break;
 			default:
 				break;

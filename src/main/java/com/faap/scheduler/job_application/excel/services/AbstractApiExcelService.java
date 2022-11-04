@@ -30,7 +30,7 @@ public abstract class AbstractApiExcelService {
 		this.setExcelWriteService(excelWriteService);
 	}
 	
-	public abstract void completeSheetCellList(List<CellWrapper> wrapperCellList, XSSFWorkbook myWorkBook, int rowNumber);
+	public abstract void completeCellWrapperList(List<CellWrapper> wrapperCellList, XSSFWorkbook myWorkBook, int rowNumber);
 	
 	public abstract void updateCellIdValue(List<RowWrapper> wrapperRowList);
 	
@@ -87,23 +87,23 @@ public abstract class AbstractApiExcelService {
 					wrapperCellTypeList);
 			
 			//Split sheet by token filter
-			List<RowWrapper> wrapperRowOfTokenFilterList = wrapperSheetOfTokenFilet.getSheetRowList().stream().filter(sr -> {
-				return sr.getSheetCellList().get(columnIndexToFilter).getCellValue().equals(tokenToFilter);
+			List<RowWrapper> wrapperRowOfTokenFilterList = wrapperSheetOfTokenFilet.getRowWrapperList().stream().filter(sr -> {
+				return sr.getCellWrapperList().get(columnIndexToFilter).getCellValue().equals(tokenToFilter);
 			}).collect(Collectors.toList());
 			
 			//Split sheet by NO token filter
-			List<RowWrapper> wrapperRowNoTokenFilterList = wrapperSheetOfTokenFilet.getSheetRowList().stream().filter(sr -> {
-				return !sr.getSheetCellList().get(columnIndexToFilter).getCellValue().equals(tokenToFilter);
+			List<RowWrapper> wrapperRowNoTokenFilterList = wrapperSheetOfTokenFilet.getRowWrapperList().stream().filter(sr -> {
+				return !sr.getCellWrapperList().get(columnIndexToFilter).getCellValue().equals(tokenToFilter);
 			}).collect(Collectors.toList());
 			
 			//Add old records of NO token filer
-			wrapperRowNoTokenFilterList.addAll(wrapperSheetNoTokenFilet.getSheetRowList());
+			wrapperRowNoTokenFilterList.addAll(wrapperSheetNoTokenFilet.getRowWrapperList());
 			
 			//Sort records of NO token filter
 			wrapperRowNoTokenFilterList = this.utilExcelService.sortSheetRowList(wrapperRowNoTokenFilterList, columnIndexToSortList, null);
 
-			if (wrapperSheetOfTokenFilet.getSheetRowList().size() != wrapperRowOfTokenFilterList.size()
-					|| wrapperSheetNoTokenFilet.getSheetRowList().size() != wrapperRowNoTokenFilterList.size()
+			if (wrapperSheetOfTokenFilet.getRowWrapperList().size() != wrapperRowOfTokenFilterList.size()
+					|| wrapperSheetNoTokenFilet.getRowWrapperList().size() != wrapperRowNoTokenFilterList.size()
 					|| fillChanged || sortChanged) {
 				this.updateRowNumber(wrapperRowOfTokenFilterList);
 				this.updateRowNumber(wrapperRowNoTokenFilterList);
@@ -168,8 +168,8 @@ public abstract class AbstractApiExcelService {
 			SheetWrapper sheetWrapper = this.readSheet(myWorkBook, sheetName,
 					wrapperCellTypeList);
 			
-			List<RowWrapper> sortedSheetRowList = this.utilExcelService.sortSheetRowList(
-					sheetWrapper.getSheetRowList(), columnIndexToSortList, columnIndexToFilter, tokenToFilter);
+			List<RowWrapper> sortedSheetRowList = this.utilExcelService.sortRowWrapperList(
+					sheetWrapper.getRowWrapperList(), columnIndexToSortList, columnIndexToFilter, tokenToFilter);
 
 
 			if (this.utilExcelService.didSheetSort(sortedSheetRowList)) {
@@ -209,15 +209,15 @@ public abstract class AbstractApiExcelService {
 			SheetWrapper sheetWrapper = this.readSheet(myWorkBook, sheetName,
 					wrapperCellTypeList);
 
-			List<RowWrapper> incompleteSheetRowList = this.utilExcelService.calculateIncompleteSheetRowList(sheetWrapper.getSheetRowList());
+			List<RowWrapper> incompleteSheetRowList = this.utilExcelService.calculateIncompleteSheetRowList(sheetWrapper.getRowWrapperList());
 
 			for(RowWrapper rowWrapper: incompleteSheetRowList) {
-				this.completeSheetCellList(rowWrapper.getSheetCellList(), myWorkBook, rowWrapper.getRowNumber());
+				this.completeCellWrapperList(rowWrapper.getCellWrapperList(), myWorkBook, rowWrapper.getRowNumber());
 			}
 
 			if (incompleteSheetRowList.size() > 0) {
 				this.deleteSheet(myWorkBook, sheetName);
-				this.addSheetToExcel(myWorkBook, sheetName, 0, wrapperCellTypeList, sheetWrapper.getSheetRowList());
+				this.addSheetToExcel(myWorkBook, sheetName, 0, wrapperCellTypeList, sheetWrapper.getRowWrapperList());
 				return new WorkbookResponse(myWorkBook, true, true);
 			}
 			else {
@@ -284,8 +284,8 @@ public abstract class AbstractApiExcelService {
 	
 	public SheetWrapper readSheet(XSSFWorkbook myWorkBook, String sheetName, List<CellTypeWrapper> sheeCellTypeList) throws Exception {
 		SheetWrapper sheetWrapper = this.excelReadService.readSheet(myWorkBook, sheetName, sheeCellTypeList);
-		this.updateCellIdValue(sheetWrapper.getSheetRowList());
-		this.updatePriority(sheetName, sheetWrapper.getSheetRowList());
+		this.updateCellIdValue(sheetWrapper.getRowWrapperList());
+		this.updatePriority(sheetName, sheetWrapper.getRowWrapperList());
 		return sheetWrapper;
 		
 	}

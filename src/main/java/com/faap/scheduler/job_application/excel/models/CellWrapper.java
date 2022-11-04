@@ -27,7 +27,7 @@ public class CellWrapper {
 		this.cellValue = cellValue;
 	}
 
-	public CellTypeWrapper getSheetCellType() {
+	public CellTypeWrapper getCellTypeWrapper() {
 		return cellTypeWrapper;
 	}
 

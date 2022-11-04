@@ -20,7 +20,7 @@ public class RowWrapper {
 		this.rowNumber = rowNumber;
 	}
 
-	public List<CellWrapper> getSheetCellList() {
+	public List<CellWrapper> getCellWrapperList() {
 		return wrapperCellList;
 	}
 

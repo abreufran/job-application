@@ -97,8 +97,8 @@ public class ThingToDoTask extends TimerTask {
 			
 			SheetWrapper thingToDoSheet = this.thingToDoExcelService.readSheet(myWorkBook,SHEET_NAME, wrapperCellTypeList);
 			
-			for(RowWrapper rowWrapper: thingToDoSheet.getSheetRowList()) {
-				List<String> cellList = this.getStrCellListFromSheetCellList(rowWrapper.getSheetCellList());
+			for(RowWrapper rowWrapper: thingToDoSheet.getRowWrapperList()) {
+				List<String> cellList = this.getStrCellListFromSheetCellList(rowWrapper.getCellWrapperList());
 				
 				StringBuffer cellStr = new StringBuffer();
 				for (String c : cellList) {

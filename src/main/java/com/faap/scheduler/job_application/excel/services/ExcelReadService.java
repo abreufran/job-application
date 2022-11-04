@@ -55,7 +55,7 @@ public class ExcelReadService {
 
 			if (validCellListResponse == ValidCellListResponse.OK) {
 				if (row.getRowNum() > 0) {
-					this.addSheetRow(sheetWrapper, cellList, wrapperCellTypeList, row);
+					this.addRowWrapper(sheetWrapper, cellList, wrapperCellTypeList, row);
 				}
 
 			} else {
@@ -70,22 +70,22 @@ public class ExcelReadService {
 
 		}
 
-		this.checkDateCell(myWorkBook, sheetWrapper.getSheetRowList());
+		this.checkDateCell(myWorkBook, sheetWrapper.getRowWrapperList());
 
 		return sheetWrapper;
 	}
 	
 	private void checkDateCell(XSSFWorkbook myWorkBook, List<RowWrapper> wrapperRowList) {
 		for (RowWrapper rowWrapper : wrapperRowList) {
-			List<CellWrapper> sheetDateCells = rowWrapper.getSheetCellList().stream()
-					.filter(sc -> sc.getSheetCellType().isDate()).collect(Collectors.toList());
+			List<CellWrapper> sheetDateCells = rowWrapper.getCellWrapperList().stream()
+					.filter(sc -> sc.getCellTypeWrapper().isDate()).collect(Collectors.toList());
 			
 			for (CellWrapper cellWrapper : sheetDateCells) {
-				if (cellWrapper.getSheetCellType().getCellType() != CellType.NUMERIC || !DateUtil.isCellDateFormatted(cellWrapper.getCell())) {
+				if (cellWrapper.getCellTypeWrapper().getCellType() != CellType.NUMERIC || !DateUtil.isCellDateFormatted(cellWrapper.getCell())) {
 
-					if (cellWrapper.getSheetCellType().isRequired()) {
+					if (cellWrapper.getCellTypeWrapper().isRequired()) {
 						System.out.println("WARNING: RowNumber: " + (rowWrapper.getRowNumber() + 1) 
-								+ " / Required Date columnIdex: " + cellWrapper.getSheetCellType().getColumnIndex() + " / Fixed.");
+								+ " / Required Date columnIdex: " + cellWrapper.getCellTypeWrapper().getColumnIndex() + " / Fixed.");
 						cellWrapper.setCellValue(this.utilDateService.getStrDate(LocalDate.now()));
 					}
 
@@ -154,12 +154,12 @@ public class ExcelReadService {
 
 	}
 	
-	public RowWrapper addSheetRow(SheetWrapper sheetWrapper, List<Cell> cellList, List<CellTypeWrapper> wrapperCellTypeList, Row row) {
+	public RowWrapper addRowWrapper(SheetWrapper sheetWrapper, List<Cell> cellList, List<CellTypeWrapper> wrapperCellTypeList, Row row) {
 		System.out.println("INFO: Row Number: " + (row.getRowNum() + 1) + " / Reading");
 		List<CellWrapper> wrapperCellList = this.getSheetCellList(cellList,
 				wrapperCellTypeList, row.getRowNum());
 		RowWrapper rowWrapper = new RowWrapper(wrapperCellList, row.getRowNum());
-		sheetWrapper.getSheetRowList().add(rowWrapper);
+		sheetWrapper.getRowWrapperList().add(rowWrapper);
 		
 		return rowWrapper;
 	}

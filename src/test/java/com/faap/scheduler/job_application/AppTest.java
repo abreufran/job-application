@@ -66,8 +66,8 @@ public class AppTest
      */
     public void testApp()
     {
-    	//this.loadPeriodicTasks();
-    	this.readAndSaveExcelTest();
+    	this.loadPeriodicTasks();
+    	//this.readAndSaveExcelTest();
 
         assertTrue( true );
     }
@@ -224,7 +224,7 @@ public class AppTest
 					wrapperCellTypeList);
 			
 			this.thingToDoExcelService.deleteSheet(myWorkBook, sheetName);
-			this.thingToDoExcelService.addSheetToExcel(myWorkBook, sheetName, myWorkBook.getNumberOfSheets(), wrapperCellTypeList, sheetWrapper.getSheetRowList());
+			this.thingToDoExcelService.addSheetToExcel(myWorkBook, sheetName, myWorkBook.getNumberOfSheets(), wrapperCellTypeList, sheetWrapper.getRowWrapperList());
 			System.out.println("readAndSaveSheet - Saving WorkBook.");
 			this.thingToDoExcelService.writeExcel(myWorkBook, finalFilePath);
 			
