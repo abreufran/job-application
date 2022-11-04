@@ -95,9 +95,9 @@ public class ThingToDoTask extends TimerTask {
 	    		cellTypeWrapperList.add(new CellTypeWrapper(thingToDoColumnType));
 	    	}
 			
-			SheetWrapper thingToDoSheetWrapper = this.thingToDoExcelService.readSheet(myWorkBook,SHEET_NAME, cellTypeWrapperList);
+			SheetWrapper sheetWrapper = this.thingToDoExcelService.readSheet(myWorkBook,SHEET_NAME, cellTypeWrapperList);
 			
-			for(RowWrapper rowWrapper: thingToDoSheetWrapper.getRowWrapperList()) {
+			for(RowWrapper rowWrapper: sheetWrapper.getRowWrapperList()) {
 				List<String> cellList = this.getStrCellListFromSheetCellList(rowWrapper.getCellWrapperList());
 				
 				StringBuffer cellStr = new StringBuffer();
