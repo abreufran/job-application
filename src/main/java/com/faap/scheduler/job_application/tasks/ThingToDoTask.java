@@ -89,13 +89,13 @@ public class ThingToDoTask extends TimerTask {
 		try {
 			myWorkBook = this.thingToDoExcelService.readExcel(this.initialThingToDoFileName);
 			
-			List<CellTypeWrapper> wrapperCellTypeList = new ArrayList<>();
+			List<CellTypeWrapper> cellTypeWrapperList = new ArrayList<>();
 	    	
 	    	for(ThingToDoColumnType thingToDoColumnType: ThingToDoColumnType.values()) {
-	    		wrapperCellTypeList.add(new CellTypeWrapper(thingToDoColumnType));
+	    		cellTypeWrapperList.add(new CellTypeWrapper(thingToDoColumnType));
 	    	}
 			
-			SheetWrapper thingToDoSheetWrapper = this.thingToDoExcelService.readSheet(myWorkBook,SHEET_NAME, wrapperCellTypeList);
+			SheetWrapper thingToDoSheetWrapper = this.thingToDoExcelService.readSheet(myWorkBook,SHEET_NAME, cellTypeWrapperList);
 			
 			for(RowWrapper rowWrapper: thingToDoSheetWrapper.getRowWrapperList()) {
 				List<String> cellList = this.getStrCellListFromSheetCellList(rowWrapper.getCellWrapperList());
