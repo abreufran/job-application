@@ -66,13 +66,13 @@ public class AppTest
      */
     public void testApp()
     {
-    	this.loadPeriodicTasks();
-    	//this.readAndSaveExcelTest();
+    	//this.loadPeriodicTasks();
+    	this.readAndExportSheetTest();
 
         assertTrue( true );
     }
     
-    public void readAndSaveExcelTest() {
+    public void readAndExportSheetTest() {
     	this.fileBackupRepository = new FileBackupRepository();
     	this.utilFileService = new UtilFileService();
     	this.utilDateService = new UtilDateService();
@@ -92,7 +92,7 @@ public class AppTest
     	ThingToDoTask thingToDoTask = new ThingToDoTask(dataFileRepository, thingToDoExcelService, utilExcelService, utilFileService, fileBackupRepository, backupPath, initialFilePath, finalFilePath);
     	
     	try {
-			thingToDoTask.readAndSaveExcel();
+			thingToDoTask.readAndExportThingsToDoSheet();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

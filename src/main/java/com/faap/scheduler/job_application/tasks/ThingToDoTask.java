@@ -84,7 +84,7 @@ public class ThingToDoTask extends TimerTask {
 		}
 	}
 	
-	public void readAndSaveExcel() throws Exception {
+	public void readAndExportThingsToDoSheet() throws Exception {
 		XSSFWorkbook myWorkBook = null;
 		try {
 			myWorkBook = this.thingToDoExcelService.readExcel(this.initialThingToDoFileName);
