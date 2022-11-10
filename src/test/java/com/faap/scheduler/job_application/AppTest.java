@@ -66,8 +66,8 @@ public class AppTest
      */
     public void testApp()
     {
-    	//this.loadPeriodicTasks();
-    	this.readAndExportSheetTest();
+    	this.loadPeriodicTasks();
+    	//this.readAndExportSheetTest();
 
         assertTrue( true );
     }

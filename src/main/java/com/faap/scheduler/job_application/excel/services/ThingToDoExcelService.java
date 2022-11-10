@@ -318,7 +318,7 @@ public class ThingToDoExcelService extends AbstractApiExcelService {
     			? incidenceDate.plusDays(weekday.getValue() - dayOfWeek.getValue()) 
     			: incidenceDate);
     	
-    	if(periodicity.getSize() == -1) {
+    	if(periodicity.getSize() == -1 && periodicity.getMonthDayNumber() == -1) {
     		switch (periodicity) {
     		case LAST_DAY_MONTH:
     			return incidenceDate.withDayOfMonth(
@@ -331,19 +331,13 @@ public class ThingToDoExcelService extends AbstractApiExcelService {
     			return firstSaturday.plusDays(7);	
     		case FIRST_DAY_DECEMBER:
     			return LocalDate.of(incidenceDate.getYear(), 12, 1);
-    		case EVERY_FIFTH_DAY:
-    			return LocalDate.of(incidenceDate.getYear(), incidenceDate.getMonth(), 5);
-    		case EVERY_NINTH_DAY:
-    			return LocalDate.of(incidenceDate.getYear(), incidenceDate.getMonth(), 9);
-    		case EVERY_FOURTEENTH_DAY:
-    			return LocalDate.of(incidenceDate.getYear(), incidenceDate.getMonth(), 14);	
-    		case EVERY_SEVENTEENTH_DAY:
-    			return LocalDate.of(incidenceDate.getYear(), incidenceDate.getMonth(), 17);
-    		case EVERY_TWENTY_NINTH_DAY:
-    			return LocalDate.of(incidenceDate.getYear(), incidenceDate.getMonth(), 29);
+  
     		default:
     			return null;
     		}
+    	}
+    	else if(periodicity.getMonthDayNumber() != -1) {
+    		return LocalDate.of(incidenceDate.getYear(), incidenceDate.getMonth(), periodicity.getMonthDayNumber());
     	}
     	else {
 	    	if(lastEstimatedDay == null) {
