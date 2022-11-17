@@ -305,45 +305,49 @@ public class ThingToDoExcelService extends AbstractApiExcelService {
 		}
 		
 		return this.getEstimatedDate(periodicityEnum, weekdayEnum, 
-				initialDateOfPeriodicTask, LocalDate.now(), lastEstimatedDate);
+				initialDateOfPeriodicTask, lastEstimatedDate);
 	}
 	
 	private LocalDate getEstimatedDate(Periodicity periodicity, Weekday weekday, 
-    		LocalDate initialDateOfPeriodicTask, LocalDate incidenceDate,
-    		LocalDate lastEstimatedDay) {
+    		LocalDate initialDateOfPeriodicTask, LocalDate lastEstimatedDay) {
     	
-    	DayOfWeek dayOfWeek = incidenceDate.getDayOfWeek();
-    	
-    	LocalDate estimatedDate = (weekday.getValue() != -1 
-    			? incidenceDate.plusDays(weekday.getValue() - dayOfWeek.getValue()) 
-    			: incidenceDate);
+		LocalDate today = LocalDate.now();
     	
     	if(periodicity.getSize() == -1 && periodicity.getMonthDayNumber() == -1) {
     		switch (periodicity) {
     		case LAST_DAY_MONTH:
-    			return incidenceDate.withDayOfMonth(
-    										incidenceDate.getMonth().length(incidenceDate.isLeapYear()));
+    			return today.withDayOfMonth(
+    										today.getMonth().length(today.isLeapYear()));
     		case SECOND_SATURDAY_NOVEMBER:
-    			LocalDate novemberFirst = LocalDate.of(incidenceDate.getYear(), 11, 1);
+    			LocalDate novemberFirst = LocalDate.of(today.getYear(), 11, 1);
     			DayOfWeek dayOfWeekNovemberFirst = novemberFirst.getDayOfWeek();
     			LocalDate firstSaturday = novemberFirst.plusDays(6 - dayOfWeekNovemberFirst.getValue());
     			
     			return firstSaturday.plusDays(7);	
     		case FIRST_DAY_DECEMBER:
-    			return LocalDate.of(incidenceDate.getYear(), 12, 1);
+    			return LocalDate.of(today.getYear(), 12, 1);
   
     		default:
     			return null;
     		}
     	}
     	else if(periodicity.getMonthDayNumber() != -1) {
-    		return LocalDate.of(incidenceDate.getYear(), incidenceDate.getMonth(), periodicity.getMonthDayNumber());
+    		return LocalDate.of(today.getYear(), today.getMonth(), periodicity.getMonthDayNumber());
     	}
     	else {
+    		
 	    	if(lastEstimatedDay == null) {
+	    		LocalDate estimatedDate = (weekday.getValue() != -1 
+	        			? today.plusDays(weekday.getValue() - today.getDayOfWeek().getValue()) 
+	        			: today);
+	    		
 	    		return estimatedDate;
 	    	}
+	    	else if(weekday.getValue() == -1) {
+	    		return lastEstimatedDay.plusDays(periodicity.getSize());
+	    	}
 	    	else {
+	    		LocalDate estimatedDate = today.plusDays(weekday.getValue() - today.getDayOfWeek().getValue());
 	    	    
 	    	    long diffDays = Math.abs(Duration.between(estimatedDate.atStartOfDay(), lastEstimatedDay.atStartOfDay()).toDays());
 	    	    
