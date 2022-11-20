@@ -28,6 +28,7 @@ public class ThingToDoExcelService extends AbstractApiExcelService {
 	public static List<Integer> COLUMN_INDEX_TO_SORT_LIST = Arrays.asList(4, 3);
 	public static int COLUMN_INDEX_TO_FILTER = 7;
 	public static String TOKEN_TO_FILTER = "PENDING";
+	public static int MAXIMUN_DAYS_NUMBERA_ALLOWED = 60;
 
 	public ThingToDoExcelService(UtilDateService utilDateService, UtilExcelService utilExcelService, 
 			ExcelReadService excelReadService, ExcelWriteService excelWriteService) {
@@ -344,7 +345,14 @@ public class ThingToDoExcelService extends AbstractApiExcelService {
 	    		return estimatedDate;
 	    	}
 	    	else if(weekday.getValue() == -1) {
-	    		return lastEstimatedDay.plusDays(periodicity.getSize());
+	    		LocalDate newEstimatedDate = lastEstimatedDay.plusDays(periodicity.getSize());
+	    		long diffDays = Math.abs(Duration.between(newEstimatedDate.atStartOfDay(), lastEstimatedDay.atStartOfDay()).toDays());
+	    		if(diffDays <= MAXIMUN_DAYS_NUMBERA_ALLOWED) {
+	    			return newEstimatedDate;
+	    		}
+	    		else {
+	    			return null;
+	    		}
 	    	}
 	    	else {
 	    		LocalDate estimatedDate = today.plusDays(weekday.getValue() - today.getDayOfWeek().getValue());
