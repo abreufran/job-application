@@ -17,11 +17,13 @@ import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import com.faap.scheduler.job_application.excel.models.Priority;
-import com.faap.scheduler.job_application.excel.models.CellWrapper;
 import com.faap.scheduler.job_application.excel.models.CellTypeWrapper;
+import com.faap.scheduler.job_application.excel.models.CellWrapper;
+import com.faap.scheduler.job_application.excel.models.Priority;
 import com.faap.scheduler.job_application.excel.models.RowWrapper;
+import com.faap.scheduler.job_application.excel.models.ThingToDoColumnType;
 import com.faap.scheduler.job_application.file.services.UtilDateService;
+import com.faap.scheduler.job_application.models.thing_to_do.ThingToDo;
 
 public class UtilExcelService {
 	private UtilDateService utilDateService;
@@ -220,6 +222,71 @@ public class UtilExcelService {
 			style.setDataFormat(createHelper.createDataFormat().getFormat(UtilDateService.WRITE_EXCEL_DATE_FORMAT));
 		}
 		cell.setCellStyle(style);
+	}
+	
+	public List<CellWrapper> getCellWrapperLit(List<ThingToDo> thingToDoList, List<CellTypeWrapper> cellTypeWrapperList) {
+		List<CellWrapper> cellWrapperList = new ArrayList<>();
+		
+		for(ThingToDo ttd: thingToDoList) {
+		
+			CellTypeWrapper cellTypeWrapper = cellTypeWrapperList.stream().filter(ct -> ct.getColumnIndex() == ThingToDoColumnType.ID.getColumnIndex()).findFirst().orElse(null);
+			
+			cellWrapperList.add(new CellWrapper(
+					cellTypeWrapper, 
+					String.valueOf(ttd.getId()), 
+					null));
+			
+			cellTypeWrapper = cellTypeWrapperList.stream().filter(ct -> ct.getColumnIndex() == ThingToDoColumnType.INCIDENCE_DATE.getColumnIndex()).findFirst().orElse(null);
+			
+			cellWrapperList.add(new CellWrapper(
+					cellTypeWrapper, 
+					String.valueOf(ttd.getIncidenceDate() != null ? this.utilDateService.getStrDate(ttd.getIncidenceDate()) : null), 
+					null));
+			
+			cellTypeWrapper = cellTypeWrapperList.stream().filter(ct -> ct.getColumnIndex() == ThingToDoColumnType.EXECUTION_DATE.getColumnIndex()).findFirst().orElse(null);
+			
+			cellWrapperList.add(new CellWrapper(
+					cellTypeWrapper, 
+					String.valueOf(ttd.getExecutionDate() != null ? this.utilDateService.getStrDate(ttd.getExecutionDate()) : null), 
+					null));
+			
+			cellTypeWrapper = cellTypeWrapperList.stream().filter(ct -> ct.getColumnIndex() == ThingToDoColumnType.ESTIMATED_DATE.getColumnIndex()).findFirst().orElse(null);
+			
+			cellWrapperList.add(new CellWrapper(
+					cellTypeWrapper, 
+					String.valueOf(ttd.getEstimatedDate() != null ? this.utilDateService.getStrDate(ttd.getEstimatedDate()) : null), 
+					null));
+			
+			cellTypeWrapper = cellTypeWrapperList.stream().filter(ct -> ct.getColumnIndex() == ThingToDoColumnType.PRIORITY.getColumnIndex()).findFirst().orElse(null);
+			
+			cellWrapperList.add(new CellWrapper(
+					cellTypeWrapper, 
+					String.valueOf(ttd.getPriority()), 
+					null));
+			
+			cellTypeWrapper = cellTypeWrapperList.stream().filter(ct -> ct.getColumnIndex() == ThingToDoColumnType.THINGS_TO_DO.getColumnIndex()).findFirst().orElse(null);
+			
+			cellWrapperList.add(new CellWrapper(
+					cellTypeWrapper, 
+					String.valueOf(ttd.getThingToDo()), 
+					null));
+			
+			cellTypeWrapper = cellTypeWrapperList.stream().filter(ct -> ct.getColumnIndex() == ThingToDoColumnType.CATEGORY.getColumnIndex()).findFirst().orElse(null);
+			
+			cellWrapperList.add(new CellWrapper(
+					cellTypeWrapper, 
+					String.valueOf(ttd.getCategory()), 
+					null));
+			
+			cellTypeWrapper = cellTypeWrapperList.stream().filter(ct -> ct.getColumnIndex() == ThingToDoColumnType.STATUS.getColumnIndex()).findFirst().orElse(null);
+			
+			cellWrapperList.add(new CellWrapper(
+					cellTypeWrapper, 
+					String.valueOf(ttd.getStatus()), 
+					null));
+		}
+		
+		return cellWrapperList;
 	}
 	
 }

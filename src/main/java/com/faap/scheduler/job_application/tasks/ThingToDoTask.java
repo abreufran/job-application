@@ -18,6 +18,7 @@ import com.faap.scheduler.job_application.excel.models.ThingToDoColumnType;
 import com.faap.scheduler.job_application.excel.services.ThingToDoExcelService;
 import com.faap.scheduler.job_application.excel.services.UtilExcelService;
 import com.faap.scheduler.job_application.file.services.UtilFileService;
+import com.faap.scheduler.job_application.models.thing_to_do.ThingToDo;
 import com.faap.scheduler.job_application.repositories.DataFileRepository;
 import com.faap.scheduler.job_application.repositories.FileBackupRepository;
 
@@ -84,6 +85,37 @@ public class ThingToDoTask extends TimerTask {
 		}
 	}
 	
+	public void importThingsToDoData() throws Exception {
+		XSSFWorkbook myWorkBook = null;
+		try {
+			
+			List<ThingToDo> reactThingToDoList = this.getReactThingToDoList();
+			
+			if(reactThingToDoList.size() > 0) {
+			
+				myWorkBook = this.thingToDoExcelService.readExcel(this.initialThingToDoFileName);
+				
+				List<CellTypeWrapper> cellTypeWrapperList = new ArrayList<>();
+		    	
+		    	for(ThingToDoColumnType thingToDoColumnType: ThingToDoColumnType.values()) {
+		    		cellTypeWrapperList.add(new CellTypeWrapper(thingToDoColumnType));
+		    	}
+				
+				SheetWrapper sheetWrapper = this.thingToDoExcelService.readSheet(myWorkBook,SHEET_NAME, cellTypeWrapperList);
+				
+				List<CellWrapper> reactCellWrapperList = this.utilExcelService.getCellWrapperLit(reactThingToDoList, cellTypeWrapperList);
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+		finally {
+			if(myWorkBook != null) {
+				myWorkBook.close();
+			}
+		}
+	}
+	
 	public void readAndExportThingsToDoSheet() throws Exception {
 		XSSFWorkbook myWorkBook = null;
 		try {
@@ -137,6 +169,10 @@ public class ThingToDoTask extends TimerTask {
 	
 	public void saveThingToDo(String thingToDo) {
 		dataFileRepository.saveDataFile(thingToDo, Flag.THING_TO_DO);
+	}
+	
+	public List<ThingToDo> getReactThingToDoList() {
+		return dataFileRepository.readReactThingToDo();
 	}
 
 	public ThingToDoExcelService getThingToDoExcelService() {

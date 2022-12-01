@@ -94,19 +94,19 @@ public class ExcelReadService {
 		}
 	}
 	
-	public List<CellWrapper> getSheetCellList(List<Cell> cellList, List<CellTypeWrapper> wrapperCellTypeList,
+	public List<CellWrapper> getCellWrapperList(List<Cell> cellList, List<CellTypeWrapper> cellTypeWrapperList,
 			int rowNumber) {
-		List<CellWrapper> wrapperCellList = new ArrayList<>();
+		List<CellWrapper> cellWrapperList = new ArrayList<>();
 		for (Cell cell: cellList) {
 			
-			CellTypeWrapper cellTypeWrapper = wrapperCellTypeList.stream().filter(ct -> ct.getColumnIndex() == cell.getColumnIndex()).findFirst().orElse(null);
+			CellTypeWrapper cellTypeWrapper = cellTypeWrapperList.stream().filter(ct -> ct.getColumnIndex() == cell.getColumnIndex()).findFirst().orElse(null);
 					
-			wrapperCellList.add(new CellWrapper(
+			cellWrapperList.add(new CellWrapper(
 					cellTypeWrapper, 
 					this.utilExcelService.readCell(cell), 
 					cell));
 		}
-		return wrapperCellList;
+		return cellWrapperList;
 	}
 	
 	private ValidCellListResponse validCellList(List<Cell> cellList, int rowNumber, List<CellTypeWrapper> sheeCellTypeList) {
@@ -156,7 +156,7 @@ public class ExcelReadService {
 	
 	public RowWrapper addRowWrapper(SheetWrapper sheetWrapper, List<Cell> cellList, List<CellTypeWrapper> wrapperCellTypeList, Row row) {
 		System.out.println("INFO: Row Number: " + (row.getRowNum() + 1) + " / Reading");
-		List<CellWrapper> wrapperCellList = this.getSheetCellList(cellList,
+		List<CellWrapper> wrapperCellList = this.getCellWrapperList(cellList,
 				wrapperCellTypeList, row.getRowNum());
 		RowWrapper rowWrapper = new RowWrapper(wrapperCellList, row.getRowNum());
 		sheetWrapper.getRowWrapperList().add(rowWrapper);

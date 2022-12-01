@@ -6,8 +6,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.faap.scheduler.job_application.enums.Flag;
+import com.faap.scheduler.job_application.models.thing_to_do.ThingToDo;
 
 public class DataFileRepository extends AbstractRepository {
 	
@@ -56,5 +59,58 @@ public class DataFileRepository extends AbstractRepository {
 		finally {
 			this.close(con, stmt, rs);
 	    } 
+	}
+	
+	
+	public List<ThingToDo> readReactThingToDo() {
+		Connection con = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		List<ThingToDo> thingToDoList = new ArrayList<>();
+		
+		try {
+			con = this.connect();
+				
+			stmt = con.prepareStatement("select id, category, created_at, email_sent, "
+					+ "estimated_date, estimated_date_sent, execution_date, incidence_date, "
+					+ "json_params, priority, status, thing_todo, ttd.token, updated_at, "
+					+ "user_name from thing_to_do ttd"
+					+ "where ttd.user_name  = 'REACT'"
+					+ "order by priority asc, estimated_date desc NULLS last");
+			
+	                     
+	        rs = stmt.executeQuery();
+	        
+	        while ( rs.next() ) {
+	        	ThingToDo ttd = new ThingToDo();
+	        	ttd.setId(rs.getInt(0));
+	        	ttd.setCategory(rs.getString(1));
+	        	ttd.setCreatedAt(rs.getTimestamp(2).toLocalDateTime());
+	        	ttd.setEmailSent(rs.getBoolean(3));
+	        	ttd.setEstimatedDate(rs.getDate(4) != null ? rs.getDate(4).toLocalDate() : null);
+	        	ttd.setEstimatedDateSent(rs.getBoolean(5));
+	        	ttd.setExecutionDate(rs.getDate(6) !=  null ? rs.getDate(6).toLocalDate() : null);
+	        	ttd.setIncidenceDate(rs.getDate(7) != null ? rs.getDate(7).toLocalDate() : null);
+	        	ttd.setJsonParams(rs.getString(8));
+	        	ttd.setPriority(rs.getString(9));
+	        	ttd.setStatus(rs.getString(10));
+	        	ttd.setThingToDo(rs.getString(11));
+	        	ttd.setToken(rs.getString(12));
+	        	ttd.setUpdatedAt(rs.getTimestamp(13).toLocalDateTime());
+	        	ttd.setUserName(rs.getString(14));
+	        	
+	        	thingToDoList.add(ttd);
+	        	
+	        }
+		         
+	        
+		} catch (Exception e) {
+			e.printStackTrace();
+		} 
+		finally {
+			this.close(con, stmt, rs);
+	    } 
+		
+		return thingToDoList;
 	}
 }
