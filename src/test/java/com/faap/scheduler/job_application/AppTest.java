@@ -102,6 +102,7 @@ public class AppTest
     	ThingToDoTask thingToDoTask = new ThingToDoTask(dataFileRepository, thingToDoExcelService, utilExcelService, utilFileService, fileBackupRepository, backupPath, initialFilePath, finalFilePath);
     	
     	try {
+    		//thingToDoTask.getThingToDoList();
 			thingToDoTask.importReactThingsToDo();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
