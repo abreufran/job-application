@@ -19,7 +19,7 @@ public class SheetWrapper {
 	}
 
 
-	public void setSheetRowList(List<RowWrapper> wrapperRowList) {
+	public void setRowWrapperList(List<RowWrapper> wrapperRowList) {
 		this.wrapperRowList = wrapperRowList;
 	}
 

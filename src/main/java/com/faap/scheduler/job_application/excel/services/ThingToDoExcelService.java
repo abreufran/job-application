@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -12,15 +13,16 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.faap.scheduler.job_application.excel.dtos.WorkbookResponse;
-import com.faap.scheduler.job_application.excel.models.SheetWrapper;
+import com.faap.scheduler.job_application.excel.models.CellTypeWrapper;
+import com.faap.scheduler.job_application.excel.models.CellWrapper;
 import com.faap.scheduler.job_application.excel.models.PeriodicTaskColumnType;
 import com.faap.scheduler.job_application.excel.models.Periodicity;
-import com.faap.scheduler.job_application.excel.models.CellWrapper;
-import com.faap.scheduler.job_application.excel.models.CellTypeWrapper;
 import com.faap.scheduler.job_application.excel.models.RowWrapper;
+import com.faap.scheduler.job_application.excel.models.SheetWrapper;
 import com.faap.scheduler.job_application.excel.models.ThingToDoColumnType;
 import com.faap.scheduler.job_application.excel.models.Weekday;
 import com.faap.scheduler.job_application.file.services.UtilDateService;
+import com.faap.scheduler.job_application.models.thing_to_do.ThingToDo;
 
 public class ThingToDoExcelService extends AbstractApiExcelService {
 	private static String THINGS_TO_DO_SHEET_NAME = "Things to do";
@@ -369,5 +371,71 @@ public class ThingToDoExcelService extends AbstractApiExcelService {
 	    	}
 	    }
     }
+	
+	public boolean importReactThingsToDoAndSort(List<ThingToDo> reactThingToDoList, 
+			String initialThingToDoFileName, String finalThingToDoFileName, String sheetName,
+			List<Integer> columnIndexToSortList, int columnIndexToFilter, String tokenToFilter) {
+		XSSFWorkbook myWorkBook = null;
+		try {
+			
+			if(reactThingToDoList.size() > 0) {
+			
+				myWorkBook = this.readExcel(initialThingToDoFileName);
+				
+				List<CellTypeWrapper> cellTypeWrapperList = new ArrayList<>();
+		    	
+		    	for(ThingToDoColumnType thingToDoColumnType: ThingToDoColumnType.values()) {
+		    		cellTypeWrapperList.add(new CellTypeWrapper(thingToDoColumnType));
+		    	}
+				
+				SheetWrapper sheetWrapper = this.readSheet(myWorkBook, sheetName, cellTypeWrapperList);
+				
+				RowWrapper lastRowWrapper = sheetWrapper.getRowWrapperList().get(sheetWrapper.getRowWrapperList().size() - 1);
+				
+				List<RowWrapper> reactRowWrapperList = this.utilExcelService.getRowWrapperLit(reactThingToDoList, cellTypeWrapperList, lastRowWrapper.getRowNumber());
+				
+				reactRowWrapperList.forEach(reactRowWrapper -> {
+					sheetWrapper.getRowWrapperList().removeIf(rw -> {
+						String reactToken = reactRowWrapper.getCellWrapperList().get(ThingToDoColumnType.ID.getColumnIndex()).getCellValue();
+						String token = rw.getCellWrapperList().get(ThingToDoColumnType.ID.getColumnIndex()).getCellValue();
+						return token.equals(reactToken);
+						
+					});
+				});
+				
+				
+				sheetWrapper.getRowWrapperList().addAll(reactRowWrapperList);
+				
+				List<RowWrapper> sortedSheetRowList = this.utilExcelService.sortRowWrapperList(
+						sheetWrapper.getRowWrapperList(), columnIndexToSortList, columnIndexToFilter, tokenToFilter);
+				
+				this.updateRowNumber(sortedSheetRowList);
+				
+				this.deleteSheet(myWorkBook, sheetName);
+				this.addSheetToExcel(myWorkBook, sheetName, 0, cellTypeWrapperList, sortedSheetRowList);
+				
+				
+				
+				System.out.println("importReactThingsToDo - Saving WorkBook.");
+				this.writeExcel(myWorkBook, finalThingToDoFileName);	
+				
+			}
+			return true;
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+		finally {
+			if(myWorkBook != null) {
+				try {
+					myWorkBook.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+	}
 
 }

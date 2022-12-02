@@ -299,7 +299,7 @@ public abstract class AbstractApiExcelService {
 	}
 	
 	
-	private void updateRowNumber(List<RowWrapper> sortedSheetRowList) {
+	protected void updateRowNumber(List<RowWrapper> sortedSheetRowList) {
 		int rowNumber = 0; //Header
 		for (RowWrapper rowWrapper: sortedSheetRowList) {
 			rowNumber++;

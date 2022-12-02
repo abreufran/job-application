@@ -224,37 +224,38 @@ public class UtilExcelService {
 		cell.setCellStyle(style);
 	}
 	
-	public List<CellWrapper> getCellWrapperLit(List<ThingToDo> thingToDoList, List<CellTypeWrapper> cellTypeWrapperList) {
-		List<CellWrapper> cellWrapperList = new ArrayList<>();
+	public List<RowWrapper> getRowWrapperLit(List<ThingToDo> thingToDoList, List<CellTypeWrapper> cellTypeWrapperList, int lastRowNumber) {
+		List<RowWrapper> rowWrapperList = new ArrayList<>();
 		
 		for(ThingToDo ttd: thingToDoList) {
-		
+			List<CellWrapper> cellWrapperList = new ArrayList<>();
+			
 			CellTypeWrapper cellTypeWrapper = cellTypeWrapperList.stream().filter(ct -> ct.getColumnIndex() == ThingToDoColumnType.ID.getColumnIndex()).findFirst().orElse(null);
 			
 			cellWrapperList.add(new CellWrapper(
 					cellTypeWrapper, 
-					String.valueOf(ttd.getId()), 
+					ttd.getToken(), 
 					null));
 			
 			cellTypeWrapper = cellTypeWrapperList.stream().filter(ct -> ct.getColumnIndex() == ThingToDoColumnType.INCIDENCE_DATE.getColumnIndex()).findFirst().orElse(null);
 			
 			cellWrapperList.add(new CellWrapper(
 					cellTypeWrapper, 
-					String.valueOf(ttd.getIncidenceDate() != null ? this.utilDateService.getStrDate(ttd.getIncidenceDate()) : null), 
+					(ttd.getIncidenceDate() != null ? this.utilDateService.getStrDate(ttd.getIncidenceDate()) : null), 
 					null));
 			
 			cellTypeWrapper = cellTypeWrapperList.stream().filter(ct -> ct.getColumnIndex() == ThingToDoColumnType.EXECUTION_DATE.getColumnIndex()).findFirst().orElse(null);
 			
 			cellWrapperList.add(new CellWrapper(
 					cellTypeWrapper, 
-					String.valueOf(ttd.getExecutionDate() != null ? this.utilDateService.getStrDate(ttd.getExecutionDate()) : null), 
+					(ttd.getExecutionDate() != null ? this.utilDateService.getStrDate(ttd.getExecutionDate()) : null), 
 					null));
 			
 			cellTypeWrapper = cellTypeWrapperList.stream().filter(ct -> ct.getColumnIndex() == ThingToDoColumnType.ESTIMATED_DATE.getColumnIndex()).findFirst().orElse(null);
 			
 			cellWrapperList.add(new CellWrapper(
 					cellTypeWrapper, 
-					String.valueOf(ttd.getEstimatedDate() != null ? this.utilDateService.getStrDate(ttd.getEstimatedDate()) : null), 
+					(ttd.getEstimatedDate() != null ? this.utilDateService.getStrDate(ttd.getEstimatedDate()) : null), 
 					null));
 			
 			cellTypeWrapper = cellTypeWrapperList.stream().filter(ct -> ct.getColumnIndex() == ThingToDoColumnType.PRIORITY.getColumnIndex()).findFirst().orElse(null);
@@ -284,9 +285,13 @@ public class UtilExcelService {
 					cellTypeWrapper, 
 					String.valueOf(ttd.getStatus()), 
 					null));
+			
+			RowWrapper rowWrapper = new RowWrapper(cellWrapperList, ++lastRowNumber);
+			
+			rowWrapperList.add(rowWrapper);
 		}
 		
-		return cellWrapperList;
+		return rowWrapperList;
 	}
 	
 }

@@ -65,14 +65,17 @@ public class AppTest
      * Rigourous Test :-)
      */
     public void testApp()
-    {
+    {    	
+    	this.importReactThingsToDoTest();
     	this.loadPeriodicTasks();
-    	//this.readAndExportSheetTest();
+    	this.readAndExportSheetTest();
 
         assertTrue( true );
     }
     
-    public void readAndExportSheetTest() {
+    public void importReactThingsToDoTest() {
+    	System.out.println("importReactThingsToDoTest");
+    	
     	this.fileBackupRepository = new FileBackupRepository();
     	this.utilFileService = new UtilFileService();
     	this.utilDateService = new UtilDateService();
@@ -84,10 +87,40 @@ public class AppTest
     	
     	//String initialFilePath = "/Users/acidlabs/Desktop/thing_to_do_backup/Things_to_do.xlsx";
     	//String finalFilePath = "/Users/acidlabs/Desktop/thing_to_do_backup/Things_to_do_prueba.xlsx";
+    	//String backupPath = "/Users/acidlabs/Desktop/thing_to_do_backup/test_backup";
     	
     	String initialFilePath = "/Users/acidlabs/Library/CloudStorage/GoogleDrive-easycryptolearning21@gmail.com/Mi unidad/Things_to_do.xlsx";
     	String finalFilePath = "/Users/acidlabs/Library/CloudStorage/GoogleDrive-easycryptolearning21@gmail.com/Mi unidad/Things_to_do.xlsx";
-    	String backupPath = "/Users/acidlabs/Desktop/thing_to_do_backup/test_backup";
+    	String backupPath = "/Users/acidlabs/Desktop/thing_to_do_backup/backup";
+    	
+    	ThingToDoTask thingToDoTask = new ThingToDoTask(dataFileRepository, thingToDoExcelService, utilExcelService, utilFileService, fileBackupRepository, backupPath, initialFilePath, finalFilePath);
+    	
+    	try {
+			thingToDoTask.importReactThingsToDo();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
+    
+    public void readAndExportSheetTest() {
+    	System.out.println("readAndExportSheetTest");
+    	this.fileBackupRepository = new FileBackupRepository();
+    	this.utilFileService = new UtilFileService();
+    	this.utilDateService = new UtilDateService();
+    	this.utilExcelService = new UtilExcelService(utilDateService);
+    	this.excelReadService = new ExcelReadService(utilDateService, utilExcelService);
+    	this.excelWriteService = new ExcelWriteService(utilDateService, utilExcelService);
+    	this.thingToDoExcelService = new ThingToDoExcelService(utilDateService, utilExcelService, excelReadService, excelWriteService);
+    	this.dataFileRepository = new DataFileRepository();
+    	
+    	//String initialFilePath = "/Users/acidlabs/Desktop/thing_to_do_backup/Things_to_do.xlsx";
+    	//String finalFilePath = "/Users/acidlabs/Desktop/thing_to_do_backup/Things_to_do_prueba.xlsx";
+    	//String backupPath = "/Users/acidlabs/Desktop/thing_to_do_backup/test_backup";
+    	
+    	String initialFilePath = "/Users/acidlabs/Library/CloudStorage/GoogleDrive-easycryptolearning21@gmail.com/Mi unidad/Things_to_do.xlsx";
+    	String finalFilePath = "/Users/acidlabs/Library/CloudStorage/GoogleDrive-easycryptolearning21@gmail.com/Mi unidad/Things_to_do.xlsx";
+    	String backupPath = "/Users/acidlabs/Desktop/thing_to_do_backup/backup";
     	
     	ThingToDoTask thingToDoTask = new ThingToDoTask(dataFileRepository, thingToDoExcelService, utilExcelService, utilFileService, fileBackupRepository, backupPath, initialFilePath, finalFilePath);
     	
@@ -100,6 +133,7 @@ public class AppTest
     }
     
     public void loadPeriodicTasks() {
+    	System.out.println("loadPeriodicTasks");
     	this.utilFileService = new UtilFileService();
     	this.utilDateService = new UtilDateService();
     	this.utilExcelService = new UtilExcelService(utilDateService);

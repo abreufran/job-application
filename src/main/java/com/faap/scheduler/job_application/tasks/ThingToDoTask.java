@@ -85,35 +85,18 @@ public class ThingToDoTask extends TimerTask {
 		}
 	}
 	
-	public void importThingsToDoData() throws Exception {
-		XSSFWorkbook myWorkBook = null;
-		try {
+	public void importReactThingsToDo() throws Exception {
 			
-			List<ThingToDo> reactThingToDoList = this.getReactThingToDoList();
-			
-			if(reactThingToDoList.size() > 0) {
-			
-				myWorkBook = this.thingToDoExcelService.readExcel(this.initialThingToDoFileName);
-				
-				List<CellTypeWrapper> cellTypeWrapperList = new ArrayList<>();
-		    	
-		    	for(ThingToDoColumnType thingToDoColumnType: ThingToDoColumnType.values()) {
-		    		cellTypeWrapperList.add(new CellTypeWrapper(thingToDoColumnType));
-		    	}
-				
-				SheetWrapper sheetWrapper = this.thingToDoExcelService.readSheet(myWorkBook,SHEET_NAME, cellTypeWrapperList);
-				
-				List<CellWrapper> reactCellWrapperList = this.utilExcelService.getCellWrapperLit(reactThingToDoList, cellTypeWrapperList);
+		List<ThingToDo> reactThingToDoList = this.getReactThingToDoList();
+		
+		if(reactThingToDoList.size() > 0) {
+			boolean response = this.thingToDoExcelService.importReactThingsToDoAndSort(reactThingToDoList, initialThingToDoFileName, 
+					finalThingToDoFileName, SHEET_NAME, COLUMN_INDEX_TO_SORT_LIST, COLUMN_INDEX_TO_FILTER, TOKEN_TO_FILTER);
+			if(response) {
+				this.updateReactThingToDoList(reactThingToDoList);
 			}
 		}
-		catch(Exception e) {
-			e.printStackTrace();
-		}
-		finally {
-			if(myWorkBook != null) {
-				myWorkBook.close();
-			}
-		}
+		
 	}
 	
 	public void readAndExportThingsToDoSheet() throws Exception {
@@ -169,6 +152,12 @@ public class ThingToDoTask extends TimerTask {
 	
 	public void saveThingToDo(String thingToDo) {
 		dataFileRepository.saveDataFile(thingToDo, Flag.THING_TO_DO);
+	}
+	
+	public void updateReactThingToDoList(List<ThingToDo> thingToDoList) {
+		for(ThingToDo ttd: thingToDoList) {
+			dataFileRepository.updateReactThingToDo(ttd.getId());
+		}
 	}
 	
 	public List<ThingToDo> getReactThingToDoList() {
