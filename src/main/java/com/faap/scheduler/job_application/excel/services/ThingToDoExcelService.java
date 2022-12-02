@@ -372,10 +372,11 @@ public class ThingToDoExcelService extends AbstractApiExcelService {
 	    }
     }
 	
-	public boolean importReactThingsToDoAndSort(List<ThingToDo> reactThingToDoList, 
+	public List<RowWrapper> saveAndSortReactThingsToDo(List<ThingToDo> reactThingToDoList, 
 			String initialThingToDoFileName, String finalThingToDoFileName, String sheetName,
 			List<Integer> columnIndexToSortList, int columnIndexToFilter, String tokenToFilter) {
 		XSSFWorkbook myWorkBook = null;
+		List<RowWrapper> sortedRowWrapperList = null;
 		try {
 			
 			if(reactThingToDoList.size() > 0) {
@@ -392,7 +393,7 @@ public class ThingToDoExcelService extends AbstractApiExcelService {
 				
 				RowWrapper lastRowWrapper = sheetWrapper.getRowWrapperList().get(sheetWrapper.getRowWrapperList().size() - 1);
 				
-				List<RowWrapper> reactRowWrapperList = this.utilExcelService.getRowWrapperLit(reactThingToDoList, cellTypeWrapperList, lastRowWrapper.getRowNumber());
+				List<RowWrapper> reactRowWrapperList = this.utilExcelService.getRowWrapperList(reactThingToDoList, cellTypeWrapperList, lastRowWrapper.getRowNumber());
 				
 				reactRowWrapperList.forEach(reactRowWrapper -> {
 					sheetWrapper.getRowWrapperList().removeIf(rw -> {
@@ -403,28 +404,25 @@ public class ThingToDoExcelService extends AbstractApiExcelService {
 					});
 				});
 				
-				
 				sheetWrapper.getRowWrapperList().addAll(reactRowWrapperList);
 				
-				List<RowWrapper> sortedSheetRowList = this.utilExcelService.sortRowWrapperList(
+				sortedRowWrapperList = this.utilExcelService.sortRowWrapperList(
 						sheetWrapper.getRowWrapperList(), columnIndexToSortList, columnIndexToFilter, tokenToFilter);
 				
-				this.updateRowNumber(sortedSheetRowList);
+				this.updateRowNumber(sortedRowWrapperList);
 				
 				this.deleteSheet(myWorkBook, sheetName);
-				this.addSheetToExcel(myWorkBook, sheetName, 0, cellTypeWrapperList, sortedSheetRowList);
-				
-				
+				this.addSheetToExcel(myWorkBook, sheetName, 0, cellTypeWrapperList, sortedRowWrapperList);
 				
 				System.out.println("importReactThingsToDo - Saving WorkBook.");
 				this.writeExcel(myWorkBook, finalThingToDoFileName);	
 				
 			}
-			return true;
+			return sortedRowWrapperList;
 		}
 		catch(Exception e) {
 			e.printStackTrace();
-			return false;
+			return sortedRowWrapperList;
 		}
 		finally {
 			if(myWorkBook != null) {

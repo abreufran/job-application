@@ -224,7 +224,7 @@ public class UtilExcelService {
 		cell.setCellStyle(style);
 	}
 	
-	public List<RowWrapper> getRowWrapperLit(List<ThingToDo> thingToDoList, List<CellTypeWrapper> cellTypeWrapperList, int lastRowNumber) {
+	public List<RowWrapper> getRowWrapperList(List<ThingToDo> thingToDoList, List<CellTypeWrapper> cellTypeWrapperList, int lastRowNumber) {
 		List<RowWrapper> rowWrapperList = new ArrayList<>();
 		
 		for(ThingToDo ttd: thingToDoList) {

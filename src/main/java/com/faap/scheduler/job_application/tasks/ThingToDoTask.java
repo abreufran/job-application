@@ -96,10 +96,10 @@ public class ThingToDoTask extends TimerTask {
 		List<ThingToDo> reactThingToDoList = this.secretaryService.getThingToDoList();
 		
 		if(reactThingToDoList.size() > 0) {
-			boolean response = this.thingToDoExcelService.importReactThingsToDoAndSort(reactThingToDoList, initialThingToDoFileName, 
+			List<RowWrapper> sortedRowWrapperList = this.thingToDoExcelService.saveAndSortReactThingsToDo(reactThingToDoList, initialThingToDoFileName, 
 					finalThingToDoFileName, SHEET_NAME, COLUMN_INDEX_TO_SORT_LIST, COLUMN_INDEX_TO_FILTER, TOKEN_TO_FILTER);
-			if(response) {
-				this.updateReactThingToDoList(reactThingToDoList);
+			if(sortedRowWrapperList != null) {
+				this.secretaryService.saveThingToDoList(sortedRowWrapperList);
 			}
 		}
 		
@@ -160,11 +160,11 @@ public class ThingToDoTask extends TimerTask {
 		dataFileRepository.saveDataFile(thingToDo, Flag.THING_TO_DO);
 	}
 	
-	public void updateReactThingToDoList(List<ThingToDo> thingToDoList) {
-		for(ThingToDo ttd: thingToDoList) {
-			dataFileRepository.updateReactThingToDo(ttd.getId());
-		}
-	}
+//	public void updateReactThingToDoList(List<ThingToDo> thingToDoList) {
+//		for(ThingToDo ttd: thingToDoList) {
+//			dataFileRepository.updateReactThingToDo(ttd.getId());
+//		}
+//	}
 	
 //	public List<ThingToDo> getReactThingToDoList() {
 //		return dataFileRepository.readReactThingToDo();
