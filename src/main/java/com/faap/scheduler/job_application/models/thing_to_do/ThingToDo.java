@@ -153,6 +153,16 @@ public class ThingToDo {
 	public void setUserName(String userName) {
 		this.userName = userName;
 	}
+
+	@Override
+	public String toString() {
+		return "ThingToDo [id=" + id + ", jsonParams=" + jsonParams + ", createdAt=" + createdAt + ", updatedAt="
+				+ updatedAt + ", incidenceDate=" + incidenceDate + ", executionDate=" + executionDate
+				+ ", estimatedDate=" + estimatedDate + ", priority=" + priority + ", thingToDo=" + thingToDo
+				+ ", category=" + category + ", status=" + status + ", token=" + token + ", emailSent=" + emailSent
+				+ ", estimatedDateSent=" + estimatedDateSent + ", userName=" + userName + "]";
+	}
+	
 	
 	
 }

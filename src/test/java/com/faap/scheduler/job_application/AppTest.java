@@ -70,8 +70,12 @@ public class AppTest
     	this.loadPeriodicTasks();
     	this.readAndExportSheetTest();
 
+    	
+		//thingToDoTask.getThingToDoList();
+		
         assertTrue( true );
     }
+    
     
     public void importReactThingsToDoTest() {
     	System.out.println("importReactThingsToDoTest");
@@ -92,6 +96,8 @@ public class AppTest
     	String initialFilePath = "/Users/acidlabs/Library/CloudStorage/GoogleDrive-easycryptolearning21@gmail.com/Mi unidad/Things_to_do.xlsx";
     	String finalFilePath = "/Users/acidlabs/Library/CloudStorage/GoogleDrive-easycryptolearning21@gmail.com/Mi unidad/Things_to_do.xlsx";
     	String backupPath = "/Users/acidlabs/Desktop/thing_to_do_backup/backup";
+    	
+    	
     	
     	ThingToDoTask thingToDoTask = new ThingToDoTask(dataFileRepository, thingToDoExcelService, utilExcelService, utilFileService, fileBackupRepository, backupPath, initialFilePath, finalFilePath);
     	
