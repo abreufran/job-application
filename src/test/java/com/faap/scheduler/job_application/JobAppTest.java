@@ -15,6 +15,7 @@ import com.faap.scheduler.job_application.excel.services.ExcelReadService;
 import com.faap.scheduler.job_application.excel.services.ExcelWriteService;
 import com.faap.scheduler.job_application.excel.services.ThingToDoExcelService;
 import com.faap.scheduler.job_application.excel.services.UtilExcelService;
+import com.faap.scheduler.job_application.file.services.SecretaryService;
 import com.faap.scheduler.job_application.file.services.UtilDateService;
 import com.faap.scheduler.job_application.file.services.UtilFileService;
 import com.faap.scheduler.job_application.repositories.DataFileRepository;
@@ -28,7 +29,7 @@ import junit.framework.TestSuite;
 /**
  * Unit test for simple App.
  */
-public class AppTest 
+public class JobAppTest 
     extends TestCase
 {
 
@@ -39,6 +40,7 @@ public class AppTest
 	private UtilExcelService utilExcelService;
 	private ExcelWriteService excelWriteService;
 	private ExcelReadService excelReadService; 
+	private SecretaryService secretaryService;
 	
 	private ThingToDoExcelService thingToDoExcelService;
     /**
@@ -46,7 +48,7 @@ public class AppTest
      *
      * @param testName name of the test case
      */
-    public AppTest( String testName )
+    public JobAppTest( String testName )
     {
         super( testName );
     }
@@ -57,7 +59,7 @@ public class AppTest
     public static Test suite()
     {
     	
-        TestSuite testSuite = new TestSuite( AppTest.class );
+        TestSuite testSuite = new TestSuite( JobAppTest.class );
         return testSuite;
     }
 
@@ -88,6 +90,7 @@ public class AppTest
     	this.excelWriteService = new ExcelWriteService(utilDateService, utilExcelService);
     	this.thingToDoExcelService = new ThingToDoExcelService(utilDateService, utilExcelService, excelReadService, excelWriteService);
     	this.dataFileRepository = new DataFileRepository();
+    	this.secretaryService = new SecretaryService();
     	
     	//String initialFilePath = "/Users/acidlabs/Desktop/thing_to_do_backup/Things_to_do.xlsx";
     	//String finalFilePath = "/Users/acidlabs/Desktop/thing_to_do_backup/Things_to_do_prueba.xlsx";
@@ -99,7 +102,8 @@ public class AppTest
     	
     	
     	
-    	ThingToDoTask thingToDoTask = new ThingToDoTask(dataFileRepository, thingToDoExcelService, utilExcelService, utilFileService, fileBackupRepository, backupPath, initialFilePath, finalFilePath);
+    	ThingToDoTask thingToDoTask = new ThingToDoTask(dataFileRepository, thingToDoExcelService, utilExcelService, utilFileService, fileBackupRepository, secretaryService,
+    			backupPath, initialFilePath, finalFilePath);
     	
     	try {
     		//thingToDoTask.getThingToDoList();
@@ -120,6 +124,7 @@ public class AppTest
     	this.excelWriteService = new ExcelWriteService(utilDateService, utilExcelService);
     	this.thingToDoExcelService = new ThingToDoExcelService(utilDateService, utilExcelService, excelReadService, excelWriteService);
     	this.dataFileRepository = new DataFileRepository();
+    	this.secretaryService = new SecretaryService();
     	
     	//String initialFilePath = "/Users/acidlabs/Desktop/thing_to_do_backup/Things_to_do.xlsx";
     	//String finalFilePath = "/Users/acidlabs/Desktop/thing_to_do_backup/Things_to_do_prueba.xlsx";
@@ -129,7 +134,8 @@ public class AppTest
     	String finalFilePath = "/Users/acidlabs/Library/CloudStorage/GoogleDrive-easycryptolearning21@gmail.com/Mi unidad/Things_to_do.xlsx";
     	String backupPath = "/Users/acidlabs/Desktop/thing_to_do_backup/backup";
     	
-    	ThingToDoTask thingToDoTask = new ThingToDoTask(dataFileRepository, thingToDoExcelService, utilExcelService, utilFileService, fileBackupRepository, backupPath, initialFilePath, finalFilePath);
+    	ThingToDoTask thingToDoTask = new ThingToDoTask(dataFileRepository, thingToDoExcelService, utilExcelService, utilFileService, fileBackupRepository, secretaryService, 
+    			backupPath, initialFilePath, finalFilePath);
     	
     	try {
 			thingToDoTask.readAndExportThingsToDoSheet();

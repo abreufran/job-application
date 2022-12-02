@@ -7,6 +7,7 @@ import com.faap.scheduler.job_application.excel.services.ExcelReadService;
 import com.faap.scheduler.job_application.excel.services.ExcelWriteService;
 import com.faap.scheduler.job_application.excel.services.ThingToDoExcelService;
 import com.faap.scheduler.job_application.excel.services.UtilExcelService;
+import com.faap.scheduler.job_application.file.services.SecretaryService;
 import com.faap.scheduler.job_application.file.services.UtilDateService;
 import com.faap.scheduler.job_application.file.services.UtilFileService;
 import com.faap.scheduler.job_application.repositories.DataFileRepository;
@@ -34,9 +35,10 @@ public class App
     	ExcelWriteService excelWriteService = new ExcelWriteService(utilDateService, utilExcelService);
     	ThingToDoExcelService thingToDoExcelService = new ThingToDoExcelService(utilDateService, utilExcelService, excelReadService, excelWriteService);
     	UtilFileService utilFileService = new UtilFileService();
+    	SecretaryService secretaryService = new SecretaryService();
     	
         App.runReadTraderFile(dataFileRepository);
-        App.runReadThingToDoFile(dataFileRepository, thingToDoExcelService, utilExcelService, utilFileService, fileBackupRepository);
+        App.runReadThingToDoFile(dataFileRepository, thingToDoExcelService, utilExcelService, utilFileService, fileBackupRepository, secretaryService);
     }
     
     public static void runReadTraderFile(DataFileRepository task) {   	
@@ -50,8 +52,11 @@ public class App
     
     public static void runReadThingToDoFile(DataFileRepository dataFileRepository, ThingToDoExcelService thingToDoExcelService, 
     		UtilExcelService utilExcelService,
-    		UtilFileService utilFileService, FileBackupRepository fileBackupRepository) {   	
-        TimerTask thingToDoTask = new ThingToDoTask(dataFileRepository, thingToDoExcelService, utilExcelService, utilFileService, fileBackupRepository, BACKUP_PATH, THING_TO_DO_FILE_NAME, THING_TO_DO_FILE_NAME);
+    		UtilFileService utilFileService, 
+    		FileBackupRepository fileBackupRepository,
+    		SecretaryService secretaryService) {   	
+        TimerTask thingToDoTask = new ThingToDoTask(dataFileRepository, thingToDoExcelService, utilExcelService, utilFileService, fileBackupRepository, secretaryService,
+        		BACKUP_PATH, THING_TO_DO_FILE_NAME, THING_TO_DO_FILE_NAME);
         
         int seconds = 30;
         
