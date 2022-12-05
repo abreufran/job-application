@@ -1,11 +1,8 @@
 package com.faap.scheduler.job_application.models.thing_to_do;
 
-import java.util.List;
-
-import com.faap.scheduler.job_application.excel.models.CellTypeWrapper;
+import com.faap.scheduler.job_application.excel.dtos.Constants;
 import com.faap.scheduler.job_application.excel.models.RowWrapper;
 import com.faap.scheduler.job_application.excel.models.ThingToDoColumnType;
-import com.faap.scheduler.job_application.excel.dtos.Constants;
 
 public class ThingToDoDto {
 	private int id;

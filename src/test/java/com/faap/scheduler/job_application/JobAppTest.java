@@ -69,8 +69,8 @@ public class JobAppTest
     public void testApp()
     {    	
     	this.importReactThingsToDoTest();
-    	this.loadPeriodicTasks();
-    	this.readAndExportSheetTest();
+    	//this.loadPeriodicTasks();
+    	//this.readAndExportSheetTest();
 
     	
 		//thingToDoTask.getThingToDoList();
