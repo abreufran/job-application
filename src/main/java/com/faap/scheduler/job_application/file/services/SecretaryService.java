@@ -2,7 +2,6 @@ package com.faap.scheduler.job_application.file.services;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.faap.scheduler.job_application.enums.Flag;
@@ -145,16 +144,22 @@ public class SecretaryService {
 		List<DataListResponse> responseListByTokenColumn = this.getAllThingToDoList(updatedThingToDoDtoList);
 		
 		for(DataListResponse dataListResponse: responseListByAllColumns) {
+			
 			boolean updated = updatedResponseList.stream().anyMatch(r -> r.getToken().equals(dataListResponse.getToken()));
 			//Si la fila fue modificada
 			if(updated) {
 				//Calculando los registros que son nuevos (es decir, que no hace match la columna token)
 				boolean toCreate = responseListByTokenColumn.stream().anyMatch(r -> r.getToken().equals(dataListResponse.getToken()) && r.getDataList().size() == 0);
 				if(toCreate) {
-					dataListResponse.setSaveType(SaveType.UPDATE_THING_TO_DO);
+					dataListResponse.setSaveType(SaveType.CREATE_THING_TO_DO);
 				}
 				else {
+					List<ThingToDo> thingToDoList = responseListByTokenColumn.stream()
+							.filter(r -> r.getToken().equals(dataListResponse.getToken()))
+							.findFirst()
+							.orElse(null).getDataList();
 					dataListResponse.setSaveType(SaveType.UPDATE_THING_TO_DO);
+					dataListResponse.setDataList(thingToDoList);
 				}
 			}
 		}
