@@ -82,13 +82,14 @@ public class JobAppTest
     public void importReactThingsToDoTest() {
     	System.out.println("importReactThingsToDoTest");
     	
+    	this.secretaryService = new SecretaryService();
     	this.fileBackupRepository = new FileBackupRepository();
     	this.utilFileService = new UtilFileService();
     	this.utilDateService = new UtilDateService();
     	this.utilExcelService = new UtilExcelService(utilDateService);
     	this.excelReadService = new ExcelReadService(utilDateService, utilExcelService);
     	this.excelWriteService = new ExcelWriteService(utilDateService, utilExcelService);
-    	this.thingToDoExcelService = new ThingToDoExcelService(utilDateService, utilExcelService, excelReadService, excelWriteService);
+    	this.thingToDoExcelService = new ThingToDoExcelService(utilDateService, utilExcelService, excelReadService, excelWriteService, secretaryService);
     	this.dataFileRepository = new DataFileRepository();
     	this.secretaryService = new SecretaryService();
     	
@@ -107,7 +108,8 @@ public class JobAppTest
     	
     	try {
     		//thingToDoTask.getThingToDoList();
-			thingToDoTask.importReactThingsToDo();
+			//thingToDoTask.importReactThingsToDo();
+    		thingToDoTask.importReactThingsToDo();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -116,13 +118,14 @@ public class JobAppTest
     
     public void readAndExportSheetTest() {
     	System.out.println("readAndExportSheetTest");
+    	this.secretaryService = new SecretaryService();
     	this.fileBackupRepository = new FileBackupRepository();
     	this.utilFileService = new UtilFileService();
     	this.utilDateService = new UtilDateService();
     	this.utilExcelService = new UtilExcelService(utilDateService);
     	this.excelReadService = new ExcelReadService(utilDateService, utilExcelService);
     	this.excelWriteService = new ExcelWriteService(utilDateService, utilExcelService);
-    	this.thingToDoExcelService = new ThingToDoExcelService(utilDateService, utilExcelService, excelReadService, excelWriteService);
+    	this.thingToDoExcelService = new ThingToDoExcelService(utilDateService, utilExcelService, excelReadService, excelWriteService, secretaryService);
     	this.dataFileRepository = new DataFileRepository();
     	this.secretaryService = new SecretaryService();
     	
@@ -147,12 +150,13 @@ public class JobAppTest
     
     public void loadPeriodicTasks() {
     	System.out.println("loadPeriodicTasks");
+    	this.secretaryService = new SecretaryService();
     	this.utilFileService = new UtilFileService();
     	this.utilDateService = new UtilDateService();
     	this.utilExcelService = new UtilExcelService(utilDateService);
     	this.excelReadService = new ExcelReadService(utilDateService, utilExcelService);
     	this.excelWriteService = new ExcelWriteService(utilDateService, utilExcelService);
-    	this.thingToDoExcelService = new ThingToDoExcelService(utilDateService, utilExcelService, excelReadService, excelWriteService);
+    	this.thingToDoExcelService = new ThingToDoExcelService(utilDateService, utilExcelService, excelReadService, excelWriteService, secretaryService);
     	
     	//String initialFilePath = "/Users/acidlabs/Desktop/thing_to_do_backup/Things_to_do.xlsx";
     	//String finalFilePath = "/Users/acidlabs/Desktop/thing_to_do_backup/Things_to_do_prueba.xlsx";
@@ -238,12 +242,12 @@ public class JobAppTest
     
     
     public void readPeriodicTasks() {
-    	
+    	this.secretaryService = new SecretaryService();
     	this.utilDateService = new UtilDateService();
     	this.utilExcelService = new UtilExcelService(utilDateService);
     	this.excelReadService = new ExcelReadService(utilDateService, utilExcelService);
     	this.excelWriteService = new ExcelWriteService(utilDateService, utilExcelService);
-    	this.thingToDoExcelService = new ThingToDoExcelService(utilDateService, utilExcelService, excelReadService, excelWriteService);
+    	this.thingToDoExcelService = new ThingToDoExcelService(utilDateService, utilExcelService, excelReadService, excelWriteService, secretaryService);
     	
     	String initialFilePath = "/Users/acidlabs/Desktop/thing_to_do_backup/Things_to_do.xlsx";
     	String finalFilePath = "/Users/acidlabs/Desktop/thing_to_do_backup/Things_to_do_prueba.xlsx";
@@ -289,11 +293,12 @@ public class JobAppTest
     }
     
     public void fillSortAndSplitSheetTest() {
+    	this.secretaryService = new SecretaryService();
     	this.utilDateService = new UtilDateService();
     	this.utilExcelService = new UtilExcelService(utilDateService);
     	this.excelReadService = new ExcelReadService(utilDateService, utilExcelService);
     	this.excelWriteService = new ExcelWriteService(utilDateService, utilExcelService);
-    	this.thingToDoExcelService = new ThingToDoExcelService(utilDateService, utilExcelService, excelReadService, excelWriteService);
+    	this.thingToDoExcelService = new ThingToDoExcelService(utilDateService, utilExcelService, excelReadService, excelWriteService, secretaryService);
     	
     	String initialFilePath = "/Users/acidlabs/Desktop/thing_to_do_backup/Things_to_do.xlsx";
     	String finalFilePath = "/Users/acidlabs/Desktop/thing_to_do_backup/Things_to_do_prueba.xlsx";

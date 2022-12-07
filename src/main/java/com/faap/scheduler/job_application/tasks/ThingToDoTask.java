@@ -91,6 +91,12 @@ public class ThingToDoTask extends TimerTask {
 		}
 	}
 	
+	public void importReactThingsToDo2_0() throws Exception {
+		this.thingToDoExcelService.saveAllThingsToDo(initialThingToDoFileName, SHEET_NAME);
+		
+		
+	}
+	
 	public void importReactThingsToDo() throws Exception {
 			
 		List<ThingToDo> reactThingToDoList = this.secretaryService.getThingToDoList();

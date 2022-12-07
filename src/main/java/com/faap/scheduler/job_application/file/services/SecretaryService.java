@@ -13,6 +13,8 @@ import com.faap.scheduler.job_application.models.thing_to_do.FindRequestDto;
 import com.faap.scheduler.job_application.models.thing_to_do.FindResponseDto;
 import com.faap.scheduler.job_application.models.thing_to_do.FindType;
 import com.faap.scheduler.job_application.models.thing_to_do.JsonParam;
+import com.faap.scheduler.job_application.models.thing_to_do.SaveAllRequestDto;
+import com.faap.scheduler.job_application.models.thing_to_do.SaveAllResponseDto;
 import com.faap.scheduler.job_application.models.thing_to_do.SaveRequestDto;
 import com.faap.scheduler.job_application.models.thing_to_do.SaveResponseDto;
 import com.faap.scheduler.job_application.models.thing_to_do.SaveType;
@@ -225,5 +227,47 @@ public class SecretaryService {
 		}
 		
 		return saveResponseDtoList;
+	}
+	
+	public List<DataListResponse> saveAllThingToDoList(List<ThingToDoDto> thingToDoDtoList) throws Exception {
+		OkHttpClient client = new OkHttpClient();
+		MediaType mediaType = MediaType.parse("application/json");
+		
+		ObjectMapper om = JsonMapper.builder()
+			    .addModule(new JavaTimeModule())
+			    .build();
+		
+		List<JsonParam> jsonParamList = new ArrayList<>();
+		for(ThingToDoDto thingToDoDto: thingToDoDtoList) {
+			JsonParam jsonParam = new JsonParam();
+			jsonParam.setToken(thingToDoDto.getToken());
+			jsonParam.setJson(om.writeValueAsString(thingToDoDto));
+			
+			jsonParamList.add(jsonParam);
+		}
+		
+		SaveAllRequestDto saveAllRequestDto = new SaveAllRequestDto();
+		saveAllRequestDto.setSaveType(SaveType.SAVE_ALL_THING_TO_DO.toString());
+		saveAllRequestDto.setFlag(Flag.THING_TO_DO.toString());
+		saveAllRequestDto.setJsonParamList(jsonParamList);
+		
+		RequestBody payload = RequestBody.create(
+				  mediaType,
+				  om.writeValueAsString(saveAllRequestDto)
+					);
+		
+		Request request = new Request.Builder()
+				  .url("http://localhost:8086/secretary-api/thing_to_do/saveAll")
+				  .method("POST", payload)
+				  //.addHeader("X-AUTH-TOKEN", "12a34bcdef5g6789h012ij34567k890123lmn45o67p89q0rs1tuv23wxy456z78")
+				  .addHeader("Content-Type", "application/json")
+				  .build();
+		
+		Response response = client.newCall(request).execute();
+
+		SaveAllResponseDto saveAllResponseDto = om.readValue(response.body().string(), SaveAllResponseDto.class);
+		
+		return saveAllResponseDto.getResponseList();
+		
 	}
 }

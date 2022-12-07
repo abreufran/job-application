@@ -27,15 +27,16 @@ public class App
 	
     public static void main( String[] args )
     {
+    	SecretaryService secretaryService = new SecretaryService();
     	FileBackupRepository fileBackupRepository = new FileBackupRepository();
     	DataFileRepository dataFileRepository = new DataFileRepository();
     	UtilDateService utilDateService = new UtilDateService();
     	UtilExcelService utilExcelService = new UtilExcelService(utilDateService);
     	ExcelReadService excelReadService = new ExcelReadService(utilDateService, utilExcelService);
     	ExcelWriteService excelWriteService = new ExcelWriteService(utilDateService, utilExcelService);
-    	ThingToDoExcelService thingToDoExcelService = new ThingToDoExcelService(utilDateService, utilExcelService, excelReadService, excelWriteService);
+    	ThingToDoExcelService thingToDoExcelService = new ThingToDoExcelService(utilDateService, utilExcelService, excelReadService, excelWriteService, secretaryService);
     	UtilFileService utilFileService = new UtilFileService();
-    	SecretaryService secretaryService = new SecretaryService();
+    	
     	
         App.runReadTraderFile(dataFileRepository);
         App.runReadThingToDoFile(dataFileRepository, thingToDoExcelService, utilExcelService, utilFileService, fileBackupRepository, secretaryService);

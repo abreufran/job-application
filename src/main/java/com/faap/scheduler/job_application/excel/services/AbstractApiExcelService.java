@@ -9,10 +9,11 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.faap.scheduler.job_application.excel.dtos.WorkbookResponse;
-import com.faap.scheduler.job_application.excel.models.SheetWrapper;
-import com.faap.scheduler.job_application.excel.models.CellWrapper;
 import com.faap.scheduler.job_application.excel.models.CellTypeWrapper;
+import com.faap.scheduler.job_application.excel.models.CellWrapper;
 import com.faap.scheduler.job_application.excel.models.RowWrapper;
+import com.faap.scheduler.job_application.excel.models.SheetWrapper;
+import com.faap.scheduler.job_application.file.services.SecretaryService;
 import com.faap.scheduler.job_application.file.services.UtilDateService;
 
 public abstract class AbstractApiExcelService {
@@ -21,13 +22,15 @@ public abstract class AbstractApiExcelService {
 	protected UtilExcelService utilExcelService;
 	protected ExcelReadService excelReadService;
 	protected ExcelWriteService excelWriteService;
+	protected SecretaryService secretaryService;
 	
 	public AbstractApiExcelService(UtilDateService utilDateService, UtilExcelService utilExcelService, 
-			ExcelReadService excelReadService, ExcelWriteService excelWriteService) {
+			ExcelReadService excelReadService, ExcelWriteService excelWriteService, SecretaryService secretaryService) {
 		this.setUtilDateService(utilDateService);
 		this.setUtilExcelService(utilExcelService);
 		this.setExcelReadService(excelReadService);
 		this.setExcelWriteService(excelWriteService);
+		this.setSecretaryService(secretaryService);
 	}
 	
 	public abstract void completeCellWrapperList(List<CellWrapper> wrapperCellList, XSSFWorkbook myWorkBook, int rowNumber);
@@ -324,4 +327,9 @@ public abstract class AbstractApiExcelService {
 	public void setUtilExcelService(UtilExcelService utilExcelService) {
 		this.utilExcelService = utilExcelService;
 	}
+
+	public void setSecretaryService(SecretaryService secretaryService) {
+		this.secretaryService = secretaryService;
+	}
+	
 }

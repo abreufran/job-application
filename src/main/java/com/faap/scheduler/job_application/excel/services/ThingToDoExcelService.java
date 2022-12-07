@@ -21,8 +21,11 @@ import com.faap.scheduler.job_application.excel.models.RowWrapper;
 import com.faap.scheduler.job_application.excel.models.SheetWrapper;
 import com.faap.scheduler.job_application.excel.models.ThingToDoColumnType;
 import com.faap.scheduler.job_application.excel.models.Weekday;
+import com.faap.scheduler.job_application.file.services.SecretaryService;
 import com.faap.scheduler.job_application.file.services.UtilDateService;
+import com.faap.scheduler.job_application.models.thing_to_do.DataListResponse;
 import com.faap.scheduler.job_application.models.thing_to_do.ThingToDo;
+import com.faap.scheduler.job_application.models.thing_to_do.ThingToDoDto;
 
 public class ThingToDoExcelService extends AbstractApiExcelService {
 	private static String THINGS_TO_DO_SHEET_NAME = "Things to do";
@@ -33,9 +36,10 @@ public class ThingToDoExcelService extends AbstractApiExcelService {
 	public static int MAXIMUN_DAYS_NUMBERA_ALLOWED = 60;
 
 	public ThingToDoExcelService(UtilDateService utilDateService, UtilExcelService utilExcelService, 
-			ExcelReadService excelReadService, ExcelWriteService excelWriteService) {
+			ExcelReadService excelReadService, ExcelWriteService excelWriteService, SecretaryService secretaryService) {
 		super(utilDateService, utilExcelService, 
-				excelReadService,excelWriteService);
+				excelReadService,excelWriteService,
+				secretaryService);
 	}
 	
 	public void loadAndSortThingsToDoSheet(ThingToDoExcelService thingToDoExcelService, String initialFilePath, String finalFilePath,
@@ -434,6 +438,44 @@ public class ThingToDoExcelService extends AbstractApiExcelService {
 			}
 		}
 
+	}
+	
+	public void saveAllThingsToDo(String initialThingToDoFileName, String sheetName) {
+		XSSFWorkbook myWorkBook = null;
+		try {
+			myWorkBook = this.readExcel(initialThingToDoFileName);
+			
+			List<CellTypeWrapper> cellTypeWrapperList = new ArrayList<>();
+	    	
+	    	for(ThingToDoColumnType thingToDoColumnType: ThingToDoColumnType.values()) {
+	    		cellTypeWrapperList.add(new CellTypeWrapper(thingToDoColumnType));
+	    	}
+			
+			SheetWrapper sheetWrapper = this.readSheet(myWorkBook, sheetName, cellTypeWrapperList);
+			List<RowWrapper> rowWrapperList = sheetWrapper.getRowWrapperList();
+			
+			List<ThingToDoDto> thingToDoDtoList = new ArrayList<>();
+			for(RowWrapper rowWrapper: rowWrapperList) {
+				
+				ThingToDoDto thingToDoDto = new ThingToDoDto(rowWrapper);
+				thingToDoDtoList.add(thingToDoDto);
+				
+			}
+			
+			List<DataListResponse> responseList = this.secretaryService.saveAllThingToDoList(thingToDoDtoList);
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+		finally {
+			if(myWorkBook != null) {
+				try {
+					myWorkBook.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 }
