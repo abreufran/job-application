@@ -27,7 +27,7 @@ public class DoneExcelService {
 			for(RowWrapper rowWrapper: sheetWrapper.getRowWrapperList()) {
 				System.out.println("RowNumber: " + rowWrapper.getRowNumber());
 				for(CellWrapper cellWrapper: rowWrapper.getCellWrapperList()) {
-					System.out.println("Cell Name / index / Value: " + cellWrapper.getCellTypeWrapper().getName() 
+					System.out.println("Cell Name / Index / Value: " + cellWrapper.getCellTypeWrapper().getName() 
 							+ " / " + cellWrapper.getCellTypeWrapper().getColumnIndex()
 							+ " / " + cellWrapper.getCellValue());
 				}
