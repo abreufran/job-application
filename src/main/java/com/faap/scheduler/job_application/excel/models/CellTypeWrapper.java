@@ -12,27 +12,37 @@ public class CellTypeWrapper {
 	private int columnIndex;
 	private FormulaWrapper formulaWrapper;
 	
-	
-	public CellTypeWrapper(ThingToDoColumnType thingToDoColumnType) {
-		this.name = thingToDoColumnType.getName();
-		this.required = thingToDoColumnType.isRequired();
-		this.cellType = thingToDoColumnType.getCellType();
-		this.date = thingToDoColumnType.isDate();
-		this.defaultValue = thingToDoColumnType.getDefaultValue();
-		this.columnWidth = thingToDoColumnType.getColumnWidth();
-		this.columnIndex = thingToDoColumnType.getColumnIndex();
-		this.formulaWrapper = thingToDoColumnType.getSheetFormula();
+	public CellTypeWrapper(DoneColumnType columnType) {
+		this.name = columnType.getName();
+		this.required = columnType.isRequired();
+		this.cellType = columnType.getCellType();
+		this.date = columnType.isDate();
+		this.defaultValue = columnType.getDefaultValue();
+		this.columnWidth = columnType.getColumnWidth();
+		this.columnIndex = columnType.getColumnIndex();
+		this.formulaWrapper = columnType.getSheetFormula();
 	}
 	
-	public CellTypeWrapper(PeriodicTaskColumnType periodicTask) {
-		this.name = periodicTask.getName();
-		this.required = periodicTask.isRequired();
-		this.cellType = periodicTask.getCellType();
-		this.date = periodicTask.isDate();
-		this.defaultValue = periodicTask.getDefaultValue();
-		this.columnWidth = periodicTask.getColumnWidth();
-		this.columnIndex = periodicTask.getColumnIndex();
-		this.formulaWrapper = periodicTask.getSheetFormula();
+	public CellTypeWrapper(ThingToDoColumnType columnType) {
+		this.name = columnType.getName();
+		this.required = columnType.isRequired();
+		this.cellType = columnType.getCellType();
+		this.date = columnType.isDate();
+		this.defaultValue = columnType.getDefaultValue();
+		this.columnWidth = columnType.getColumnWidth();
+		this.columnIndex = columnType.getColumnIndex();
+		this.formulaWrapper = columnType.getSheetFormula();
+	}
+	
+	public CellTypeWrapper(PeriodicTaskColumnType columnType) {
+		this.name = columnType.getName();
+		this.required = columnType.isRequired();
+		this.cellType = columnType.getCellType();
+		this.date = columnType.isDate();
+		this.defaultValue = columnType.getDefaultValue();
+		this.columnWidth = columnType.getColumnWidth();
+		this.columnIndex = columnType.getColumnIndex();
+		this.formulaWrapper = columnType.getSheetFormula();
 	}
 	
 	public String getName() {

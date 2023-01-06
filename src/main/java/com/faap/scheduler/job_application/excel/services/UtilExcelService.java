@@ -64,7 +64,12 @@ public class UtilExcelService {
 				return String.valueOf(cell.getNumericCellValue());
 			}
 		case FORMULA:
-			return cell.getRichStringCellValue().toString();
+			try {
+				return cell.getRichStringCellValue().toString();
+			}
+			catch (Exception e) {
+				return String.valueOf(cell.getNumericCellValue());
+			}
 		default:
 			return null;
 		}
