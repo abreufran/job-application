@@ -8,6 +8,7 @@ import com.faap.scheduler.job_application.excel.models.DoneColumnType;
 import com.faap.scheduler.job_application.excel.services.DoneExcelService;
 import com.faap.scheduler.job_application.excel.services.ExcelReadService;
 import com.faap.scheduler.job_application.excel.services.UtilExcelService;
+import com.faap.scheduler.job_application.file.services.GoalService;
 import com.faap.scheduler.job_application.file.services.UtilDateService;
 
 import junit.framework.Test;
@@ -59,9 +60,10 @@ public class DoneExcelServiceTest
     public void exportDoneTasks() {
     	System.out.println("exportDoneTasks");
     	UtilDateService utilDateService = new UtilDateService();
+    	GoalService goalService = new GoalService();
     	UtilExcelService utilExcelService = new UtilExcelService(utilDateService);
     	ExcelReadService excelReadService = new ExcelReadService(utilDateService, utilExcelService);
-    	DoneExcelService doneExcelService = new DoneExcelService(excelReadService);
+    	DoneExcelService doneExcelService = new DoneExcelService(excelReadService, goalService);
     	
     	String sheetName = "Things Done";
     	String initialFilePath = "/Users/acidlabs/Library/CloudStorage/GoogleDrive-easycryptolearning21@gmail.com/Mi unidad/Things_to_do.xlsx";
