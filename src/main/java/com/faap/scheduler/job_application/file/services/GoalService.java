@@ -257,14 +257,7 @@ public class GoalService {
 		List<Done> doneList = new ArrayList<>();
 		
 
-		int count = 0;
 		for(RowWrapper rowWrapper: rowWrapperList) {
-			if(count > 0) {
-				break;
-			}
-			else {
-				count++;
-			}
 			
 			LocalDate localDate = this.parseStrToLocalDate(rowWrapper.getCellWrapperList().get(DoneColumnType.DATE.getColumnIndex()).getCellValue());
 			String formatStrDate = this.getStringFromDate(localDate);
