@@ -257,96 +257,102 @@ public class GoalService {
 		List<Done> doneList = new ArrayList<>();
 		
 
+		int rowNumber = 0;
 		for(RowWrapper rowWrapper: rowWrapperList) {
-			
-			LocalDate localDate = this.parseStrToLocalDate(rowWrapper.getCellWrapperList().get(DoneColumnType.DATE.getColumnIndex()).getCellValue());
-			String formatStrDate = this.getStringFromDate(localDate);
-			Integer initialHour = (int) Double.parseDouble(rowWrapper.getCellWrapperList().get(DoneColumnType.INITIAL_HOUR.getColumnIndex()).getCellValue());
-			Integer initialMinute = (int) Double.parseDouble(rowWrapper.getCellWrapperList().get(DoneColumnType.INITIAL_MINUTE.getColumnIndex()).getCellValue());
-			
-			Integer finalHour = (int) Double.parseDouble(rowWrapper.getCellWrapperList().get(DoneColumnType.FINAL_HOUR.getColumnIndex()).getCellValue());
-			Integer finalMinute = (int) Double.parseDouble(rowWrapper.getCellWrapperList().get(DoneColumnType.FINAL_MINUTE.getColumnIndex()).getCellValue());
-			
-			String description = rowWrapper.getCellWrapperList().get(DoneColumnType.DESCRIPTION.getColumnIndex()).getCellValue();
-			String disciplineName = rowWrapper.getCellWrapperList().get(DoneColumnType.DISCIPLINE.getColumnIndex()).getCellValue();
-			
-			String resultCell = rowWrapper.getCellWrapperList().get(DoneColumnType.RESULT.getColumnIndex()).getCellValue();
-			Double result = null;
-			if(resultCell != null) {
-				result = Double.parseDouble(rowWrapper.getCellWrapperList().get(DoneColumnType.RESULT.getColumnIndex()).getCellValue());
-			}
-			String unitName = rowWrapper.getCellWrapperList().get(DoneColumnType.UNIT.getColumnIndex()).getCellValue();
-			
-			Discipline discipline = findDiscipline(disciplineName, customerId);
-			
-			if(discipline == null) {
-				DisciplineDto dto = new DisciplineDto();
-				dto.setName(disciplineName);
-				dto.setDescription("");
-				dto.setCustomerId(customerId);
-				dto.setChannel(channelName);
+			rowNumber++;
+			try {
+				LocalDate localDate = this.parseStrToLocalDate(rowWrapper.getCellWrapperList().get(DoneColumnType.DATE.getColumnIndex()).getCellValue());
+				String formatStrDate = this.getStringFromDate(localDate);
+				Integer initialHour = (int) Double.parseDouble(rowWrapper.getCellWrapperList().get(DoneColumnType.INITIAL_HOUR.getColumnIndex()).getCellValue());
+				Integer initialMinute = (int) Double.parseDouble(rowWrapper.getCellWrapperList().get(DoneColumnType.INITIAL_MINUTE.getColumnIndex()).getCellValue());
 				
-				discipline = createDiscipline(dto);
-			}
-			
-			Unit unit = null;
-			
-			if(unitName != null) {
-				unit = findUnit(unitName, customerId);
+				Integer finalHour = (int) Double.parseDouble(rowWrapper.getCellWrapperList().get(DoneColumnType.FINAL_HOUR.getColumnIndex()).getCellValue());
+				Integer finalMinute = (int) Double.parseDouble(rowWrapper.getCellWrapperList().get(DoneColumnType.FINAL_MINUTE.getColumnIndex()).getCellValue());
 				
-				if(unit == null) {
-					UnitDto dto = new UnitDto();
-					dto.setName(unitName);
+				String description = rowWrapper.getCellWrapperList().get(DoneColumnType.DESCRIPTION.getColumnIndex()).getCellValue();
+				String disciplineName = rowWrapper.getCellWrapperList().get(DoneColumnType.DISCIPLINE.getColumnIndex()).getCellValue();
+				
+				String resultCell = rowWrapper.getCellWrapperList().get(DoneColumnType.RESULT.getColumnIndex()).getCellValue();
+				Double result = null;
+				if(resultCell != null) {
+					result = Double.parseDouble(rowWrapper.getCellWrapperList().get(DoneColumnType.RESULT.getColumnIndex()).getCellValue());
+				}
+				String unitName = rowWrapper.getCellWrapperList().get(DoneColumnType.UNIT.getColumnIndex()).getCellValue();
+				
+				Discipline discipline = findDiscipline(disciplineName, customerId);
+				
+				if(discipline == null) {
+					DisciplineDto dto = new DisciplineDto();
+					dto.setName(disciplineName);
 					dto.setDescription("");
 					dto.setCustomerId(customerId);
 					dto.setChannel(channelName);
 					
-					unit = createUnit(dto);
+					discipline = createDiscipline(dto);
 				}
-			}
-			
-			DoneTemplate doneTemplate = findDoneTemplate(description, customerId);
-			
-			if(doneTemplate == null) {
-				DoneTemplateDto dto = new DoneTemplateDto();
-				dto.setDefaultInitialHour(initialHour);
-				dto.setDefaultInitialMinute(initialMinute);
-				dto.setDefaultFinalHour(finalHour);
-				dto.setDefaultFinalMinute(finalMinute);
-				dto.setDescription(description);
-				dto.setDefaultDiscipline(discipline.getName());
-				dto.setDefaultResult(result);
-				dto.setDefaultUnit(unitName);
-				dto.setCustomerId(customerId);
-				dto.setChannel(channelName);
 				
-				doneTemplate = createDoneTemplate(dto);
+				Unit unit = null;
+				
+				if(unitName != null) {
+					unit = findUnit(unitName, customerId);
+					
+					if(unit == null) {
+						UnitDto dto = new UnitDto();
+						dto.setName(unitName);
+						dto.setDescription("");
+						dto.setCustomerId(customerId);
+						dto.setChannel(channelName);
+						
+						unit = createUnit(dto);
+					}
+				}
+				
+				DoneTemplate doneTemplate = findDoneTemplate(description, customerId);
+				
+				if(doneTemplate == null) {
+					DoneTemplateDto dto = new DoneTemplateDto();
+					dto.setDefaultInitialHour(initialHour);
+					dto.setDefaultInitialMinute(initialMinute);
+					dto.setDefaultFinalHour(finalHour);
+					dto.setDefaultFinalMinute(finalMinute);
+					dto.setDescription(description);
+					dto.setDefaultDiscipline(discipline.getName());
+					dto.setDefaultResult(result);
+					dto.setDefaultUnit(unitName);
+					dto.setCustomerId(customerId);
+					dto.setChannel(channelName);
+					
+					doneTemplate = createDoneTemplate(dto);
+				}
+				
+				DoneDto doneDto = new DoneDto();
+				doneDto.setDate(formatStrDate);
+				doneDto.setInitialHour(initialHour);
+				doneDto.setInitialMinute(initialMinute);
+				doneDto.setFinalHour(finalHour);
+				doneDto.setFinalMinute(finalMinute);
+				doneDto.setDescription(description);
+				doneDto.setDiscipline(disciplineName);
+				doneDto.setResult(result);
+				doneDto.setUnit(unitName);
+				doneDto.setCustomerId(customerId);
+				doneDto.setChannel(channelName);
+				
+				Done done = findDone(doneDto);
+				
+				if(done == null) {
+					done = createDone(doneDto);
+					System.out.println("Created Done Task: " + done);
+				}
+				else {
+					System.out.println("Exist Done Task: " + done);
+				}
+				
+				doneList.add(done);	
 			}
-			
-			DoneDto doneDto = new DoneDto();
-			doneDto.setDate(formatStrDate);
-			doneDto.setInitialHour(initialHour);
-			doneDto.setInitialMinute(initialMinute);
-			doneDto.setFinalHour(finalHour);
-			doneDto.setFinalMinute(finalMinute);
-			doneDto.setDescription(description);
-			doneDto.setDiscipline(disciplineName);
-			doneDto.setResult(result);
-			doneDto.setUnit(unitName);
-			doneDto.setCustomerId(customerId);
-			doneDto.setChannel(channelName);
-			
-			Done done = findDone(doneDto);
-			
-			if(done == null) {
-				done = createDone(doneDto);
-				System.out.println("Created Done Task: " + done);
+			catch (Exception e) {
+				System.out.println("Invalid Row: " + (rowNumber + 1) + ". Incomplete fields." + e);
 			}
-			else {
-				System.out.println("Exist Done Task: " + done);
-			}
-			
-			doneList.add(done);	
 		}
 		
 		return doneList;
