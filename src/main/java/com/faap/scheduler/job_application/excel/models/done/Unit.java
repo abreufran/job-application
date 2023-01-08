@@ -1,6 +1,5 @@
 package com.faap.scheduler.job_application.excel.models.done;
 
-import java.nio.channels.Channel;
 import java.time.LocalDateTime;
 
 

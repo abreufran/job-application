@@ -74,7 +74,7 @@ public class GoalService {
 					);
 		
 		Request request = new Request.Builder()
-				  .url("http://localhost:8087/goal-api/doneTemplate/create")
+				  .url("http://localhost:8087/goal-api/done_template/create")
 				  .method("POST", payload)
 				  //.addHeader("X-AUTH-TOKEN", "12a34bcdef5g6789h012ij34567k890123lmn45o67p89q0rs1tuv23wxy456z78")
 				  .addHeader("Content-Type", "application/json")
@@ -195,14 +195,20 @@ public class GoalService {
 	
 	public Done findDone(DoneDto doneDto) throws Exception {
 		OkHttpClient client = new OkHttpClient();
+		MediaType mediaType = MediaType.parse("application/json");
 		
 		ObjectMapper om = JsonMapper.builder()
 	    .addModule(new JavaTimeModule())
 	    .build();
 		
+		RequestBody payload = RequestBody.create(
+				  mediaType,
+				  om.writeValueAsString(doneDto)
+					);
+		
 		Request request = new Request.Builder()
 				  .url("http://localhost:8087/goal-api/done/find")
-	
+				  .method("POST", payload)
 				  //.addHeader("X-AUTH-TOKEN", "12a34bcdef5g6789h012ij34567k890123lmn45o67p89q0rs1tuv23wxy456z78")
 				  .addHeader("Content-Type", "application/json")
 				  .build();
@@ -290,16 +296,20 @@ public class GoalService {
 				discipline = createDiscipline(dto);
 			}
 			
-			Unit unit = findUnit(unitName, customerId);
+			Unit unit = null;
 			
-			if(unit == null) {
-				UnitDto dto = new UnitDto();
-				dto.setName(unitName);
-				dto.setDescription("");
-				dto.setCustomerId(customerId);
-				dto.setChannel(channelName);
+			if(unitName != null) {
+				unit = findUnit(unitName, customerId);
 				
-				unit = createUnit(dto);
+				if(unit == null) {
+					UnitDto dto = new UnitDto();
+					dto.setName(unitName);
+					dto.setDescription("");
+					dto.setCustomerId(customerId);
+					dto.setChannel(channelName);
+					
+					unit = createUnit(dto);
+				}
 			}
 			
 			DoneTemplate doneTemplate = findDoneTemplate(description, customerId);
@@ -313,7 +323,7 @@ public class GoalService {
 				dto.setDescription(description);
 				dto.setDefaultDiscipline(discipline.getName());
 				dto.setDefaultResult(result);
-				dto.setDefaultUnit(unit.getName());
+				dto.setDefaultUnit(unitName);
 				dto.setCustomerId(customerId);
 				dto.setChannel(channelName);
 				
@@ -329,7 +339,7 @@ public class GoalService {
 			doneDto.setDescription(description);
 			doneDto.setDiscipline(disciplineName);
 			doneDto.setResult(result);
-			doneDto.setUnit(unit.getName());
+			doneDto.setUnit(unitName);
 			doneDto.setCustomerId(customerId);
 			doneDto.setChannel(channelName);
 			

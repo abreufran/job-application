@@ -4,6 +4,7 @@ public class CreateDisciplineResponse {
 	private int statusCode;
 	private String message;
 	private Discipline payload;
+	
 	public int getStatusCode() {
 		return statusCode;
 	}
