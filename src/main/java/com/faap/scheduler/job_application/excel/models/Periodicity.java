@@ -13,6 +13,7 @@ public enum Periodicity {
 	EVERY_8_WEEKS("Every 8 weeks", 56, -1),
 	EVERY_9_WEEKS("Every 9 weeks", 63, -1),
 	EVERY_10_WEEKS("Every 10 weeks", 70, -1),
+	EVERY_20_WEEKS("Every 20 weeks", 140, -1),
 	
 	EVERY_1_MONTH("Every 1 month", 30, -1),
 	EVERY_2_MONTHS("Every 2 months", 60, -1),
