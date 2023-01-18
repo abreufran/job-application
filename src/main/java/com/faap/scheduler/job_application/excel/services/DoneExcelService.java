@@ -37,7 +37,34 @@ public class DoneExcelService {
 				}
 			}*/
 			
-			goalService.exportRowWrapperList(sheetWrapper.getRowWrapperList(), customerId, systemChannelName);
+			goalService.exportDoneRowWrapperList(sheetWrapper.getRowWrapperList(), customerId, systemChannelName);
+			
+		}
+		catch(Exception e) {
+			System.out.println(e);
+		}
+	}
+	
+	public void exportPeriodicTask(String initialFilePath, String sheetName, List<CellTypeWrapper> wrapperCellTypeList) {
+		XSSFWorkbook myWorkBook = null;
+		int customerId = 1;
+		String systemChannelName = "System";
+		try {
+			myWorkBook = this.excelReadService.readExcel(initialFilePath);
+			
+			SheetWrapper sheetWrapper = this.excelReadService.readSheet(myWorkBook, sheetName, wrapperCellTypeList);
+			
+			/*
+			for(RowWrapper rowWrapper: sheetWrapper.getRowWrapperList()) {
+				System.out.println("RowNumber: " + rowWrapper.getRowNumber());
+				for(CellWrapper cellWrapper: rowWrapper.getCellWrapperList()) {
+					System.out.println("Cell Name / Index / Value: " + cellWrapper.getCellTypeWrapper().getName() 
+							+ " / " + cellWrapper.getCellTypeWrapper().getColumnIndex()
+							+ " / " + cellWrapper.getCellValue());
+				}
+			}*/
+			
+			goalService.exportPeriodicRowWrapperList(sheetWrapper.getRowWrapperList(), customerId, systemChannelName);
 			
 		}
 		catch(Exception e) {
