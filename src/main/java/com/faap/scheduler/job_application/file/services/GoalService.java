@@ -8,7 +8,13 @@ import java.util.List;
 import com.faap.scheduler.job_application.excel.models.DoneColumnType;
 import com.faap.scheduler.job_application.excel.models.PeriodicTaskColumnType;
 import com.faap.scheduler.job_application.excel.models.RowWrapper;
+import com.faap.scheduler.job_application.excel.models.ThingToDoColumnType;
+import com.faap.scheduler.job_application.excel.models.done.Channel;
+import com.faap.scheduler.job_application.excel.models.done.ChannelDto;
+import com.faap.scheduler.job_application.excel.models.done.CreateChannelResponse;
+import com.faap.scheduler.job_application.excel.models.done.CreateCustomerResponse;
 import com.faap.scheduler.job_application.excel.models.done.CreateDailyCategoryResponse;
+import com.faap.scheduler.job_application.excel.models.done.CreateDailyTaskResponse;
 import com.faap.scheduler.job_application.excel.models.done.CreateDisciplineResponse;
 import com.faap.scheduler.job_application.excel.models.done.CreateDoneResponse;
 import com.faap.scheduler.job_application.excel.models.done.CreateDoneTemplateResponse;
@@ -17,15 +23,22 @@ import com.faap.scheduler.job_application.excel.models.done.CreatePeriodicityRes
 import com.faap.scheduler.job_application.excel.models.done.CreatePriorityResponse;
 import com.faap.scheduler.job_application.excel.models.done.CreateUnitResponse;
 import com.faap.scheduler.job_application.excel.models.done.CreateWeekdayResponse;
+import com.faap.scheduler.job_application.excel.models.done.Customer;
+import com.faap.scheduler.job_application.excel.models.done.CustomerDto;
 import com.faap.scheduler.job_application.excel.models.done.DailyCategory;
 import com.faap.scheduler.job_application.excel.models.done.DailyCategoryDto;
+import com.faap.scheduler.job_application.excel.models.done.DailyTask;
+import com.faap.scheduler.job_application.excel.models.done.DailyTaskDto;
 import com.faap.scheduler.job_application.excel.models.done.Discipline;
 import com.faap.scheduler.job_application.excel.models.done.DisciplineDto;
 import com.faap.scheduler.job_application.excel.models.done.Done;
 import com.faap.scheduler.job_application.excel.models.done.DoneDto;
 import com.faap.scheduler.job_application.excel.models.done.DoneTemplate;
 import com.faap.scheduler.job_application.excel.models.done.DoneTemplateDto;
+import com.faap.scheduler.job_application.excel.models.done.FindChannelResponse;
+import com.faap.scheduler.job_application.excel.models.done.FindCustomerResponse;
 import com.faap.scheduler.job_application.excel.models.done.FindDailyCategoryResponse;
+import com.faap.scheduler.job_application.excel.models.done.FindDailyTaskResponse;
 import com.faap.scheduler.job_application.excel.models.done.FindDisciplineResponse;
 import com.faap.scheduler.job_application.excel.models.done.FindDoneResponse;
 import com.faap.scheduler.job_application.excel.models.done.FindDoneTemplateResponse;
@@ -54,6 +67,112 @@ import com.squareup.okhttp.RequestBody;
 import com.squareup.okhttp.Response;
 
 public class GoalService {
+	
+	public Customer findCustomer(Integer customerId) throws Exception {
+		OkHttpClient client = new OkHttpClient();
+		
+		ObjectMapper om = JsonMapper.builder()
+	    .addModule(new JavaTimeModule())
+	    .build();
+		
+		Request request = new Request.Builder()
+				  .url("http://localhost:8087/goal-api/customer/id/" + customerId)
+	
+				  //.addHeader("X-AUTH-TOKEN", "12a34bcdef5g6789h012ij34567k890123lmn45o67p89q0rs1tuv23wxy456z78")
+				  .addHeader("Content-Type", "application/json")
+				  .build();
+		
+		Response response = client.newCall(request).execute();
+
+		FindCustomerResponse findCustomerResponse = om.readValue(response.body().string(), FindCustomerResponse.class);
+		
+		if(findCustomerResponse.getPayload().size() == 0) {
+        	return null;
+        }
+        else {
+        	return findCustomerResponse.getPayload().get(0);
+        }
+	}
+	
+	public Customer createCustomer(CustomerDto customerDto) throws Exception {
+		OkHttpClient client = new OkHttpClient();
+		MediaType mediaType = MediaType.parse("application/json");
+		
+		ObjectMapper om = JsonMapper.builder()
+	    .addModule(new JavaTimeModule())
+	    .build();
+		
+		RequestBody payload = RequestBody.create(
+				  mediaType,
+				  om.writeValueAsString(customerDto)
+					);
+		
+		Request request = new Request.Builder()
+				  .url("http://localhost:8087/goal-api/customer/create")
+				  .method("POST", payload)
+				  //.addHeader("X-AUTH-TOKEN", "12a34bcdef5g6789h012ij34567k890123lmn45o67p89q0rs1tuv23wxy456z78")
+				  .addHeader("Content-Type", "application/json")
+				  .build();
+		
+		Response response = client.newCall(request).execute();
+
+		CreateCustomerResponse createCustomerResponse = om.readValue(response.body().string(), CreateCustomerResponse.class);
+		
+		return createCustomerResponse.getPayload();
+	}
+	
+	public Channel findChannel(String name) throws Exception {
+		OkHttpClient client = new OkHttpClient();
+		
+		ObjectMapper om = JsonMapper.builder()
+	    .addModule(new JavaTimeModule())
+	    .build();
+		
+		Request request = new Request.Builder()
+				  .url("http://localhost:8087/goal-api/channel/name/" + name)
+	
+				  //.addHeader("X-AUTH-TOKEN", "12a34bcdef5g6789h012ij34567k890123lmn45o67p89q0rs1tuv23wxy456z78")
+				  .addHeader("Content-Type", "application/json")
+				  .build();
+		
+		Response response = client.newCall(request).execute();
+
+		FindChannelResponse findChannelResponse = om.readValue(response.body().string(), FindChannelResponse.class);
+		
+		if(findChannelResponse.getPayload().size() == 0) {
+        	return null;
+        }
+        else {
+        	return findChannelResponse.getPayload().get(0);
+        }
+	}
+	
+	public Channel createChannel(ChannelDto channelDto) throws Exception {
+		OkHttpClient client = new OkHttpClient();
+		MediaType mediaType = MediaType.parse("application/json");
+		
+		ObjectMapper om = JsonMapper.builder()
+	    .addModule(new JavaTimeModule())
+	    .build();
+		
+		RequestBody payload = RequestBody.create(
+				  mediaType,
+				  om.writeValueAsString(channelDto)
+					);
+		
+		Request request = new Request.Builder()
+				  .url("http://localhost:8087/goal-api/channel/create")
+				  .method("POST", payload)
+				  //.addHeader("X-AUTH-TOKEN", "12a34bcdef5g6789h012ij34567k890123lmn45o67p89q0rs1tuv23wxy456z78")
+				  .addHeader("Content-Type", "application/json")
+				  .build();
+		
+		Response response = client.newCall(request).execute();
+
+		CreateChannelResponse createChannelResponse = om.readValue(response.body().string(), CreateChannelResponse.class);
+		
+		return createChannelResponse.getPayload();
+	}
 	
 	public DoneTemplate findDoneTemplate(String name, Integer customerId) throws Exception {
 		OkHttpClient client = new OkHttpClient();
@@ -544,10 +663,103 @@ public class GoalService {
 		
 		return createPeriodicResponse.getPayload();
 	}
+	
+	
+	public DailyTask findDailyTask(DailyTaskDto dailyTaskDto) throws Exception {
+		OkHttpClient client = new OkHttpClient();
+		MediaType mediaType = MediaType.parse("application/json");
+		
+		ObjectMapper om = JsonMapper.builder()
+	    .addModule(new JavaTimeModule())
+	    .build();
+		
+		RequestBody payload = RequestBody.create(
+				  mediaType,
+				  om.writeValueAsString(dailyTaskDto)
+					);
+		
+		Request request = new Request.Builder()
+				  .url("http://localhost:8087/goal-api/daily_task/find")
+				  .method("POST", payload)
+				  //.addHeader("X-AUTH-TOKEN", "12a34bcdef5g6789h012ij34567k890123lmn45o67p89q0rs1tuv23wxy456z78")
+				  .addHeader("Content-Type", "application/json")
+				  .build();
+		
+		Response response = client.newCall(request).execute();
+
+		FindDailyTaskResponse findDailyTaskResponse = om.readValue(response.body().string(), FindDailyTaskResponse.class);
+		
+		if(findDailyTaskResponse.getPayload().size() == 0) {
+        	return null;
+        }
+        else {
+        	return findDailyTaskResponse.getPayload().get(0);
+        }
+	}
+	
+	public DailyTask createDailyTask(DailyTaskDto dailyTaskDto) throws Exception {
+		OkHttpClient client = new OkHttpClient();
+		MediaType mediaType = MediaType.parse("application/json");
+		
+		ObjectMapper om = JsonMapper.builder()
+	    .addModule(new JavaTimeModule())
+	    .build();
+		
+		RequestBody payload = RequestBody.create(
+				  mediaType,
+				  om.writeValueAsString(dailyTaskDto)
+					);
+		
+		Request request = new Request.Builder()
+				  .url("http://localhost:8087/goal-api/daily_task/create")
+				  .method("POST", payload)
+				  //.addHeader("X-AUTH-TOKEN", "12a34bcdef5g6789h012ij34567k890123lmn45o67p89q0rs1tuv23wxy456z78")
+				  .addHeader("Content-Type", "application/json")
+				  .build();
+		
+		Response response = client.newCall(request).execute();
+
+		CreateDailyTaskResponse createDailyTaskResponse = om.readValue(response.body().string(), CreateDailyTaskResponse.class);
+		
+		return createDailyTaskResponse.getPayload();
+	}
 
 	public List<Done> exportDoneRowWrapperList(List<RowWrapper> rowWrapperList, 
-			int customerId, String channelName) throws Exception {
+			int customerId, String customerFirstName, String customerEmail,
+			String channelName, String formatDateToRequest,
+			String webChannelName) throws Exception {
 		List<Done> doneList = new ArrayList<>();
+		
+		Customer customer = findCustomer(customerId);
+		
+		if(customer == null) {
+			CustomerDto dto = new CustomerDto();
+			dto.setFirstName(customerFirstName);
+			dto.setLastName(customerFirstName);
+			dto.setEmail(customerEmail);
+			
+			customer = createCustomer(dto);
+		}
+		
+		Channel channelWeb = findChannel(webChannelName);
+		
+		if(channelWeb == null) {
+			ChannelDto dto = new ChannelDto();
+			dto.setName(webChannelName);
+			dto.setDescription("");
+			
+			channelWeb = createChannel(dto);
+		}
+		
+		Channel channel = findChannel(channelName);
+		
+		if(channel == null) {
+			ChannelDto dto = new ChannelDto();
+			dto.setName(channelName);
+			dto.setDescription("");
+			
+			channel = createChannel(dto);
+		}
 		
 
 		int rowNumber = 0;
@@ -651,10 +863,174 @@ public class GoalService {
 		return doneList;
 	}
 	
+	public List<DailyTask> exportDailyTaskRowWrapperList(List<RowWrapper> rowWrapperList, 
+			int customerId, String customerFirstName, String customerEmail,
+			String channelName, String formatDateToRequest,
+			String disciplineName, String webChannelName) throws Exception {
+		List<DailyTask> dailyTaskList = new ArrayList<>();
+		
+		
+		Customer customer = findCustomer(customerId);
+		
+		if(customer == null) {
+			CustomerDto dto = new CustomerDto();
+			dto.setFirstName(customerFirstName);
+			dto.setLastName(customerFirstName);
+			dto.setEmail(customerEmail);
+			
+			customer = createCustomer(dto);
+		}
+		
+		Channel channelWeb = findChannel(webChannelName);
+		
+		if(channelWeb == null) {
+			ChannelDto dto = new ChannelDto();
+			dto.setName(webChannelName);
+			dto.setDescription("");
+			
+			channelWeb = createChannel(dto);
+		}
+		
+		Channel channel = findChannel(channelName);
+		
+		if(channel == null) {
+			ChannelDto dto = new ChannelDto();
+			dto.setName(channelName);
+			dto.setDescription("");
+			
+			channel = createChannel(dto);
+		}
+
+		int rowNumber = 0;
+		for(RowWrapper rowWrapper: rowWrapperList) {
+			rowNumber++;
+			try {
+				LocalDate incidenceDate = this.parseStrToLocalDate(rowWrapper.getCellWrapperList().get(ThingToDoColumnType.INCIDENCE_DATE.getColumnIndex()).getCellValue());
+				String formatStrIncidenceDate = this.getStringFromDate(incidenceDate);
+				
+				LocalDate executionDate = this.parseStrToLocalDate(rowWrapper.getCellWrapperList().get(ThingToDoColumnType.EXECUTION_DATE.getColumnIndex()).getCellValue());
+				String formatStrExecutionDate = this.getStringFromDate(executionDate);
+				
+				LocalDate estimatedDate = this.parseStrToLocalDate(rowWrapper.getCellWrapperList().get(ThingToDoColumnType.ESTIMATED_DATE.getColumnIndex()).getCellValue());
+				String formatStrEstimatedDate = this.getStringFromDate(estimatedDate);
+				
+				String priorityName = rowWrapper.getCellWrapperList().get(ThingToDoColumnType.PRIORITY.getColumnIndex()).getCellValue();
+
+				String description = rowWrapper.getCellWrapperList().get(ThingToDoColumnType.THINGS_TO_DO.getColumnIndex()).getCellValue();
+				String dailyCategoryName = rowWrapper.getCellWrapperList().get(ThingToDoColumnType.CATEGORY.getColumnIndex()).getCellValue();
+				
+				String statusName = rowWrapper.getCellWrapperList().get(ThingToDoColumnType.STATUS.getColumnIndex()).getCellValue();
+				
+				Priority priority = findPriority(priorityName, customerId);
+				
+				if(priority == null) {
+					PriorityDto dto = new PriorityDto();
+					dto.setName(priorityName);
+					dto.setDescription("");
+					dto.setCustomerId(customerId);
+					dto.setChannel(channelName);
+					
+					priority = createPriority(dto);
+				}
+				
+				Discipline discipline = findDiscipline(disciplineName, customerId);
+				
+				if(discipline == null) {
+					DisciplineDto dto = new DisciplineDto();
+					dto.setName(disciplineName);
+					dto.setDescription("");
+					dto.setCustomerId(customerId);
+					dto.setChannel(channelName);
+					
+					discipline = createDiscipline(dto);
+				}
+				
+				DailyCategory dailyCategory = null;
+				
+				if(dailyCategoryName != null) {
+					dailyCategory = findDailyCategory(dailyCategoryName, customerId);
+					
+					if(dailyCategory == null) {
+						DailyCategoryDto dto = new DailyCategoryDto();
+						dto.setName(dailyCategoryName);
+						dto.setDescription("");
+						dto.setCustomerId(customerId);
+						dto.setChannel(channelName);
+						dto.setDiscipline(disciplineName);
+						
+						dailyCategory = createDailyCategory(dto);
+					}
+				}
+				
+				
+				DailyTaskDto dailyTaskDto = new DailyTaskDto();
+				dailyTaskDto.setIncidenceDate(formatStrIncidenceDate);
+				dailyTaskDto.setExecutionDate(formatStrExecutionDate);
+				dailyTaskDto.setEstimatedDate(formatStrEstimatedDate);
+				dailyTaskDto.setPriority(priorityName);
+				dailyTaskDto.setDescription(description);
+				dailyTaskDto.setDailyCategory(dailyCategoryName);
+				dailyTaskDto.setStatus(statusName);
+				dailyTaskDto.setCustomerId(customerId);
+				dailyTaskDto.setChannel(channelName);
+				
+				DailyTask dailyTask = findDailyTask(dailyTaskDto);
+				
+				if(dailyTask == null) {
+					dailyTask = createDailyTask(dailyTaskDto);
+					System.out.println("Created DailyTask Task: " + dailyTask);
+				}
+				else {
+					System.out.println("Exist DailyTask Task: " + dailyTask);
+				}
+				
+				dailyTaskList.add(dailyTask);	
+			}
+			catch (Exception e) {
+				System.out.println("Invalid Row: " + (rowNumber + 1) + ". Incomplete fields." + e);
+			}
+		}
+		
+		return dailyTaskList;
+	}
+	
+	
 	public List<Periodic> exportPeriodicRowWrapperList(List<RowWrapper> rowWrapperList, 
-			int customerId, String channelName) throws Exception {
+			int customerId, String customerFirstName, String customerEmail,
+			String channelName, String formatDateToRequest,
+			String disciplineName, String webChannelName) throws Exception {
 		List<Periodic> periodicList = new ArrayList<>();
 		
+		Customer customer = findCustomer(customerId);
+		
+		if(customer == null) {
+			CustomerDto dto = new CustomerDto();
+			dto.setFirstName(customerFirstName);
+			dto.setLastName(customerFirstName);
+			dto.setEmail(customerEmail);
+			
+			customer = createCustomer(dto);
+		}
+		
+		Channel channelWeb = findChannel(webChannelName);
+		
+		if(channelWeb == null) {
+			ChannelDto dto = new ChannelDto();
+			dto.setName(webChannelName);
+			dto.setDescription("");
+			
+			channelWeb = createChannel(dto);
+		}
+		
+		Channel channel = findChannel(channelName);
+		
+		if(channel == null) {
+			ChannelDto dto = new ChannelDto();
+			dto.setName(channelName);
+			dto.setDescription("");
+			
+			channel = createChannel(dto);
+		}
 
 		int rowNumber = 0;
 		for(RowWrapper rowWrapper: rowWrapperList) {
