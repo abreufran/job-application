@@ -23,7 +23,6 @@ import com.faap.scheduler.job_application.excel.models.ThingToDoColumnType;
 import com.faap.scheduler.job_application.excel.models.Weekday;
 import com.faap.scheduler.job_application.file.services.SecretaryService;
 import com.faap.scheduler.job_application.file.services.UtilDateService;
-import com.faap.scheduler.job_application.models.thing_to_do.DataListResponse;
 import com.faap.scheduler.job_application.models.thing_to_do.ThingToDo;
 import com.faap.scheduler.job_application.models.thing_to_do.ThingToDoDto;
 
@@ -339,7 +338,14 @@ public class ThingToDoExcelService extends AbstractApiExcelService {
     		}
     	}
     	else if(periodicity.getMonthDayNumber() != -1) {
-    		return LocalDate.of(today.getYear(), today.getMonth(), periodicity.getMonthDayNumber());
+    		
+    		try {
+    			return LocalDate.of(today.getYear(), today.getMonth(), periodicity.getMonthDayNumber());
+    		}
+    		catch (Exception e) {
+    			return today.withDayOfMonth(
+						today.getMonth().length(today.isLeapYear()));
+    		}
     	}
     	else {
     		
@@ -462,7 +468,7 @@ public class ThingToDoExcelService extends AbstractApiExcelService {
 				
 			}
 			
-			List<DataListResponse> responseList = this.secretaryService.saveAllThingToDoList(thingToDoDtoList);
+			this.secretaryService.saveAllThingToDoList(thingToDoDtoList);
 		}
 		catch(Exception e) {
 			e.printStackTrace();
