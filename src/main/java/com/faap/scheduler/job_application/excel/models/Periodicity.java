@@ -30,6 +30,10 @@ public enum Periodicity {
 	
 	SECOND_SATURDAY_NOVEMBER("Second saturday of november", -1, -1),
 	
+	SECOND_TUESDAY_OF_MONTH("Second tuesday of month", -1, -1),
+	
+	FOURTH_THURSDAY_OF_MONTH("Fourth thursday of month", -1, -1),
+	
 	LAST_DAY_MONTH("Last day of the month", -1, -1),
 	
 	EVERY_FIRST_DAY("Every first day", -1, 1),
