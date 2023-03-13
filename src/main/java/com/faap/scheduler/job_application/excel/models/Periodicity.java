@@ -34,6 +34,20 @@ public enum Periodicity {
 	
 	FOURTH_THURSDAY_OF_MONTH("Fourth thursday of month", -1, -1),
 	
+	EVERY_MARCH_EIGHTH("Every march eighth", -1, -1),
+	
+	EVERY_JUNE_THIRTEENTH("Every june thirteenth", -1, -1),
+	
+	EVERY_JUNE_TWENTY_SECOND("Every june twenty second", -1, -1),
+	
+	EVERY_OCTOBER_TENTH("Every october tenth", -1, -1),
+	
+	EVERY_OCTOBER_TWENTIETH("Every october twentieth", -1, -1),
+	
+	EVERY_OCTOBER_TWENTY_FOURTH("Every october twenty fourth", -1, -1),
+	
+	
+	
 	LAST_DAY_MONTH("Last day of the month", -1, -1),
 	
 	EVERY_FIRST_DAY("Every first day", -1, 1),

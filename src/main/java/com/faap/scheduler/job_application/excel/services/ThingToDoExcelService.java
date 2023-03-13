@@ -346,6 +346,24 @@ public class ThingToDoExcelService extends AbstractApiExcelService {
     			return firstThursday.plusDays(21);	
     		case FIRST_DAY_DECEMBER:
     			return LocalDate.of(today.getYear(), 12, 1);
+    			
+    		case EVERY_MARCH_EIGHTH:
+    			return LocalDate.of(today.getYear(), 3, 8);	
+    			
+    		case EVERY_JUNE_THIRTEENTH:
+    			return LocalDate.of(today.getYear(), 06, 13);
+    			
+    		case EVERY_JUNE_TWENTY_SECOND:
+    			return LocalDate.of(today.getYear(), 06, 22);
+    			
+    		case EVERY_OCTOBER_TENTH:
+    			return LocalDate.of(today.getYear(), 10, 10);	
+    			
+    		case EVERY_OCTOBER_TWENTIETH:
+    			return LocalDate.of(today.getYear(), 10, 20);	
+    			
+    		case EVERY_OCTOBER_TWENTY_FOURTH:
+    			return LocalDate.of(today.getYear(), 10, 24);	
   
     		default:
     			return null;
