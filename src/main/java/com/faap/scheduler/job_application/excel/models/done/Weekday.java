@@ -2,6 +2,8 @@ package com.faap.scheduler.job_application.excel.models.done;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 
 public class Weekday {
 
@@ -10,13 +12,17 @@ public class Weekday {
 	private String name;
 
 	private String description;
+	
+	private Integer value;
 
 	private Channel channel;
 	
 	private Customer customer;
 
+	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
 	private LocalDateTime createdAt;
 
+	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
 	private LocalDateTime updatedAt;
 
 	public Integer getId() {
@@ -79,6 +85,14 @@ public class Weekday {
 	public String toString() {
 		return "Weekday [id=" + id + ", name=" + name + ", description=" + description + ", channel=" + channel
 				+ ", customer=" + customer + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + "]";
+	}
+
+	public Integer getValue() {
+		return value;
+	}
+
+	public void setValue(Integer value) {
+		this.value = value;
 	}
 	
 	

@@ -3,19 +3,26 @@ package com.faap.scheduler.job_application.models.thing_to_do;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 public class ThingToDo {
 	private int id;
 	
 	private String jsonParams;
 	
+	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
 	private LocalDateTime createdAt;
 
+	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
 	private LocalDateTime updatedAt;
 	
+	@JsonFormat(pattern="yyyy-MM-dd")
 	private LocalDate incidenceDate;
 	
+	@JsonFormat(pattern="yyyy-MM-dd")
 	private LocalDate executionDate;
 	
+	@JsonFormat(pattern="yyyy-MM-dd")
 	private LocalDate estimatedDate;
 	
 	private String priority;

@@ -3,13 +3,17 @@ package com.faap.scheduler.job_application.excel.models.done;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 
 public class Periodic {
 
 	private Integer id;
 	
+	@JsonFormat(pattern="yyyy-MM-dd")
 	private LocalDate initialDate;
 	
+	@JsonFormat(pattern="yyyy-MM-dd")
 	private LocalDate finalDate;
 
 	private String description;
@@ -28,8 +32,10 @@ public class Periodic {
 	
 	private Customer customer;
 	
+	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
 	private LocalDateTime createdAt;
 	
+	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
 	private LocalDateTime updatedAt;
 
 	public Integer getId() {

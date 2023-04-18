@@ -2,6 +2,8 @@ package com.faap.scheduler.job_application.excel.models.done;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 public class Discipline {
 
 	private Integer id;
@@ -14,8 +16,10 @@ public class Discipline {
 	
 	private Customer customer;
 	
+	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
 	private LocalDateTime createdAt;
 
+	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
 	private LocalDateTime updatedAt;
 
 	public Integer getId() {

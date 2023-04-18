@@ -2,6 +2,8 @@ package com.faap.scheduler.job_application.excel.models.done;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 
 public class DoneTemplate {
 
@@ -23,12 +25,16 @@ public class DoneTemplate {
 	
 	private Unit defaultUnit;
 	
+	private boolean trackingEnabled;
+	
 	private Channel channel;
 	
 	private Customer customer;
 	
+	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
 	private LocalDateTime createdAt;
 	
+	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
 	private LocalDateTime updatedAt;
 
 	public Integer getId() {
@@ -142,6 +148,14 @@ public class DoneTemplate {
 				+ defaultFinalMinute + ", description=" + description + ", defaultDiscipline=" + defaultDiscipline
 				+ ", defaultResult=" + defaultResult + ", defaultUnit=" + defaultUnit + ", channel=" + channel
 				+ ", customer=" + customer + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + "]";
+	}
+
+	public boolean isTrackingEnabled() {
+		return trackingEnabled;
+	}
+
+	public void setTrackingEnabled(boolean trackingEnabled) {
+		this.trackingEnabled = trackingEnabled;
 	}
 	
 	

@@ -3,15 +3,20 @@ package com.faap.scheduler.job_application.excel.models.done;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 
 public class DailyTask {
 
 	private Integer id;
 	
+	@JsonFormat(pattern="yyyy-MM-dd")
 	private LocalDate incidenceDate;
 	
+	@JsonFormat(pattern="yyyy-MM-dd")
 	private LocalDate executionDate;
 	
+	@JsonFormat(pattern="yyyy-MM-dd")
 	private LocalDate estimatedDate;
 	
 	private Priority priority;
@@ -28,8 +33,10 @@ public class DailyTask {
 	
 	private Customer customer;
 	
+	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
 	private LocalDateTime createdAt;
 	
+	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
 	private LocalDateTime updatedAt;
 
 	public Integer getId() {

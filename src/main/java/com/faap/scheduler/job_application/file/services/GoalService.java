@@ -76,7 +76,7 @@ public class GoalService {
 	    .build();
 		
 		Request request = new Request.Builder()
-				  .url("http://localhost:8087/goal-api/customer/id/" + customerId)
+				  .url("http://localhost:8087/goal-api/customer/customer_id/" + customerId)
 	
 				  //.addHeader("X-AUTH-TOKEN", "12a34bcdef5g6789h012ij34567k890123lmn45o67p89q0rs1tuv23wxy456z78")
 				  .addHeader("Content-Type", "application/json")
