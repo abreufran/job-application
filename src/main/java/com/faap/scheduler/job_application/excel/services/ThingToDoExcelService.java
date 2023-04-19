@@ -325,23 +325,29 @@ public class ThingToDoExcelService extends AbstractApiExcelService {
     			return today.withDayOfMonth(today.getMonth().length(today.isLeapYear()));
     		case SECOND_SATURDAY_NOVEMBER:
     			LocalDate novemberFirst = LocalDate.of(today.getYear(), 11, 1);
-    			DayOfWeek dayOfWeekNovemberFirst = novemberFirst.getDayOfWeek();
-    			LocalDate firstSaturday = novemberFirst.plusDays(6 - dayOfWeekNovemberFirst.getValue());
+    			while (novemberFirst.getDayOfWeek() != DayOfWeek.SATURDAY) {
+    				novemberFirst = novemberFirst.plusDays(1);
+    	        }
+    			LocalDate firstSaturday = novemberFirst;
     			
     			return firstSaturday.plusDays(7);	
     		case SECOND_TUESDAY_OF_MONTH:
     			
     			LocalDate monthFirst = LocalDate.of(today.getYear(), today.getMonth(), 1);
-    			DayOfWeek dayOfWeekMonthFirst = monthFirst.getDayOfWeek();
-    			LocalDate firstTuesday = monthFirst.plusDays(2 - dayOfWeekMonthFirst.getValue());
+    			while (monthFirst.getDayOfWeek() != DayOfWeek.TUESDAY) {
+    				monthFirst = monthFirst.plusDays(1);
+    	        }
+    			LocalDate firstTuesday = monthFirst;
     			
     			return firstTuesday.plusDays(7);
     			
     		case FOURTH_THURSDAY_OF_MONTH:
     			
     			monthFirst = LocalDate.of(today.getYear(), today.getMonth(), 1);
-    			dayOfWeekMonthFirst = monthFirst.getDayOfWeek();
-    			LocalDate firstThursday = monthFirst.plusDays(4 - dayOfWeekMonthFirst.getValue());
+    			while (monthFirst.getDayOfWeek() != DayOfWeek.THURSDAY) {
+    				monthFirst = monthFirst.plusDays(1);
+    	        }
+    			LocalDate firstThursday = monthFirst;
     			
     			return firstThursday.plusDays(21);	
     		case FIRST_DAY_DECEMBER:
